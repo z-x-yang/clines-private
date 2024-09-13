@@ -26,6 +26,8 @@ import os
 #     # Handle the response as needed (e.g., print or process)
 #     return response.json()['choices'][0]['message']['content']
 
+import torch
+from tqdm import tqdm
 
 def openai_chat(inputs_message):
     print(inputs_message)
@@ -40,10 +42,7 @@ def openai_chat(inputs_message):
     response = client.chat.completions.create(model=engine_name,  
                                                 messages=inputs_message,
                                                 max_tokens=4096,
-                                                temperature=0.,
-                                                top_p=1,
-                                                frequency_penalty=0,
-                                                presence_penalty=0)
+                                                temperature=0.,)
     
     return response.choices[0].message.content.strip()
     
@@ -135,8 +134,6 @@ class Retriever():
     def __init__(self, path):
 
         import transformers
-        import torch
-
         self.tokenizer = transformers.AutoTokenizer.from_pretrained(path, use_fast=True, do_lower_case=True)
         self.encoder = transformers.AutoModel.from_pretrained(path, trust_remote_code=True)
         if torch.cuda.is_available():
@@ -151,7 +148,7 @@ class Retriever():
                 code, term = item.split('||')
                 self.dict_map[term] = code
                 self.term_list.append(term)
-        self.term_list = list(set(self.term_list))
+        self.term_list = list(set(self.term_list))[:20000]
 
     def embed_terms(self, names, batch_size = 2048):
 
@@ -174,7 +171,8 @@ class Retriever():
                     batch_tokenized_names_cuda[k] = v.cuda()
                 
                 batch_dense_embeds = self.encoder(**batch_tokenized_names_cuda).last_hidden_state[:,0,:] 
-                # batch_dense_embeds = batch_dense_embeds.cpu().detach().numpy()
+                batch_dense_embeds = batch_dense_embeds / torch.norm(batch_dense_embeds, p=2, dim=-1, keepdim=True)
+                batch_dense_embeds = batch_dense_embeds.cpu()#.detach().numpy()
                 dense_embeds.append(batch_dense_embeds)
                 
         dense_embeds = torch.concat(dense_embeds, dim=0)
@@ -190,17 +188,17 @@ class Retriever():
         
         import faiss
         res = faiss.StandardGpuResources()  # use a single GPU
-        index = faiss.IndexFlatL2(self.dense_embeds.shape[-1])   # build the index
+        index = faiss.IndexFlatIP(self.dense_embeds.shape[-1])   # build the index
         self.gpu_index_flat = faiss.index_cpu_to_gpu(res, 0, index)
         self.gpu_index_flat.add(self.dense_embeds)  
 
     def embedding_retrieval(self, term, batch_size=2048):
 
         embed_for_test = self.embed_terms(term, batch_size)
-        D, I = gpu_index_flat.search(embed_for_test, 1)  # actual search
-        preds_fortest = {}
+        D, I = self.gpu_index_flat.search(embed_for_test, 1)  # actual search
+        preds_fortest = []
         for i, (idx, ds) in enumerate(zip(I, D)):
-            preds_fortest[term[i]] = {self.term_list[j]: d for j, d in zip(idx, ds)}
+            preds_fortest.append({self.dict_map[self.term_list[j]]: d for j, d in zip(idx, ds)})
             
         return preds_fortest
     

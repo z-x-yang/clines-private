@@ -18,7 +18,8 @@ For your final output, annotate the original record by marking each extracted en
 Here is the record:
 
 {note}
-                            '''
+
+'''
         elif self.prompt_name in ['recoverentity']:
             self.template = '''
 You will receive an electronic health record with named entities marked by <KEY> and </KEY>. Your task is to extract the marked entities in the record and recover the standard name or synonyms of the entities.
@@ -32,12 +33,15 @@ CLEAN: the standard names or synonyms of the entities.
 Here is the record:
 
 {note}
-                            '''
+
+'''
         elif self.prompt_name in ['findinfo']:
             self.template = '''
-You will be provided with an electronic health record from a patient and the entities extracted in this record. Your task is to find the information related to the entities extracted, such as modifiers, dosage, results, units, etc. 
+You will be provided with an electronic health record from a patient with the entities extracted (marked by <KEY> and </KEY>) in this record. Your task is to find the information related to the entities extracted, such as modifiers, dosage, results, units, etc. 
 
-The final answer should be provided in JSON format using the entities as the key of some dictionary formats, and the value will be the related information which have to be a dictionary of keys: 
+The final answer should be provided in JSON format which is a list of python dictionary. For each entry dictionary, the value will be the related information which have to be a dictionary of keys: 
+ - tag: this is the KEY value for each extracted entity.
+ - entity: this is the corresponding extracted entity.
  - assertion_status: this should be one of the following categories: Present (the patient currently has the entities), Absent (the patient currently doesn't have or no longer has the entities), and Speculative (the patient will possibly have the entities). If this is not a suitable key for the entities, use 'Not Applicable'.
  - body_location: this should be the body location related to the entity. If this is not a suitable key for the entities, use 'Not Applicable'.
  - modifier: this should be the short phrase or adjectives that modify the entities, this should be an extraction from the record. If this is not a suitable key for the entities, use 'Not Applicable'.
@@ -49,24 +53,22 @@ Here is the record:
 
 {note}
 
-Here are the entities:
-
-{entity}
-                            '''
+'''
         elif self.prompt_name in ['finddate']:
             self.template = '''
-You will be provided with an electronic health record from a patient, the entities extracted in this record, and the date the record was taken. Your task is to find the happening time for each entities. 
+You will be provided with an electronic health record from a patient with the entities extracted (marked by <KEY> and </KEY>) in this record, and the date the record was taken. Your task is to find the happening time for each entity. 
 
-The final answer should be provided in JSON format using the entities as the key of some dictionary formats, and the value will be a list containing two date information in the format of [YYYY-MM-DD, YYYY-MM-DD], in which the first one is the possible starting time and the second is the end time. If there is only one date information for the entity put the same date to both entires. If there is no corresponding time information, use 'not applicable' as the value.
+The final answer should be provided in JSON format which is a list of python dictionary.
+Each entry dictionary should contain the keys of 
+ - tag: this is the KEY value for each extracted entity.
+ - entity: this is the corresponding extracted entity.
+ - date: the value will be a list containing two pieces of date information in the format of [YYYY-MM-DD, YYYY-MM-DD], in which the first one is the possible starting time and the second is the end time. If there is only one date information for the entity put the same date to both entries. If there is no corresponding time information, use 'not applicable' as the value.
 
 Here is the record:
 
 {note}
 
-Here are the entities:
-
-{entity}
-                            '''
+'''
     def apply_template(self, ehr, entity=None):
         
         return self.template.format(**{'note': ehr, 'entity': entity})
