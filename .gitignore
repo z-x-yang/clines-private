@@ -1,3 +1,5 @@
 *.csv
 *.json
 *.jsonl
+setting_env.sh
+*.txt
