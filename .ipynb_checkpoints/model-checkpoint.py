@@ -28,9 +28,10 @@ import os
 
 import torch
 from tqdm import tqdm
+import semchunk
 
 def openai_chat(inputs_message):
-    print(inputs_message)
+    # print(inputs_message)
     from openai import AzureOpenAI
     GPT4V_KEY = os.getenv("OPENAIKEY")
     GPT4V_ENDPOINT = os.getenv("OPENAIENDPOINT")
@@ -76,8 +77,11 @@ class LLM():
 
         self.model_name = model_name
         if self.model_name in ['gpt3.5', 'gpt4', 'gpt4o', 'gpt4omini']:
-
+            
+            import tiktoken
             self.chat_func = openai_chat
+            self.tokenizer = tiktoken.encoding_for_model('gpt-4')
+            self.chunker = semchunk.chunkerify(self.tokenizer, 512)
 
         elif self.model_name in ['gemini']:
 
