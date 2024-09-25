@@ -46,6 +46,21 @@ def openai_chat(inputs_message):
                                                 temperature=0.,)
     
     return response.choices[0].message.content.strip()
+
+def llama_chat(inputs_message):
+    import openai
+    client = openai.Client(
+        base_url="http://127.0.0.1:30000/v1", api_key="EMPTY")
+
+    # Chat completion
+    response = client.chat.completions.create(
+        model="default",
+        messages=inputs_message,
+        temperature=0,
+        max_tokens=4096,
+    )
+    
+    return response.choices[0].message.content.strip()
     
 def huggingface_chat(input_message):
     
@@ -94,6 +109,12 @@ class LLM():
         elif self.model_name in ['llama', 'mistral']:
 
             self.chat_func = huggingface_chat
+        
+        elif self.model_name in ['llama-3-405b']:
+            import tiktoken
+            self.chat_func = llama_chat
+            self.tokenizer = tiktoken.encoding_for_model('gpt-4')
+            self.chunker = semchunk.chunkerify(self.tokenizer, 512)
 
         self.new_chat()
 
@@ -122,6 +143,13 @@ class LLM():
         elif self.model_name in ['llama', 'mistral']:
 
             NotImplementedError
+            
+        elif self.model_name in ['llama-3-405b']:
+            
+            self.message_buffer.append({
+                                          "role": "system",
+                                          "content": "You are an AI assistant that follows people's instructions."
+                                        })
         
 
     def __call__(self, query):
@@ -135,12 +163,13 @@ class LLM():
     
 class Retriever():
 
-    def __init__(self, path):
+    def __init__(self, path, use_gpu=True):
 
         import transformers
         self.tokenizer = transformers.AutoTokenizer.from_pretrained(path, use_fast=True, do_lower_case=True)
         self.encoder = transformers.AutoModel.from_pretrained(path, trust_remote_code=True)
-        if torch.cuda.is_available():
+        self.use_gpu = use_gpu
+        if torch.cuda.is_available() and use_gpu:
             self.encoder = self.encoder.cuda()
 
     def load_dictionary(self, file_path):
@@ -154,13 +183,11 @@ class Retriever():
                 self.term_list.append(term)
         self.term_list = list(set(self.term_list))[:20000]
 
-    def embed_terms(self, names, batch_size = 2048):
-
+    def embed_terms(self, names, batch_size = 256):
         self.encoder.eval() 
         dense_embeds = []
         
         with torch.no_grad():
-            
             iterations = tqdm(range(0, len(names), batch_size))
                 
             for start in iterations:
@@ -183,23 +210,38 @@ class Retriever():
 
         return dense_embeds
         
-    def embed_dictionary(self, batch_size = 2048):
+    def embed_dictionary(self, batch_size = 256):
+        import os
+        import torch
 
-        self.encoder.eval() 
-        self.dense_embeds = self.embed_terms(self.term_list, batch_size)
+        cache_file = '/n/lw_groups/hms/dbmi/yu/lab/zoy043/data/dense_embeds_cache.pt'
+        print(f"Checking if cache file exists at {cache_file}")
+
+        if os.path.exists(cache_file):
+            print("Cache file found. Loading dense embeddings from cache.")
+            self.dense_embeds = torch.load(cache_file)
+        else:
+            print("Cache file not found. Embedding terms and saving to cache.")
+            self.encoder.eval()
+            self.dense_embeds = self.embed_terms(self.term_list, batch_size)
+            torch.save(self.dense_embeds, cache_file)
+            print("Dense embeddings saved to cache.")
 
     def faiss_setup(self):
-        
         import faiss
-        res = faiss.StandardGpuResources()  # use a single GPU
-        index = faiss.IndexFlatIP(self.dense_embeds.shape[-1])   # build the index
-        self.gpu_index_flat = faiss.index_cpu_to_gpu(res, 0, index)
-        self.gpu_index_flat.add(self.dense_embeds)  
+        if self.use_gpu:
+            res = faiss.StandardGpuResources()  # use a single GPU
+            index = faiss.IndexFlatIP(self.dense_embeds.shape[-1])   # build the index
+            self.index_flat = faiss.index_cpu_to_gpu(res, 0, index)
+            self.index_flat.add(self.dense_embeds)
+        else:
+            self.index_flat = faiss.IndexFlatIP(self.dense_embeds.shape[-1])
+            self.index_flat.add(self.dense_embeds)
 
-    def embedding_retrieval(self, term, batch_size=2048):
+    def embedding_retrieval(self, term, batch_size=256):
 
         embed_for_test = self.embed_terms(term, batch_size)
-        D, I = self.gpu_index_flat.search(embed_for_test, 1)  # actual search
+        D, I = self.index_flat.search(embed_for_test, 1)  # actual search
         preds_fortest = []
         for i, (idx, ds) in enumerate(zip(I, D)):
             preds_fortest.append({self.dict_map[self.term_list[j]]: d for j, d in zip(idx, ds)})

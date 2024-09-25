@@ -1,0 +1,44 @@
+# Function to get all unique tags from list1
+def get_tags_from_list1(list1):
+    return {int(item['TAG']) for item in list1}
+
+# Remove items with tags not in list1 and ensure all tags in list1 are in list2 and list3
+def clean_and_fill_list(main_tags, lst, tag_key, default_item):
+    # Remove items with tags not in list1
+    cleaned_list = [item for item in lst if item[tag_key] in main_tags]
+    
+    # Get existing tags in the current list
+    existing_tags = {int(item[tag_key]) for item in cleaned_list}
+    
+    # Find missing tags
+    missing_tags = main_tags - existing_tags
+    
+    # Add default items for missing tags
+    for tag in missing_tags:
+        new_item = default_item.copy()
+        new_item[tag_key] = tag
+        cleaned_list.append(new_item)
+    
+    return cleaned_list
+
+# Main processing function
+def process_lists_based_on_list1(list1, list2, list3):
+    # Get all unique tags from list1
+    main_tags = get_tags_from_list1(list1)
+
+    # Clean and fill list2 based on tags from list1
+    list2_cleaned = clean_and_fill_list(main_tags, list2, 'tag', {
+        "tag": None, 
+        "assertion_status": None, 
+        "body_location": None, 
+        "value": None, 
+        "unit": None
+    })
+
+    # Clean and fill list3 based on tags from list1
+    list3_cleaned = clean_and_fill_list(main_tags, list3, 'tag', {
+        "tag": None, 
+        "date": [None, None]
+    })
+
+    return list2_cleaned, list3_cleaned

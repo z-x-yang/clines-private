@@ -3,3 +3,5 @@
 *.jsonl
 setting_env.sh
 *.txt
+*.log
+*.pyc
