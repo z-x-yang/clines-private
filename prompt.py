@@ -111,7 +111,7 @@ Here is the piece of the record for you to extract:
 
 {note}
 
-Json output:
+Json output without comment:
 '''
 # - entity: this is the corresponding extracted entity.
     def apply_template(self, inputs):

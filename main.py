@@ -278,13 +278,14 @@ class PIPELINE:
         Returns:
             dict: A dictionary containing the aggregated results and admission/discharge dates.
         """
-        chunked_ehr = []
+        chunked_ehr = [""]
         for item in self.model.chunker(ehr):
-            if len(item) < 300:
+            if len(chunked_ehr[-1]) < 300:
                 chunked_ehr[-1] += item
             else:
                 chunked_ehr.append(item)
         chunked_ehr = chunked_ehr[:3]
+
         if len(chunked_ehr) == 1:
             self.call_single(ehr)
         else:
@@ -324,7 +325,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Process some EHR notes.')
     parser.add_argument('--model_name', type=str, default='llama-3-405b', help='Name of the model to use')
-    parser.add_argument('--results_file', type=str, default='./results_0925.json', help='File to save the results')
+    parser.add_argument('--results_file', type=str, default='./results_0926.json', help='File to save the results')
     parser.add_argument('--max_retries', type=int, default=1, help='Maximum number of retries for processing each note')
     parser.add_argument('--debug', type=bool, default=False, help='Debug mode')
     parser.add_argument('--notes_file', type=str, default='./mimic-data-processing/cleaned_mimiciii_notes.csv', help='CSV file containing the notes')
@@ -346,7 +347,7 @@ if __name__ == '__main__':
     # Initialize the error log file
     with open(args.error_log_file, 'w') as f:
             json.dump([], f)
-            
+                        
     for i in tqdm(range(0, len(notes)), desc="Processing notes"):
         ehr = notes.iloc[i]['TEXT']
         
