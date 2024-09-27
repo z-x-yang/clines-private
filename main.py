@@ -9,6 +9,7 @@ from prompt import PROMPT
 import re
 import demjson3
 from check import process_lists_based_on_list1
+import traceback
 
 class PIPELINE:
     """
@@ -168,9 +169,10 @@ class PIPELINE:
                 
                 tmp['begin_date'] = self.pipeline_result['date_results'][i]['date'][0]
                 tmp['end_date'] = self.pipeline_result['date_results'][i]['date'][1]
-            except:
-                print(tmp)
-                raise
+            except Exception as e:
+                print("tmp:", tmp)
+                print("error:", e)
+                raise e
             
             aggregated_result.append(tmp)
 
@@ -278,9 +280,11 @@ class PIPELINE:
         Returns:
             dict: A dictionary containing the aggregated results and admission/discharge dates.
         """
+        self.reinitialize()
+        print("Start processing:\n\n")
         chunked_ehr = [""]
         for item in self.model.chunker(ehr):
-            if len(chunked_ehr[-1]) < 300:
+            if len(chunked_ehr[-1]) < 200 or len(item) < 300:
                 chunked_ehr[-1] += item
             else:
                 chunked_ehr.append(item)
@@ -301,6 +305,7 @@ class PIPELINE:
             "discharge_date": self.discharge_date
         }
         print(result_dict)
+        print("End processing.\n\n")
         return result_dict
 
 def convert_to_serializable(obj):
@@ -322,14 +327,20 @@ def convert_to_serializable(obj):
 
 if __name__ == '__main__':
     import argparse
+    import json
+    import pandas as pd
+    from tqdm import tqdm
+    import torch
+    import traceback
 
     parser = argparse.ArgumentParser(description='Process some EHR notes.')
     parser.add_argument('--model_name', type=str, default='llama-3-405b', help='Name of the model to use')
-    parser.add_argument('--results_file', type=str, default='./results_0926.json', help='File to save the results')
+    parser.add_argument('--results_file', type=str, default='./results_0927_2.json', help='File to save the results')
     parser.add_argument('--max_retries', type=int, default=1, help='Maximum number of retries for processing each note')
     parser.add_argument('--debug', type=bool, default=False, help='Debug mode')
     parser.add_argument('--notes_file', type=str, default='./mimic-data-processing/cleaned_mimiciii_notes.csv', help='CSV file containing the notes')
     parser.add_argument('--error_log_file', type=str, help='File to save the error logs')
+    parser.add_argument('--start_index', type=int, default=15, help='Index to start processing from')
     
     args = parser.parse_args()
     if not args.error_log_file:
@@ -340,15 +351,29 @@ if __name__ == '__main__':
 
     notes = pd.read_csv(args.notes_file)
     
-    # Initialize the results file
-    with open(args.results_file, 'w') as f:
-            json.dump([], f)
+    # Load existing results if start_index > 0
+    if args.start_index > 0 and os.path.exists(args.results_file):
+        with open(args.results_file, 'r') as f:
+            all_results = json.load(f)
+        with open(args.error_log_file, 'r') as f:
+            error_log = json.load(f)
+        
+        # Remove entries with index >= start_index
+        all_results = [result for result in all_results if result.get('index', float('inf')) < args.start_index]
+        error_log = [error for error in error_log if error.get('index', float('inf')) < args.start_index]
+    else:
+        all_results = []
+        error_log = []
     
-    # Initialize the error log file
+    # Save the updated results file
+    with open(args.results_file, 'w') as f:
+        json.dump(all_results, f, indent=4)
+    
+    # Save the updated error log file
     with open(args.error_log_file, 'w') as f:
-            json.dump([], f)
+        json.dump(error_log, f, indent=4)        
                         
-    for i in tqdm(range(0, len(notes)), desc="Processing notes"):
+    for i in tqdm(range(args.start_index, len(notes)), desc="Processing notes"):
         ehr = notes.iloc[i]['TEXT']
         
         if args.debug:   
@@ -363,18 +388,18 @@ if __name__ == '__main__':
                         print(f"Attempt {attempt + 1} failed: {e}. Retrying...")
                     else:
                         result = {"error": str(e)}
-                        # Load existing error log
-                        with open(args.error_log_file, 'r') as f:
-                            error_log = json.load(f)
+                        # Get traceback string
+                        traceback_str = traceback.format_exc()
                         # Append new error
-                        error_log.append({"index": i, "error": str(e)})
+                        error_log.append({"index": i, "error": str(e), "traceback": traceback_str})
+                        print("error:", str(e))
+                        print("traceback:", traceback_str)
                         # Save updated error log
                         with open(args.error_log_file, 'w') as f:
                             json.dump(error_log, f, indent=4)
         
-        # Load existing results
-        with open(args.results_file, 'r') as f:
-            all_results = json.load(f)
+        # Add index to result
+        result['index'] = i
         
         # Append new result
         all_results.append(result)
@@ -386,7 +411,5 @@ if __name__ == '__main__':
         # Release GPU memory
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
-        
-        pipeline.reinitialize()
 
     print("Processing complete.")        
