@@ -335,12 +335,12 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Process some EHR notes.')
     parser.add_argument('--model_name', type=str, default='llama-3-405b', help='Name of the model to use')
-    parser.add_argument('--results_file', type=str, default='./results_0927_2.json', help='File to save the results')
+    parser.add_argument('--results_file', type=str, default='./results_0927_3.json', help='File to save the results')
     parser.add_argument('--max_retries', type=int, default=1, help='Maximum number of retries for processing each note')
     parser.add_argument('--debug', type=bool, default=False, help='Debug mode')
     parser.add_argument('--notes_file', type=str, default='./mimic-data-processing/cleaned_mimiciii_notes.csv', help='CSV file containing the notes')
     parser.add_argument('--error_log_file', type=str, help='File to save the error logs')
-    parser.add_argument('--start_index', type=int, default=15, help='Index to start processing from')
+    parser.add_argument('--start_index', type=int, default=0, help='Index to start processing from')
     
     args = parser.parse_args()
     if not args.error_log_file:
@@ -359,8 +359,8 @@ if __name__ == '__main__':
             error_log = json.load(f)
         
         # Remove entries with index >= start_index
-        all_results = [result for result in all_results if result.get('index', float('inf')) < args.start_index]
-        error_log = [error for error in error_log if error.get('index', float('inf')) < args.start_index]
+        all_results = [result for result in all_results if result.get('result_index', float('inf')) < args.start_index]
+        error_log = [error for error in error_log if error.get('result_index', float('inf')) < args.start_index]
     else:
         all_results = []
         error_log = []
@@ -399,7 +399,7 @@ if __name__ == '__main__':
                             json.dump(error_log, f, indent=4)
         
         # Add index to result
-        result['index'] = i
+        result['result_index'] = i
         
         # Append new result
         all_results.append(result)

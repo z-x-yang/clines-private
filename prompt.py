@@ -108,9 +108,9 @@ Your output:
 You will be provided with a piece of texts from a electronic health record of a patient with the entities extracted (marked by <KEY> and </KEY>), and the previous piece from the same note, the admission date and the discharge date are also provided as contexts. Your task is to find the happening time for each entity and you can refer to the context information if necessary. 
 
 The final answer should be provided in JSON format which is a list of python dictionary.
-Each entry dictionary should contain the keys of 
+Each entry dictionary should contain two keys:
  - tag: the order in which the entities appear. It is the same as the number of KEY value in the record.
- - date: the value will be a list containing two pieces of date information in the format of [YYYY-MM-DD, YYYY-MM-DD], in which the first one is the possible starting time and the second is the end time. If there is only one date information for the entity put the same date to both entries. If there is no corresponding time information, use null as the value (such as {{"tag": "1", "date": [null, null]}}).
+ - date: the value will be a list containing two pieces of date information in the format of [YYYY-MM-DD, YYYY-MM-DD], in which the first one is the possible starting time and the second is the end time. If there is only one date information for the entity put the same date to both entries. If there is no corresponding time information, use [null, null] as the value (such as {{"tag": "1", "date": [null, null]}}).
 
 Example:
 ```
