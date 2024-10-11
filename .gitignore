@@ -5,3 +5,5 @@ setting_env.sh
 *.txt
 *.log
 *.pyc
+*.pt
+*cache*

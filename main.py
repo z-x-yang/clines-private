@@ -41,8 +41,10 @@ class PIPELINE:
         """
         self.model = model
         self.retriever = Retriever('cambridgeltl/SapBERT-from-PubMedBERT-fulltext')
-        self.retriever.load_dictionary('./umls_dictionary.txt')
+        self.retriever.load_dictionary_all('./umls_dictionary.txt')
+        self.retriever.load_dictionary_bodyloc('./umls_body_loc_dictionary.txt')
         self.retriever.embed_dictionary(4096)
+        
         self.retriever.faiss_setup()
         self.prompt_ner = PROMPT('findentity')
         self.prompt_clean = PROMPT('recoverentity')
@@ -128,23 +130,37 @@ class PIPELINE:
 
         return result
 
-    def entity_linking(self, ner_results):
+    def entity_linking(self, results, type='all'):
         """
         Perform entity linking on the NER results.
 
         Args:
-            ner_results (list): List of dictionaries containing NER results.
+            results (list): List of dictionaries containing NER results.
 
         Returns:
             list: NER results with added entity codes.
         """
-        term_for_test = []
-        for item in ner_results:
-            term_for_test.append(item['CLEAN'])
-        linking_result = self.retriever.embedding_retrieval(term_for_test, 256)
-        for i in range(len(ner_results)):
-            ner_results[i]['CODE'] = linking_result[i]
-        return ner_results
+        
+        if type == 'all':
+            term_for_test = []
+            for item in results:
+                term_for_test.append(item['CLEAN'])
+            linking_result = self.retriever.embedding_retrieval_all(term_for_test, 256)
+            for i in range(len(results)):
+                results[i]['CODE'] = linking_result[i]
+        elif type == 'bodyloc':
+            term_for_test = []
+            for item in results:
+                if 'body_location' in item:
+                    term_for_test.append(item['body_location'])
+                else:
+                    term_for_test.append(None)
+            linking_result = self.retriever.embedding_retrieval_bodyloc(term_for_test, 256)
+            for i in range(len(results)):
+                if linking_result[i] is not None:
+                    results[i]['code'] = linking_result[i]
+
+        return results
 
     def result_aggregation(self):
         """
@@ -221,18 +237,21 @@ class PIPELINE:
         self.model.new_chat()
         query_clean = self.prompt_clean.apply_template({'note': ner_results})
         clean_results = self.model(query_clean)
-        print("clean_results:", clean_results, "\n####################\n")
         clean_results = demjson3.decode(self.parse_result(clean_results))
         clean_results = self.deduplication(clean_results, 'TAG')
-        clean_results = self.entity_linking(clean_results)
+        clean_results = self.entity_linking(clean_results, type='all')
+        print("clean_results:", clean_results, "\n####################\n")
         
         # Information Extraction
         self.model.new_chat()
         query_info = self.prompt_info.apply_template({'note': ner_results})
         info_results = self.model(query_info)
-        print("info_results:", info_results, "\n####################\n")
         info_results = demjson3.decode(self.parse_result(info_results))
         info_results = self.deduplication(info_results, 'tag')
+        info_results = self.entity_linking(info_results, type='bodyloc')
+        print("info_results:", info_results, "\n####################\n")
+        input()
+        # raise
         
         # Date Extraction
         if prev_ehr is None:

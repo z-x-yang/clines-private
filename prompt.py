@@ -50,7 +50,7 @@ You will receive an electronic health record with named entities marked by <KEY>
 
 The final answer should be provided in JSON format which is a list of python dictionary. For each entry dictionary, the value will be the related information which have to be a dictionary of keys: 
  - tag: the order in which the entities appear. It is the same as the number of **KEY** value in the record.
- - assertion_status: this should be one of the following categories: Present (the patient currently has the entities), Absent (the patient currently doesn't have or no longer has the entities), and Speculative (the patient will possibly have the entities). If this is not a suitable key for the entities, ignore this key in the dictionary.
+ - assertion_status: this should be one of the following categories: Present (the patient currently has the entities), Absent (the patient currently doesn't have or no longer has the entities), Speculative (the patient will possibly have the entities), and Not Associated (the entity is not associated with the patient, such as disease of patients' family members). If this is not a suitable key for the entities, ignore this key in the dictionary.
  - body_location: this should be the body location related to the entity. This should be a short and clean phrase associated with a human body part, extracted from the origianl record. If this is not a suitable key for the entities, ignore this key in the dictionary.
  - value: this should be the value of the lab test or medication dosage, etc. If this is not a suitable key for the entities, ignore this key in the dictionary.
  - unit: this should be the unit corresponding to the value. If this is not a suitable key for the entities, ignore this key in the dictionary.
