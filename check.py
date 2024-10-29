@@ -18,7 +18,7 @@ def clean_and_fill_list(main_tags, lst, tag_key, default_item):
     return [cleaned_list[tag] for tag in main_tags]
 
 # Main processing function
-def process_lists_based_on_list1(list1, list2, list3):
+def process_lists_based_on_list1(list1, list2, list3, list4):
     # Get all unique tags from list1
     main_tags = get_tags_from_list1(list1)
 
@@ -37,4 +37,9 @@ def process_lists_based_on_list1(list1, list2, list3):
         "date": [None, None]
     })
 
-    return list2_cleaned, list3_cleaned
+    list4_cleaned = clean_and_fill_list(main_tags, list4, 'tag', {
+        "tag": None, 
+        "related": [None, None]
+    })
+
+    return list2_cleaned, list3_cleaned, list4_cleaned

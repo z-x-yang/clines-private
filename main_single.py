@@ -47,7 +47,6 @@ class PIPELINE:
         
         self.retriever.faiss_setup()
         self.prompt_ner = PROMPT('findentity')
-        self.prompt_relate = PROMPT('findrelated')
         self.prompt_clean = PROMPT('recoverentity')
         self.prompt_info = PROMPT('findinfo')
         self.prompt_date_single = PROMPT('finddate_single')
@@ -59,8 +58,7 @@ class PIPELINE:
                                 'info_results': [],
                                 'date_results': [],
                                 'parsed_ner_result': [],
-                                'parsed_ner_context': [],
-                               'relate_results': []}
+                                'parsed_ner_context': []}
         self.admission_date = None
         self.discharge_date = None
         
@@ -71,8 +69,7 @@ class PIPELINE:
                                 'info_results': [],
                                 'date_results': [],
                                 'parsed_ner_result': [],
-                                'parsed_ner_context': [],
-                               'relate_results': []}
+                                'parsed_ner_context': []}
         self.admission_date = None
         self.discharge_date = None
 
@@ -193,8 +190,6 @@ class PIPELINE:
                 tmp['value'] = self.pipeline_result['info_results'][i].get('value', pd.NA)
                 tmp['unit'] = self.pipeline_result['info_results'][i].get('unit', pd.NA)
                 tmp['note'] = self.pipeline_result['info_results'][i].get('note', pd.NA)
-                tmp['related'] = self.pipeline_result['relate_results'][i].get('related', pd.NA)
-                # tmp['related'] = [json.dumps(item) if item is not None else None for item in tmp['related']]
                 
                 tmp['begin_date'] = self.pipeline_result['date_results'][i]['date'][0]
                 tmp['end_date'] = self.pipeline_result['date_results'][i]['date'][1]
@@ -248,14 +243,6 @@ class PIPELINE:
         self.pipeline_result['parsed_ner_context'] += self.parse_ner_context(ner_results)
         print(self.parse_ner_result(ner_results),len(self.parse_ner_result(ner_results)))
         # Entity Cleaning and Linking
-
-        self.model.new_chat()
-        query_relate = self.prompt_relate.apply_template({'note': ner_results})
-        relate_results = self.model(query_relate)
-        relate_results = demjson3.decode(self.parse_result(relate_results))
-        relate_results = self.deduplication(relate_results, 'tag')
-        print("relate_results:", relate_results, "\n####################\n")
-        # raise
         
         self.model.new_chat()
         query_clean = self.prompt_clean.apply_template({'note': ner_results})
@@ -308,10 +295,9 @@ class PIPELINE:
             
         # Aggregate results
         self.pipeline_result['clean_results'] += clean_results
-        info_results, date_results, relate_results = process_lists_based_on_list1(clean_results, info_results, date_results, relate_results)
+        info_results, date_results = process_lists_based_on_list1(clean_results, info_results, date_results)
         self.pipeline_result['info_results'] += info_results
         self.pipeline_result['date_results'] += date_results
-        self.pipeline_result['relate_results'] += relate_results
             
     def __call__(self, ehr):
         """
@@ -381,77 +367,27 @@ if __name__ == '__main__':
     parser.add_argument('--debug', type=bool, default=False, help='Debug mode')
     parser.add_argument('--notes_file', type=str, default='./mimic-data-processing/cleaned_mimiciii_notes.csv', help='CSV file containing the notes')
     parser.add_argument('--error_log_file', type=str, help='File to save the error logs')
+    parser.add_argument('--output_path', type=str, help='File to save the error logs')
     parser.add_argument('--start_index', type=int, default=0, help='Index to start processing from')
     
     args = parser.parse_args()
-    if not args.error_log_file:
-        args.error_log_file = args.results_file.replace('.json', '_error_log.json')
     
     model = LLM(args.model_name)
     pipeline = PIPELINE(model)
 
-    notes = pd.read_csv(args.notes_file)
-    
-    # Load existing results if start_index > 0
-    if args.start_index > 0 and os.path.exists(args.results_file):
-        with open(args.results_file, 'r') as f:
-            all_results = json.load(f)
-        with open(args.error_log_file, 'r') as f:
-            error_log = json.load(f)
-        
-        # Remove entries with index >= start_index
-        all_results = [result for result in all_results if int(result.get('result_index', float('inf'))) < args.start_index]
-        error_log = [error for error in error_log if int(error.get('result_index', float('inf'))) < args.start_index]
-    else:
-        all_results = []
-        error_log = []
-    
-    # Save the updated results file
-    with open(args.results_file, 'w') as f:
-        json.dump(all_results, f, indent=4)
-    
-    # Save the updated error log file
-    with open(args.error_log_file, 'w') as f:
-        json.dump(error_log, f, indent=4)        
-                        
-    for i in tqdm(range(args.start_index, len(notes)), desc="Processing notes"):
-        ehr = notes.iloc[i]['TEXT']
-        
-        if args.debug:   
-            result = pipeline(ehr)
-        else:
-            for attempt in range(args.max_retries):
-                try:
-                    result = pipeline(ehr)
-                    break
-                except Exception as e:
-                    if attempt < args.max_retries - 1:
-                        print(f"Attempt {attempt + 1} failed: {e}. Retrying...")
-                    else:
-                        result = {"error": str(e)}
-                        # Get traceback string
-                        traceback_str = traceback.format_exc()
-                        # Append new error
-                        error_log.append({"index": i, "error": str(e), "traceback": traceback_str})
-                        print("error:", str(e))
-                        print("traceback:", traceback_str)
-                        # Save updated error log
-                        with open(args.error_log_file, 'w') as f:
-                            json.dump(error_log, f, indent=4)
-        
-        # Add index to result
-        result['result_index'] = str(notes.iloc[i]['ROW_ID'])
-        result["result_aggregation"].to_csv(f"outputs/{notes.iloc[i]['ROW_ID']}_{result['admission_date']}_{result['discharge_date']}.csv")
-        result["result_aggregation"] = result["result_aggregation"].to_dict(orient='records')
-        # Append new result
-        all_results.append(result)
-        print(all_results)
-        # Save updated results
-        with open(args.results_file, 'w') as f:
-            json.dump(all_results, f, indent=4, default=convert_to_serializable)
-        
-        # Release GPU memory
-        if torch.cuda.is_available():
-            torch.cuda.empty_cache()
+    headers = os.listdir('/n/data1/hsph/biostat/celehs/lab/hongyi/ehrllm/0821_model/structure_eval/annotations/')
+    headers = [item[:-4].split('_', 1) if 'Hongyi' not in item else [None, item[:-4]] for item in headers if 'csv' in item]
 
-    print("Processing complete.")        
+    path = '/n/data1/hsph/biostat/celehs/lab/hongyi/ehrllm/0821_model/annotation/'
+    for item in headers:
+        with open(path + f'/{item[-1]}/ehr.txt', 'r') as f:
+            ehr = "".join(f.readlines())
+        result = pipeline(ehr)
+        if item[0] is None:
+            item = item[1]
+        else:
+            item = '_'.join(item)
+        result["result_aggregation"].to_csv(f"{args.output_path}/{item}_model_result.csv")
+
+
+

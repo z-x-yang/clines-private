@@ -15,12 +15,18 @@ You will receive an electronic health record for a patient. Your task is to thor
 
 For your final output, annotate the original record by marking each extracted entity with <KEY> tags on both sides. Assign an integer to the value of KEY to indicate the order in which the entities appear, such as <1>...</1>, <2>...</2>, <3>...</3>, etc.
 
-Example:
+Example 1:
 The patient was taken to the <1>Operating Room</1>
 for <2>wound exploration</2> directly from the <3>Trauma Room</3>.  The
-patient was taken to the <4>Operating Room</4>, as mentioned above,
-for an <5>exploratory laparotomy</5>, <6>extensive lysis of adhesions</6>,
-and control of <7>rectus and omental bleeding</7>.
+patient was taken to the <4>Operating Room</4> for <5>chest CT</5>, as mentioned above,
+for an <6>exploratory laparotomy</6>, <7>extensive lysis of adhesions</7>,
+and control of <8>rectus and omental bleeding</8>._____s/p <9>radical resection</9> of right posterior shoulder <10>leiomyosarcoma</10>, negative margins.
+<11>TUMOR SIZE</11>: 4 x 3.2 x 3 cm
+
+Example 2:
+<1>Hydrocodone</1> 7.5mg + <2>Apap</2> 325mg 7.5-325MG TABLETS take 1 PO as directed PRN <3>arthritis</3>; No Change  
+<4>Lisinopril</4> 20 mg (20 MG TABLET Take 1) PO QD; No Change  
+<5>Multivitamins</5> 1 TAB (TABLET) PO QD; No Change 
 
 Here is the record:
 
@@ -30,7 +36,7 @@ Your annotated record:
 '''
         elif self.prompt_name in ['recoverentity']:
             self.template = '''
-You will receive an electronic health record with named entities marked by <KEY> and </KEY>. Your task is to extract the marked entities in the record and recover the standard name or synonyms of the entities.
+You will receive an electronic health record with named entities marked by <KEY> and </KEY>. Your task is to extract the marked entities in the record and recover the standard name or synonyms of the entities. If the marked entity is a number or unit, you should infer based on the context what is the biomedical concept it indicates.
 
 Your final outputs should be in the JSON format which is a list and the element in it should be a dictionary containing the keys of 
 
@@ -43,6 +49,32 @@ Here is the record:
 
 Your json output without comment:
 '''
+
+
+        elif self.prompt_name in ['findrelated']:
+            # pass
+            self.template = '''
+You will receive an electronic health record with named entities marked by <KEY> and </KEY>. Your task is to find the relatedness between entities based on the contexts. 
+
+Your final outputs should be in the JSON format which is a list and the element in it should be a dictionary containing the keys of 
+
+tag: the order in which the entities appear. It is the same as the number of KEY value in the record;
+related: the list of KEY values of entities related to this entity.
+
+For example:
+[
+  {{"tag": "1", "related": ["2", "3"]}},
+  {{"tag": "2", "related": ["1"]}},
+  {{"tag": "3", "related": ["1"]}},
+]
+
+Here is the record:
+
+{note}
+
+Your json output without comment:
+'''
+            
             # ORIGIN: the original name form of the entity in the record;
         elif self.prompt_name in ['findinfo']:
             self.template = '''
@@ -50,21 +82,21 @@ You will receive an electronic health record with named entities marked by <KEY>
 
 The final answer should be provided in JSON format which is a list of python dictionary. For each entry dictionary, the value will be the related information which have to be a dictionary of keys: 
  - tag: the order in which the entities appear. It is the same as the number of **KEY** value in the record.
- - assertion_status: this should be one of the following categories: Present (the patient currently has the entities), Absent (the patient currently doesn't have or no longer has the entities), Speculative (the patient will possibly have the entities), and Not Associated (the entity is not associated with the patient, such as disease of patients' family members). If this is not a suitable key for the entities, ignore this key in the dictionary.
+ - assertion_status: this should be one of the following categories: Present (the patient currently has the entities), Absent (the patient currently doesn't have or no longer has the entities), Speculative (the patient will possibly have the entities), and Not Associated (the entity is not associated with the patient, such as disease of patients' family members). This key has to be presented to every entity.
  - body_location: this should be the body location related to the entity. This should be a short and clean phrase associated with a human body part, extracted from the origianl record. If this is not a suitable key for the entities, ignore this key in the dictionary.
  - value: this should be the value of the lab test or medication dosage, etc. If this is not a suitable key for the entities, ignore this key in the dictionary.
  - unit: this should be the unit corresponding to the value. If this is not a suitable key for the entities, ignore this key in the dictionary.
-
+ - note: this is a complementary key that should contain the additional necessary information related to the entities. For example, the detailed condition of a disease or symptom or detailed medication instructions (e.g., frequency, timeline).
+ 
 Example:
 ```
 [
-  {{"tag": "1", "value": "600", "unit": "mg"}},
-  {{"tag": "2", "value": "17", "unit": "pg/mL"}},
-  {{"tag": "3", "value": "5.7", "unit": null, "body_location": "blood"}},
-  {{"tag": "4", "body_location": "heart"}},
-  {{"tag": "5", "body_location": "heart", "assertion_status": "Present"}},
-  {{"tag": "6", "assertion_status": "Absent"}},
-  {{"tag": "7", "assertion_status": "Speculative"}}
+  {{"tag": "1", "value": "600", "unit": "mg", "assertion_status": "Present", "note": "once every two days"}},
+  {{"tag": "2", "value": "5.7", "unit": null, "body_location": "blood", "assertion_status": "Present"}},
+  {{"tag": "3", "body_location": "heart", "assertion_status": "Present"}},
+  {{"tag": "4", "body_location": "heart", "assertion_status": "Present"}},
+  {{"tag": "5", "assertion_status": "Absent", "note": "severe"}},
+  {{"tag": "6", "assertion_status": "Speculative"}}
 ]
 ```
 
@@ -74,6 +106,7 @@ Here is the record:
 
 Your json output without comment:
 '''
+            
              # - entity: this is the corresponding extracted entity.
         elif self.prompt_name in ['finddate_single']:
             self.template = '''

@@ -29,6 +29,7 @@ import os
 import torch
 from tqdm import tqdm
 import semchunk
+import json
 
 def openai_chat(inputs_message):
     # print(inputs_message)
@@ -44,7 +45,7 @@ def openai_chat(inputs_message):
                                                 messages=inputs_message,
                                                 max_tokens=4096,
                                                 temperature=0.,)
-    
+    # print(response)
     return response.choices[0].message.content.strip()
 
 def llama_chat(inputs_message):
@@ -181,7 +182,7 @@ class Retriever():
                 code, term = item.split('||')
                 self.dict_map[term] = code
                 self.term_list_all.append(term)
-        self.term_list_all = list(set(self.term_list_all))[:2000]
+        self.term_list_all = list(set(self.term_list_all))
 
     def load_dictionary_bodyloc(self, file_path):
         
@@ -190,15 +191,14 @@ class Retriever():
             for item in f.readlines():
                 code, term = item.split('||')
                 self.term_list_bodyloc.append(term)
-        self.term_list_bodyloc = list(set(self.term_list_bodyloc))[:2000]
+        self.term_list_bodyloc = list(set(self.term_list_bodyloc))
 
-    def embed_term(self, names, batch_size = 256):
+    def embed_term(self, names, batch_size = 512):
         self.encoder.eval() 
         dense_embeds = []
         
         with torch.no_grad():
             iterations = tqdm(range(0, len(names), batch_size))
-                
             for start in iterations:
                 end = min(start + batch_size, len(names))
                 batch = names[start:end]
@@ -219,7 +219,7 @@ class Retriever():
 
         return dense_embeds
         
-    def embed_dictionary(self, batch_size = 256):
+    def embed_dictionary(self, batch_size = 2048):
         import os
         import torch
 
@@ -229,22 +229,27 @@ class Retriever():
         if os.path.exists(cache_file + '/dense_embed_all.pt'):
             print("Cache file found. Loading dense embeddings from cache.")
             self.dense_embeds_all = torch.load(cache_file + '/dense_embed_all.pt')
+            self.term_list_all = json.load(open(cache_file + '/term_list_all.jsonl', 'r'))
         else:
             print("Cache file not found. Embedding terms and saving to cache.")
+            
             self.encoder.eval()
             self.dense_embeds_all = self.embed_term(self.term_list_all, batch_size)
+            json.dump(self.term_list_all, open(cache_file + '/term_list_all.jsonl', 'w'))
             torch.save(self.dense_embeds_all, cache_file + '/dense_embed_all.pt')
             print("Dense embeddings saved to cache.")
 
         print(f"Checking if cache file exists at {cache_file + '/dense_embed_bodyloc.pt'}")
         if os.path.exists(cache_file + '/dense_embed_bodyloc.pt'):
             print("Cache file found. Loading dense embeddings from cache.")
+            self.term_list_bodyloc = json.load(open(cache_file + '/term_list_bodyloc.jsonl', 'r'))
             self.dense_embeds_bodyloc = torch.load(cache_file + '/dense_embed_bodyloc.pt')
         else:
             print("Cache file not found. Embedding terms and saving to cache.")
             self.encoder.eval()
             self.dense_embeds_bodyloc = self.embed_term(self.term_list_bodyloc, batch_size)
             torch.save(self.dense_embeds_bodyloc, cache_file + '/dense_embed_bodyloc.pt')
+            json.dump(self.term_list_bodyloc, open(cache_file + '/term_list_bodyloc.jsonl', 'w'))
             print("Dense embeddings saved to cache.")
 
     def faiss_setup(self):
@@ -275,7 +280,7 @@ class Retriever():
         D, I = self.index_flat_all.search(embed_for_test, 1)  # actual search
         preds_fortest = []
         for i, (idx, ds) in enumerate(zip(I, D)):
-            preds_fortest.append({self.dict_map[self.term_list_all[j]]: d for j, d in zip(idx, ds)})
+            preds_fortest.append(json.dumps({self.dict_map[self.term_list_all[j]]: self.term_list_all[j].strip() for j, d in zip(idx, ds)}))
             
         return preds_fortest
 
@@ -288,7 +293,7 @@ class Retriever():
         D, I = self.index_flat_bodyloc.search(embed_for_test, 1)  # actual search
         _preds_fortest = []
         for i, (idx, ds) in enumerate(zip(I, D)):
-            _preds_fortest.append({self.dict_map[self.term_list_bodyloc[j]]: d for j, d in zip(idx, ds)})
+            _preds_fortest.append(json.dumps({self.dict_map[self.term_list_bodyloc[j]]: self.term_list_bodyloc[j].strip() for j, d in zip(idx, ds)}))
         preds_fortest = []
         for item in term:
             if item is None:
