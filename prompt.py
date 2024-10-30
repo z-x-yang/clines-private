@@ -36,7 +36,9 @@ Your annotated record:
 '''
         elif self.prompt_name in ['recoverentity']:
             self.template = '''
-You will receive an electronic health record with named entities marked by <KEY> and </KEY>. Your task is to extract the marked entities in the record and recover the standard name or synonyms of the entities. If the marked entity is a number or unit, you should infer based on the context what is the biomedical concept it indicates.
+You will receive an electronic health record with named entities marked by <KEY> and </KEY>. Your task is to extract the marked entities in the record and recover the standard name or synonyms of the entities. You should select the standard name as similar to the marked entities as possible. For example, if the marked entities is a medication brand name, just keep the brand name.
+
+If the marked entity is a number or unit, you should infer based on the context what is the biomedical concept it indicates. 
 
 Your final outputs should be in the JSON format which is a list and the element in it should be a dictionary containing the keys of 
 
@@ -84,8 +86,8 @@ The final answer should be provided in JSON format which is a list of python dic
  - tag: the order in which the entities appear. It is the same as the number of **KEY** value in the record.
  - assertion_status: this should be one of the following categories: Present (the patient currently has the entities), Absent (the patient currently doesn't have or no longer has the entities), Speculative (the patient will possibly have the entities), and Not Associated (the entity is not associated with the patient, such as disease of patients' family members). This key has to be presented to every entity.
  - body_location: this should be the body location related to the entity. This should be a short and clean phrase associated with a human body part, extracted from the origianl record. If this is not a suitable key for the entities, ignore this key in the dictionary.
- - value: this should be the value of the lab test or medication dosage, etc. If this is not a suitable key for the entities, ignore this key in the dictionary.
- - unit: this should be the unit corresponding to the value. If this is not a suitable key for the entities, ignore this key in the dictionary.
+ - value: this should be the value of the number corresponding to the marked entity, even though the marked entity is a number. If this is not a suitable key for the entities, ignore this key in the dictionary.
+ - unit: this should be the unit corresponding to the value. If there is a value but no unit, you can infer the unit for the value. If this is not a suitable key for the entities, ignore this key in the dictionary.
  - note: this is a complementary key that should contain the additional necessary information related to the entities. For example, the detailed condition of a disease or symptom or detailed medication instructions (e.g., frequency, timeline).
  
 Example:
@@ -94,7 +96,7 @@ Example:
   {{"tag": "1", "value": "600", "unit": "mg", "assertion_status": "Present", "note": "once every two days"}},
   {{"tag": "2", "value": "5.7", "unit": null, "body_location": "blood", "assertion_status": "Present"}},
   {{"tag": "3", "body_location": "heart", "assertion_status": "Present"}},
-  {{"tag": "4", "body_location": "heart", "assertion_status": "Present"}},
+  {{"tag": "4", "value": "28", "unit": null, "assertion_status": "Present"}},
   {{"tag": "5", "assertion_status": "Absent", "note": "severe"}},
   {{"tag": "6", "assertion_status": "Speculative"}}
 ]
@@ -127,7 +129,7 @@ Json output:
         elif self.prompt_name in ['date_range']:
             self.template = '''
 You will receive an electronic health record for a patient. Your task is extract the admission date and the discharge date of the patient.
-Your output should be in JSON Array format: "[admission date, discharge date]". If this does not apply to the record provided, for example, use null to fill up the value (such as [null, null]).
+Your output should be in JSON Array format: "[admission date, discharge date]". If there is no specific admission date or discharge date, use null to fill up the value (such as [null, null]).
 
 Here is the record:
 
@@ -143,7 +145,7 @@ You will be provided with a piece of texts from a electronic health record of a 
 The final answer should be provided in JSON format which is a list of python dictionary.
 Each entry dictionary should contain two keys:
  - tag: the order in which the entities appear. It is the same as the number of KEY value in the record.
- - date: the value will be a list containing two pieces of date information in the format of [YYYY-MM-DD, YYYY-MM-DD], in which the first one is the possible starting time and the second is the end time. If there is only one date information for the entity put the same date to both entries. If there is no corresponding time information, use [null, null] as the value (such as {{"tag": "1", "date": [null, null]}}).
+ - date: the value will be a list containing two pieces of date information in the format of [YYYY-MM-DD, YYYY-MM-DD], in which the first one is the possible starting time and the second is the end time. If there is only one date information for the entity put the same date to both entries. If there is no specific time information, use [null, null] as the value (such as {{"tag": "1", "date": [null, null]}}).
 
 Example:
 ```

@@ -193,7 +193,7 @@ class Retriever():
                 self.term_list_bodyloc.append(term)
         self.term_list_bodyloc = list(set(self.term_list_bodyloc))
 
-    def embed_term(self, names, batch_size = 512):
+    def embed_term(self, names, batch_size = 256):
         self.encoder.eval() 
         dense_embeds = []
         
@@ -219,16 +219,16 @@ class Retriever():
 
         return dense_embeds
         
-    def embed_dictionary(self, batch_size = 2048):
+    def embed_dictionary(self, batch_size = 256):
         import os
         import torch
 
-        cache_file = './cache/'
+        cache_file = './cache'
         
         print(f"Checking if cache file exists at {cache_file + '/dense_embed_all.pt'}")
         if os.path.exists(cache_file + '/dense_embed_all.pt'):
             print("Cache file found. Loading dense embeddings from cache.")
-            self.dense_embeds_all = torch.load(cache_file + '/dense_embed_all.pt')
+            self.dense_embeds_all = torch.load(cache_file + '/dense_embed_all.pt', map_location=torch.device('cpu'))
             self.term_list_all = json.load(open(cache_file + '/term_list_all.jsonl', 'r'))
         else:
             print("Cache file not found. Embedding terms and saving to cache.")
@@ -243,7 +243,7 @@ class Retriever():
         if os.path.exists(cache_file + '/dense_embed_bodyloc.pt'):
             print("Cache file found. Loading dense embeddings from cache.")
             self.term_list_bodyloc = json.load(open(cache_file + '/term_list_bodyloc.jsonl', 'r'))
-            self.dense_embeds_bodyloc = torch.load(cache_file + '/dense_embed_bodyloc.pt')
+            self.dense_embeds_bodyloc = torch.load(cache_file + '/dense_embed_bodyloc.pt', map_location=torch.device('cpu'))
         else:
             print("Cache file not found. Embedding terms and saving to cache.")
             self.encoder.eval()
@@ -254,7 +254,8 @@ class Retriever():
 
     def faiss_setup(self):
         import faiss
-        if self.use_gpu:
+        # if self.use_gpu:
+        if False:
             res = faiss.StandardGpuResources()  # use a single GPU
             index = faiss.IndexFlatIP(self.dense_embeds_all.shape[-1])   # build the index
             self.index_flat_all = faiss.index_cpu_to_gpu(res, 0, index)

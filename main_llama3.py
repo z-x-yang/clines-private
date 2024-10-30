@@ -86,15 +86,22 @@ class PIPELINE:
         Returns:
             str: Cleaned JSON string.
         """
-        result = re.findall('```[^`]+```', string)
-        if len(result) == 0:
+        results = re.findall('```[^`]+```', string)
+        if len(results) == 0:
             return string
-        result = result[0].strip('```').lstrip('json')
-        result = result.replace('None', 'null')
-        result = result.replace('"null"', 'null')
-        # result = result.replace('""', 'null')
-        result = result.replace('"NA"', 'null')
-        return result
+        for result in results:
+            result = result.strip('```').lstrip('json')
+            result = result.replace('None', 'null')
+            result = result.replace('"null"', 'null')
+            # result = result.replace('""', 'null')
+            result = result.replace('"NA"', 'null')
+            try:
+                _ = demjson3.decode(result)
+                return result
+            except:
+                continue
+        return string
+        
 
     def parse_ner_result(self, string):
         """
@@ -375,13 +382,14 @@ if __name__ == '__main__':
     from tqdm import tqdm
     import torch
     import traceback
+    import os
 
-    parser = argparse.ArgumentParser(description='Process some EHR notes.')
+    parser = argparse.ArgumentParser(description='Process EHR text files.')
     parser.add_argument('--model_name', type=str, default='llama-3-405b', help='Name of the model to use')
     parser.add_argument('--results_file', type=str, default='./results_0927_3.json', help='File to save the results')
     parser.add_argument('--max_retries', type=int, default=1, help='Maximum number of retries for processing each note')
     parser.add_argument('--debug', type=bool, default=False, help='Debug mode')
-    parser.add_argument('--notes_file', type=str, default='./mimic-data-processing/cleaned_mimiciii_notes.csv', help='CSV file containing the notes')
+    parser.add_argument('--ehr_dir', type=str, required=True, help='Directory containing EHR text files')
     parser.add_argument('--error_log_file', type=str, help='File to save the error logs')
     parser.add_argument('--start_index', type=int, default=0, help='Index to start processing from')
     
@@ -392,32 +400,18 @@ if __name__ == '__main__':
     model = LLM(args.model_name)
     pipeline = PIPELINE(model)
 
-    notes = pd.read_csv(args.notes_file)
+    # Get list of text files in directory
+    ehr_files = [f for f in os.listdir(args.ehr_dir) if f.endswith('.txt')]
     
-    # Load existing results if start_index > 0
-    if args.start_index > 0 and os.path.exists(args.results_file):
-        with open(args.results_file, 'r') as f:
-            all_results = json.load(f)
-        with open(args.error_log_file, 'r') as f:
-            error_log = json.load(f)
+    all_results = []
+    error_log = []
+    
+    for filename in tqdm(ehr_files[args.start_index:], desc="Processing EHR files"):
+        file_path = os.path.join(args.ehr_dir, filename)
         
-        # Remove entries with index >= start_index
-        all_results = [result for result in all_results if int(result.get('result_index', float('inf'))) < args.start_index]
-        error_log = [error for error in error_log if int(error.get('result_index', float('inf'))) < args.start_index]
-    else:
-        all_results = []
-        error_log = []
-    
-    # Save the updated results file
-    with open(args.results_file, 'w') as f:
-        json.dump(all_results, f, indent=4)
-    
-    # Save the updated error log file
-    with open(args.error_log_file, 'w') as f:
-        json.dump(error_log, f, indent=4)        
-                        
-    for i in tqdm(range(args.start_index, len(notes)), desc="Processing notes"):
-        ehr = notes.iloc[i]['TEXT']
+        # Read EHR text file
+        with open(file_path, 'r') as f:
+            ehr = f.read()
         
         if args.debug:   
             result = pipeline(ehr)
@@ -434,16 +428,18 @@ if __name__ == '__main__':
                         # Get traceback string
                         traceback_str = traceback.format_exc()
                         # Append new error
-                        error_log.append({"index": i, "error": str(e), "traceback": traceback_str})
+                        error_log.append({"filename": filename, "error": str(e), "traceback": traceback_str})
                         print("error:", str(e))
                         print("traceback:", traceback_str)
                         # Save updated error log
                         with open(args.error_log_file, 'w') as f:
                             json.dump(error_log, f, indent=4)
         
-        # Add index to result
-        result['result_index'] = str(notes.iloc[i]['ROW_ID'])
-        result["result_aggregation"].to_csv(f"outputs/{notes.iloc[i]['ROW_ID']}_{result['admission_date']}_{result['discharge_date']}.csv")
+        # Add filename to result
+        result['filename'] = filename
+        # Save CSV with filename
+        output_filename = os.path.splitext(filename)[0]
+        result["result_aggregation"].to_csv(f"outputs/{output_filename}.csv")
         result["result_aggregation"] = result["result_aggregation"].to_dict(orient='records')
         # Append new result
         all_results.append(result)
@@ -456,4 +452,4 @@ if __name__ == '__main__':
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
 
-    print("Processing complete.")        
+    print("Processing complete.")
