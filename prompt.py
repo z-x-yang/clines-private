@@ -36,7 +36,9 @@ Your annotated record:
 '''
         elif self.prompt_name in ['recoverentity']:
             self.template = '''
-You will receive an electronic health record with named entities marked by <KEY> and </KEY>. Your task is to extract the marked entities in the record and recover the standard name or synonyms of the entities. If the marked entity is a number or unit, you should infer based on the context what is the biomedical concept it indicates.
+You will receive an electronic health record with named entities marked by <KEY> and </KEY>. Your task is to extract the marked entities in the record and recover the standard name or synonyms of the entities. You should select the standard name as similar to the marked entities as possible. For example, if the marked entities is a medication brand name, just keep the brand name.
+
+If the marked entity is a number or unit, you should infer based on the context what is the biomedical concept it indicates. 
 
 Your final outputs should be in the JSON format which is a list and the element in it should be a dictionary containing the keys of 
 
