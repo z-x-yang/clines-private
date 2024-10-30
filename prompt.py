@@ -86,8 +86,8 @@ The final answer should be provided in JSON format which is a list of python dic
  - tag: the order in which the entities appear. It is the same as the number of **KEY** value in the record.
  - assertion_status: this should be one of the following categories: Present (the patient currently has the entities), Absent (the patient currently doesn't have or no longer has the entities), Speculative (the patient will possibly have the entities), and Not Associated (the entity is not associated with the patient, such as disease of patients' family members). This key has to be presented to every entity.
  - body_location: this should be the body location related to the entity. This should be a short and clean phrase associated with a human body part, extracted from the origianl record. If this is not a suitable key for the entities, ignore this key in the dictionary.
- - value: this should be the value of the lab test or medication dosage, etc. If this is not a suitable key for the entities, ignore this key in the dictionary.
- - unit: this should be the unit corresponding to the value. If this is not a suitable key for the entities, ignore this key in the dictionary.
+ - value: this should be the value of the number corresponding to the marked entity, even though the marked entity is a number. If this is not a suitable key for the entities, ignore this key in the dictionary.
+ - unit: this should be the unit corresponding to the value. If there is a value but no unit, you can infer the unit for the value. If this is not a suitable key for the entities, ignore this key in the dictionary.
  - note: this is a complementary key that should contain the additional necessary information related to the entities. For example, the detailed condition of a disease or symptom or detailed medication instructions (e.g., frequency, timeline).
  
 Example:
@@ -96,7 +96,7 @@ Example:
   {{"tag": "1", "value": "600", "unit": "mg", "assertion_status": "Present", "note": "once every two days"}},
   {{"tag": "2", "value": "5.7", "unit": null, "body_location": "blood", "assertion_status": "Present"}},
   {{"tag": "3", "body_location": "heart", "assertion_status": "Present"}},
-  {{"tag": "4", "body_location": "heart", "assertion_status": "Present"}},
+  {{"tag": "4", "value": "28", "unit": null, "assertion_status": "Present"}},
   {{"tag": "5", "assertion_status": "Absent", "note": "severe"}},
   {{"tag": "6", "assertion_status": "Speculative"}}
 ]
