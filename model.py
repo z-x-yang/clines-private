@@ -196,7 +196,7 @@ class Retriever():
     def embed_term(self, names, batch_size = 512):
         self.encoder.eval() 
         dense_embeds = []
-        
+        names = [item.lower() for item in names]
         with torch.no_grad():
             iterations = tqdm(range(0, len(names), batch_size))
             for start in iterations:
@@ -280,8 +280,8 @@ class Retriever():
         D, I = self.index_flat_all.search(embed_for_test, 1)  # actual search
         preds_fortest = []
         for i, (idx, ds) in enumerate(zip(I, D)):
+            # preds_fortest.append(json.dumps({self.dict_map[self.term_list_all[j]]: [self.term_list_all[j].strip(), float(d)] for j, d in zip(idx, ds)}))
             preds_fortest.append(json.dumps({self.dict_map[self.term_list_all[j]]: self.term_list_all[j].strip() for j, d in zip(idx, ds)}))
-            
         return preds_fortest
 
     def embedding_retrieval_bodyloc(self, term, batch_size=256):
@@ -293,6 +293,7 @@ class Retriever():
         D, I = self.index_flat_bodyloc.search(embed_for_test, 1)  # actual search
         _preds_fortest = []
         for i, (idx, ds) in enumerate(zip(I, D)):
+            # _preds_fortest.append(json.dumps({self.dict_map[self.term_list_bodyloc[j]]: [self.term_list_bodyloc[j].strip(), float(d)] for j, d in zip(idx, ds)}))
             _preds_fortest.append(json.dumps({self.dict_map[self.term_list_bodyloc[j]]: self.term_list_bodyloc[j].strip() for j, d in zip(idx, ds)}))
         preds_fortest = []
         for item in term:
