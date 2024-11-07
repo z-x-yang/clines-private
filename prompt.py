@@ -78,27 +78,60 @@ Your json output without comment:
 '''
             
             # ORIGIN: the original name form of the entity in the record;
+
+        elif self.prompt_name in ['findstatus']:
+            self.template = '''
+You will receive an electronic health record with named entities marked by <KEY> and </KEY>. Your task is to find the information related to the entities extracted, such as modifiers, dosage, results, units, etc. 
+
+The final answer should be provided in JSON format, a list of Python dictionaries. 
+For each entry dictionary, the keys and values will be as follows: 
+ - tag: the order in which the entities appear. It is the same as the number of **KEY** values in the record.
+ - assertion_status: this should be one of the following 6 categories: Present; Absent; Possible; Conditional; Hypothetical; Not associated. 
+   The definitions of each category are: 
+   Present: problems associated with the patient can be present. Example: history of chest pain; the patient has had increasing weight gain.
+   Absent: the note asserts that the problem does not exist in the patient. Example: patient denies pain; elevated enzymes resolved.
+   Possible: the note asserts that the patient may have a problem, but there is uncertainty expressed in the note. Possible takes precedence over absent, so terms like “probably not” or “unlikely” categorize problems as being possible just as “probably” and “likely” do.  Example: We suspect this is pneumonia; pneumonia unlikely.
+   Conditional: the mention of the medical problem asserts that the patient  experiences the problem only under certain conditions. Allergies can fall into this category. Example: Penicillin causes a rash; Ativan 0.5 mg IV q 4 to 6 hours prn anxiety.
+   Not associated: the mention of the medical problem is associated  with someone who is not the patient. Example: Family history of prostate cancer.
+
+Example:
+CT showed <1>lesions</1> most likely secondary to <2>metastatic disease</2>. <3>Ativan</3> 0.5 mg IV q 4 to 6 hours prn <4>anxiety</4>.
+```
+[
+  {{"tag": "1", "assertion_status": "Present"}},
+  {{"tag": "2", "assertion_status": "Possible"}},
+  {{"tag": "3", "assertion_status": "Present"}},
+  {{"tag": "4", "assertion_status": "Conditional"}}
+]
+```
+
+Here is the record:
+
+{note}
+
+Your json output without comment:
+'''
+            
         elif self.prompt_name in ['findinfo']:
             self.template = '''
 You will receive an electronic health record with named entities marked by <KEY> and </KEY>. Your task is to find the information related to the entities extracted, such as modifiers, dosage, results, units, etc. 
 
 The final answer should be provided in JSON format which is a list of python dictionary. For each entry dictionary, the value will be the related information which have to be a dictionary of keys: 
  - tag: the order in which the entities appear. It is the same as the number of **KEY** value in the record.
- - assertion_status: this should be one of the following categories: Present (the patient currently has the entities), Absent (the patient currently doesn't have or no longer has the entities), Speculative (the patient will possibly have the entities), and Not Associated (the entity is not associated with the patient, such as disease of patients' family members). This key has to be presented to every entity.
  - body_location: this should be the body location related to the entity. This should be a short and clean phrase associated with a human body part, extracted from the origianl record. If this is not a suitable key for the entities, ignore this key in the dictionary.
  - value: this should be the value of the number corresponding to the marked entity, even though the marked entity is a number. If this is not a suitable key for the entities, ignore this key in the dictionary.
  - unit: this should be the unit corresponding to the value. If there is a value but no unit, you can infer the unit for the value. If this is not a suitable key for the entities, ignore this key in the dictionary.
- - note: this is a complementary key that should contain the additional necessary information related to the entities. For example, the detailed condition of a disease or symptom or detailed medication instructions (e.g., frequency, timeline).
+ - infer: this relates to the unit key. If the unit key value is inferred, put True under this key, otherwise False. This key has to co-occur with the unit key.
+ - note: this is a complementary key that should contain the additional necessary information as concisely as possible related to the entities. For example, the detailed condition of a disease or symptom or detailed medication instructions (e.g., frequency, timeline).
  
 Example:
 ```
 [
-  {{"tag": "1", "value": "600", "unit": "mg", "assertion_status": "Present", "note": "once every two days"}},
-  {{"tag": "2", "value": "5.7", "unit": null, "body_location": "blood", "assertion_status": "Present"}},
-  {{"tag": "3", "body_location": "heart", "assertion_status": "Present"}},
-  {{"tag": "4", "value": "28", "unit": null, "assertion_status": "Present"}},
-  {{"tag": "5", "assertion_status": "Absent", "note": "severe"}},
-  {{"tag": "6", "assertion_status": "Speculative"}}
+  {{"tag": "1", "value": "600", "unit": "mg", "note": "once every two days", 'infer': "False"}},
+  {{"tag": "2", "value": "5.7", "unit": null, "body_location": "blood", 'infer': "False"}},
+  {{"tag": "3", "body_location": "heart"}},
+  {{"tag": "4", "value": "28", "unit": 'mmol/L', 'infer': "True"}},
+  {{"tag": "5", "note": "severe"}}
 ]
 ```
 
@@ -137,10 +170,22 @@ Here is the record:
 
 Your output:
 '''
+        elif self.prompt_name in ['norm_date']:
+            self.template = '''
+Given an anchor time in the form of YYYY-MM-DD, what is the date range of "{date}" when the anchor time is {anchor}?
+Your answer should be given in the form of [YYYY-MM-DD, YYYY-MM-DD] representing the start and end time.
+Your final answer should be in JSON format.
+Example:
+```
+["2118-06-02", "2118-06-14"]
+```
+
+Your json output without comment:
+'''
             
         elif self.prompt_name in ['finddate_multi']:
             self.template = '''
-You will be provided with a piece of texts from a electronic health record of a patient with the entities extracted (marked by <KEY> and </KEY>), and the previous piece from the same note, the admission date and the discharge date are also provided as contexts. Your task is to find the happening time for each entity and you can refer to the context information if necessary. 
+You will be provided with a piece of texts from a electronic health record of a patient with the entities extracted (marked by <KEY> and </KEY>), and the previous piece from the same note, the admission date, and the discharge date are also provided as contexts. Your task is to find the happening time for each entity and you can refer to the context information if necessary. 
 
 The final answer should be provided in JSON format which is a list of python dictionary.
 Each entry dictionary should contain two keys:

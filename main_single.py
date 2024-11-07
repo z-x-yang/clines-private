@@ -387,31 +387,31 @@ if __name__ == '__main__':
     model = LLM(args.model_name)
     pipeline = PIPELINE(model)
 
-    headers = os.listdir('/n/data1/hsph/biostat/celehs/lab/hongyi/ehrllm/0821_model/structure_eval/annotations/')
-    headers = [item[:-4].split('_', 1) if 'Hongyi' not in item else [None, item[:-4]] for item in headers if 'csv' in item]
+    with open(f'{args.notes_file}/ehr.txt', 'r') as f:
+        ehr = "".join(f.readlines())
+    result = pipeline(ehr)
+    result["result_aggregation"].to_csv(f"{args.output_path}/{args.model_name}_model_result.csv")
 
-    path = '/n/data1/hsph/biostat/celehs/lab/hongyi/ehrllm/0821_model/annotation/'
-    list_keys = []
-    for item in headers:
-        with open(path + f'/{item[-1]}/ehr.txt', 'r') as f:
-            ehr = "".join(f.readlines())
-
+#````
+    # headers = os.listdir('/n/data1/hsph/biostat/celehs/lab/hongyi/ehrllm/0821_model/structure_eval/annotations/')
+    # headers = [item[:-4].split('_', 1) if 'Hongyi' not in item else [None, item[:-4]] for item in headers if 'csv' in item]
+    # path = '/n/data1/hsph/biostat/celehs/lab/hongyi/ehrllm/0821_model/annotation/'
+    # list_keys = []
+    # for item in headers:
     #     with open(path + f'/{item[-1]}/ehr.txt', 'r') as f:
-    #         ehr = f.readlines()
-    #     with open(f"{args.output_path}/{item[-1]}.txt", 'w') as f:
-    #         for l in ehr:
-    #             f.write(l)
-        
-    # print(list_keys)
-
-
-        result = pipeline(ehr)
-        if item[0] is None:
-
-            item = item[1]
-        else:
-            item = '_'.join(item)
-        result["result_aggregation"].to_csv(f"{args.output_path}/{item}_model_result.csv")
-
+    #         ehr = "".join(f.readlines())
+    # #     with open(path + f'/{item[-1]}/ehr.txt', 'r') as f:
+    # #         ehr = f.readlines()
+    # #     with open(f"{args.output_path}/{item[-1]}.txt", 'w') as f:
+    # #         for l in ehr:
+    # #             f.write(l)
+    # # print(list_keys)
+    #     result = pipeline(ehr)
+    #     if item[0] is None:
+    #         item = item[1]
+    #     else:
+    #         item = '_'.join(item)
+    #     result["result_aggregation"].to_csv(f"{args.output_path}/{item}_model_result.csv")
+#````
 
 

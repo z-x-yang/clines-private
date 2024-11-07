@@ -176,11 +176,13 @@ class Retriever():
     def load_dictionary_all(self, file_path):
         
         self.dict_map = {}
+        self.dict_map_sty = {}
         self.term_list_all = []
         with open(file_path, 'r') as f:
             for item in f.readlines():
-                code, term = item.split('||')
+                code, term, sty = item.strip().split('||')
                 self.dict_map[term] = code
+                self.dict_map_sty[term] = sty
                 self.term_list_all.append(term)
         self.term_list_all = list(set(self.term_list_all))
 
@@ -189,7 +191,7 @@ class Retriever():
         self.term_list_bodyloc = []
         with open(file_path, 'r') as f:
             for item in f.readlines():
-                code, term = item.split('||')
+                code, term, _ = item.strip().split('||')
                 self.term_list_bodyloc.append(term)
         self.term_list_bodyloc = list(set(self.term_list_bodyloc))
 
@@ -228,8 +230,8 @@ class Retriever():
         print(f"Checking if cache file exists at {cache_file + '/dense_embed_all.pt'}")
         if os.path.exists(cache_file + '/dense_embed_all.pt'):
             print("Cache file found. Loading dense embeddings from cache.")
-            self.dense_embeds_all = torch.load(cache_file + '/dense_embed_all.pt')
             self.term_list_all = json.load(open(cache_file + '/term_list_all.jsonl', 'r'))
+            self.dense_embeds_all = torch.load(cache_file + '/dense_embed_all.pt')
         else:
             print("Cache file not found. Embedding terms and saving to cache.")
             
@@ -281,7 +283,7 @@ class Retriever():
         preds_fortest = []
         for i, (idx, ds) in enumerate(zip(I, D)):
             # preds_fortest.append(json.dumps({self.dict_map[self.term_list_all[j]]: [self.term_list_all[j].strip(), float(d)] for j, d in zip(idx, ds)}))
-            preds_fortest.append(json.dumps({self.dict_map[self.term_list_all[j]]: self.term_list_all[j].strip() for j, d in zip(idx, ds)}))
+            preds_fortest.append(json.dumps({self.dict_map[self.term_list_all[j]]: [self.term_list_all[j].strip(), self.dict_map_sty[self.term_list_all[j]]] for j, d in zip(idx, ds)}))
         return preds_fortest
 
     def embedding_retrieval_bodyloc(self, term, batch_size=256):
@@ -294,7 +296,7 @@ class Retriever():
         _preds_fortest = []
         for i, (idx, ds) in enumerate(zip(I, D)):
             # _preds_fortest.append(json.dumps({self.dict_map[self.term_list_bodyloc[j]]: [self.term_list_bodyloc[j].strip(), float(d)] for j, d in zip(idx, ds)}))
-            _preds_fortest.append(json.dumps({self.dict_map[self.term_list_bodyloc[j]]: self.term_list_bodyloc[j].strip() for j, d in zip(idx, ds)}))
+            _preds_fortest.append(json.dumps({self.dict_map[self.term_list_bodyloc[j]]: [self.term_list_bodyloc[j].strip(), self.dict_map_sty[self.term_list_bodyloc[j]]] for j, d in zip(idx, ds)}))
         preds_fortest = []
         for item in term:
             if item is None:
