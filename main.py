@@ -11,6 +11,7 @@ import demjson3
 from check import process_lists_based_on_list1
 import traceback
 import sqlite3
+from schema import Schema
 
 class PIPELINE:
     """
@@ -33,7 +34,7 @@ class PIPELINE:
         discharge_date (str): Discharge date extracted from the EHR.
     """
 
-    def __init__(self, model, save_mode = 'sqlite'):
+    def __init__(self, model, schema = 'i2b2', save_mode = 'csv'):
         """
         Initialize the PIPELINE with a language model and set up necessary components.
 
@@ -41,11 +42,12 @@ class PIPELINE:
             model (LLM): An instance of the language model.
         """
         self.model = model
-        self.save_mode = save_mode
+        self.output_schema = Schema(schema, format_type)
+        
 
-        if self.save_mode == 'sqlite':
-            self.connection = sqlite3.connect('outputs/sqlite_database.db')
-            self.cursor = self.connection.cursor()
+        # if self.save_mode == 'sqlite':
+        #     self.connection = sqlite3.connect('outputs/sqlite_database.db')
+        #     self.cursor = self.connection.cursor()
             
         self.retriever = Retriever('cambridgeltl/SapBERT-from-PubMedBERT-fulltext')
         self.retriever.load_dictionary_all('./umls_dictionary.txt')
@@ -173,33 +175,33 @@ class PIPELINE:
 
         return results
 
-    def write_sqlit(self, aggregated_result, key):
+    # def write_sqlit(self, aggregated_result, key):
         
-        tables = {'"ehr_id"': "TEXT", 
-                  '"admission_date"': "TEXT",
-                  '"discharge_date"': "TEXT"}
-        for key in aggregated_result[0]:
-            tables[f'"{key}"'] =  "TEXT"
-        create_table_query = [f'{k}'+' '+v for k, v in tables.items()]
-        create_table_query = f"CREATE TABLE IF NOT EXISTS data ({', '.join(create_table_query)});"
-        print(create_table_query)
-        self.cursor.execute(create_table_query)
-        self.connection.commit()
+    #     tables = {'"ehr_id"': "TEXT", 
+    #               '"admission_date"': "TEXT",
+    #               '"discharge_date"': "TEXT"}
+    #     for key in aggregated_result[0]:
+    #         tables[f'"{key}"'] =  "TEXT"
+    #     create_table_query = [f'{k}'+' '+v for k, v in tables.items()]
+    #     create_table_query = f"CREATE TABLE IF NOT EXISTS data ({', '.join(create_table_query)});"
+    #     print(create_table_query)
+    #     self.cursor.execute(create_table_query)
+    #     self.connection.commit()
 
-        insert_query = f"INSERT INTO data ({', '.join(tables)}) VALUES ({', '.join(['?' for _ in tables])})"
-        print(insert_query)
-        data_batch = []
-        for item in aggregated_result:
-            row = [key, self.admission_date, self.discharge_date]
-            for key in item:
-                row.append(item[key] if key != 'related' else json.dumps(item[key]))
-            print(row)
-            data_batch.append(row)
+    #     insert_query = f"INSERT INTO data ({', '.join(tables)}) VALUES ({', '.join(['?' for _ in tables])})"
+    #     print(insert_query)
+    #     data_batch = []
+    #     for item in aggregated_result:
+    #         row = [key, self.admission_date, self.discharge_date]
+    #         for key in item:
+    #             row.append(item[key] if key != 'related' else json.dumps(item[key]))
+    #         print(row)
+    #         data_batch.append(row)
         
             
-        self.cursor.executemany(insert_query, data_batch)
-        self.connection.commit()  # Commit in batches
-        data_batch.clear()
+    #     self.cursor.executemany(insert_query, data_batch)
+    #     self.connection.commit()  # Commit in batches
+    #     data_batch.clear()
 
     def result_aggregation(self, key):
         """
@@ -213,6 +215,9 @@ class PIPELINE:
             try:
                 tmp = {
                     'term_index': i + 1, # self.pipeline_result['clean_results'][i]['TAG'],
+                    'key': key,
+                    'admission_date': self.admission_date,
+                    'discharge_date': self.discharge_date,
                     'mention': self.pipeline_result['parsed_ner_result'][i],
                     'context': self.pipeline_result['parsed_ner_context'][i],
                 }
@@ -234,6 +239,8 @@ class PIPELINE:
                 tmp['value'] = self.pipeline_result['info_results'][i].get('value', None)
                 tmp['unit'] = self.pipeline_result['info_results'][i].get('unit', None)
                 tmp['infer'] = self.pipeline_result['info_results'][i].get('infer', None)
+                tmp['freq'] = self.pipeline_result['info_results'][i].get('freq', None)
+                tmp['route'] = self.pipeline_result['info_results'][i].get('route', None)
                 tmp['note'] = self.pipeline_result['info_results'][i].get('note', None)
                 tmp['related'] = self.pipeline_result['relate_results'][i].get('related', None)
                 # tmp['related'] = [json.dumps(item) if item is not None else None for item in tmp['related']]
@@ -247,22 +254,24 @@ class PIPELINE:
             
             aggregated_result.append(tmp)
 
-        if self.save_mode == 'csv':
+        self.output_schema(aggregated_result)
+
+        # if self.save_mode == 'csv':
             
-            aggregated_result = pd.DataFrame(aggregated_result)
-            aggregated_result = aggregated_result.replace('(?i)none', pd.NA, regex = True)
-            aggregated_result.to_csv(f"outputs/{key}_{self.admission_date}_{self.discharge_date}.csv")
+        #     aggregated_result = pd.DataFrame(aggregated_result)
+        #     aggregated_result = aggregated_result.replace('(?i)none', pd.NA, regex = True)
+        #     aggregated_result.to_csv(f"outputs/{key}_{self.admission_date}_{self.discharge_date}.csv")
             
-        elif self.save_mode == 'sqlite':
+        # elif self.save_mode == 'sqlite':
 
-            self.write_sqlit(aggregated_result, key)
+        #     self.write_sqlit(aggregated_result, key)
 
-        elif self.save_mode == 'json':
+        # elif self.save_mode == 'json':
 
-            with open(f"outputs/{key}_{self.admission_date}_{self.discharge_date}.json", 'w'):
-                json.dump(aggregated_result, f)
+        #     with open(f"outputs/{key}_{self.admission_date}_{self.discharge_date}.json", 'w'):
+        #         json.dump(aggregated_result, f)
                 
-        return aggregated_result
+        # return aggregated_result
     
     def deduplication(self, list_of_dict, key):
         """
@@ -302,6 +311,7 @@ class PIPELINE:
         self.pipeline_result['parsed_ner_result'] += self.parse_ner_result(ner_results)
         self.pipeline_result['parsed_ner_context'] += self.parse_ner_context(ner_results)
         print(self.parse_ner_result(ner_results),len(self.parse_ner_result(ner_results)))
+        
         # Entity Cleaning and Linking
         self.model.new_chat()
         query_relate = self.prompt_relate.apply_template({'note': ner_results})
@@ -327,6 +337,7 @@ class PIPELINE:
         print("status_results:", status_results, "\n####################\n")
         # raise
         
+        
         self.model.new_chat()
         query_info = self.prompt_info.apply_template({'note': ner_results})
         info_results = self.model(query_info)
@@ -335,6 +346,9 @@ class PIPELINE:
         info_results = self.deduplication(info_results, 'tag')
         info_results = self.entity_linking(info_results, type='bodyloc')
         print("info_results:", info_results, "\n####################\n")
+        # input()
+        
+        # return None
 
         # Date Extraction
         if prev_ehr is None:
@@ -476,7 +490,7 @@ if __name__ == '__main__':
         args.error_log_file = args.results_file.replace('.json', '_error_log.json')
     
     model = LLM(args.model_name)
-    pipeline = PIPELINE(model, 'sqlite')
+    pipeline = PIPELINE(model, 'csv')
 
     notes = pd.read_csv(args.notes_file)
     
