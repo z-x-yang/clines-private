@@ -47,6 +47,7 @@ class PIPELINE:
         
         self.retriever.faiss_setup()
         self.prompt_ner = PROMPT('findentity')
+        self.prompt_relate = PROMPT('findrelated')
         self.prompt_clean = PROMPT('recoverentity')
         self.prompt_info = PROMPT('findinfo')
         self.prompt_date_single = PROMPT('finddate_single')
@@ -58,7 +59,8 @@ class PIPELINE:
                                 'info_results': [],
                                 'date_results': [],
                                 'parsed_ner_result': [],
-                                'parsed_ner_context': []}
+                                'parsed_ner_context': [],
+                                'relate_results': []}
         self.admission_date = None
         self.discharge_date = None
         
@@ -69,7 +71,8 @@ class PIPELINE:
                                 'info_results': [],
                                 'date_results': [],
                                 'parsed_ner_result': [],
-                                'parsed_ner_context': []}
+                                'parsed_ner_context': [],
+                                'relate_results': []}
         self.admission_date = None
         self.discharge_date = None
 
@@ -243,6 +246,14 @@ class PIPELINE:
         self.pipeline_result['parsed_ner_context'] += self.parse_ner_context(ner_results)
         print(self.parse_ner_result(ner_results),len(self.parse_ner_result(ner_results)))
         # Entity Cleaning and Linking
+
+        self.model.new_chat()
+        query_relate = self.prompt_relate.apply_template({'note': ner_results})
+        relate_results = self.model(query_relate)
+        relate_results = demjson3.decode(self.parse_result(relate_results))
+        relate_results = self.deduplication(relate_results, 'tag')
+        print("relate_results:", relate_results, "\n####################\n")
+        # raise
         
         self.model.new_chat()
         query_clean = self.prompt_clean.apply_template({'note': ner_results})
@@ -295,9 +306,10 @@ class PIPELINE:
             
         # Aggregate results
         self.pipeline_result['clean_results'] += clean_results
-        info_results, date_results = process_lists_based_on_list1(clean_results, info_results, date_results)
+        info_results, date_results, relate_results = process_lists_based_on_list1(clean_results, info_results, date_results, relate_results)
         self.pipeline_result['info_results'] += info_results
         self.pipeline_result['date_results'] += date_results
+        self.pipeline_result['relate_results'] += relate_results
             
     def __call__(self, ehr):
         """
@@ -375,19 +387,31 @@ if __name__ == '__main__':
     model = LLM(args.model_name)
     pipeline = PIPELINE(model)
 
-    headers = os.listdir('/n/data1/hsph/biostat/celehs/lab/hongyi/ehrllm/0821_model/structure_eval/annotations/')
-    headers = [item[:-4].split('_', 1) if 'Hongyi' not in item else [None, item[:-4]] for item in headers if 'csv' in item]
+    with open(f'{args.notes_file}/ehr.txt', 'r') as f:
+        ehr = "".join(f.readlines())
+    result = pipeline(ehr)
+    result["result_aggregation"].to_csv(f"{args.output_path}/{args.model_name}_model_result.csv")
 
-    path = '/n/data1/hsph/biostat/celehs/lab/hongyi/ehrllm/0821_model/annotation/'
-    for item in headers:
-        with open(path + f'/{item[-1]}/ehr.txt', 'r') as f:
-            ehr = "".join(f.readlines())
-        result = pipeline(ehr)
-        if item[0] is None:
-            item = item[1]
-        else:
-            item = '_'.join(item)
-        result["result_aggregation"].to_csv(f"{args.output_path}/{item}_model_result.csv")
-
+#````
+    # headers = os.listdir('/n/data1/hsph/biostat/celehs/lab/hongyi/ehrllm/0821_model/structure_eval/annotations/')
+    # headers = [item[:-4].split('_', 1) if 'Hongyi' not in item else [None, item[:-4]] for item in headers if 'csv' in item]
+    # path = '/n/data1/hsph/biostat/celehs/lab/hongyi/ehrllm/0821_model/annotation/'
+    # list_keys = []
+    # for item in headers:
+    #     with open(path + f'/{item[-1]}/ehr.txt', 'r') as f:
+    #         ehr = "".join(f.readlines())
+    # #     with open(path + f'/{item[-1]}/ehr.txt', 'r') as f:
+    # #         ehr = f.readlines()
+    # #     with open(f"{args.output_path}/{item[-1]}.txt", 'w') as f:
+    # #         for l in ehr:
+    # #             f.write(l)
+    # # print(list_keys)
+    #     result = pipeline(ehr)
+    #     if item[0] is None:
+    #         item = item[1]
+    #     else:
+    #         item = '_'.join(item)
+    #     result["result_aggregation"].to_csv(f"{args.output_path}/{item}_model_result.csv")
+#````
 
 

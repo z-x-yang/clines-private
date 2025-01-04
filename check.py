@@ -18,28 +18,32 @@ def clean_and_fill_list(main_tags, lst, tag_key, default_item):
     return [cleaned_list[tag] for tag in main_tags]
 
 # Main processing function
-def process_lists_based_on_list1(list1, list2, list3, list4):
+def process_lists_based_on_list1(list1, list2, list3, list4, list5):
     # Get all unique tags from list1
     main_tags = get_tags_from_list1(list1)
 
     # Clean and fill list2 based on tags from list1
     list2_cleaned = clean_and_fill_list(main_tags, list2, 'tag', {
         "tag": None, 
-        "assertion_status": None, 
         "body_location": None, 
         "value": None, 
         "unit": None
     })
 
-    # Clean and fill list3 based on tags from list1
     list3_cleaned = clean_and_fill_list(main_tags, list3, 'tag', {
+        "tag": None, 
+        "assertion_status": None,
+    })
+
+    # Clean and fill list3 based on tags from list1
+    list4_cleaned = clean_and_fill_list(main_tags, list4, 'tag', {
         "tag": None, 
         "date": [None, None]
     })
 
-    list4_cleaned = clean_and_fill_list(main_tags, list4, 'tag', {
+    list5_cleaned = clean_and_fill_list(main_tags, list5, 'tag', {
         "tag": None, 
         "related": [None, None]
     })
 
-    return list2_cleaned, list3_cleaned, list4_cleaned
+    return list2_cleaned, list3_cleaned, list4_cleaned, list5_cleaned
