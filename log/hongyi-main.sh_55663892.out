@@ -1,0 +1,4 @@
+Checking if cache file exists at ./cache//dense_embed_all.pt
+Cache file found. Loading dense embeddings from cache.
+Checking if cache file exists at ./cache//dense_embed_bodyloc.pt
+Cache file found. Loading dense embeddings from cache.

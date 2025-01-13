@@ -1,5 +1,7 @@
 *.csv
+.ipynb_checkpoints/
 *.json
+__pycache__/
 *.jsonl
 setting_env.sh
 *.txt

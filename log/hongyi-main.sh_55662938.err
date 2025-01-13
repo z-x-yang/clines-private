@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/n/data1/hsph/biostat/celehs/lab/hongyi/language-into-clinical-data/main.py", line 526, in <module>
+    error_log = [error for error in error_log if int(error.get('result_index', float('inf'))) < args.start_index]
+  File "/n/data1/hsph/biostat/celehs/lab/hongyi/language-into-clinical-data/main.py", line 526, in <listcomp>
+    error_log = [error for error in error_log if int(error.get('result_index', float('inf'))) < args.start_index]
+OverflowError: cannot convert float infinity to integer
