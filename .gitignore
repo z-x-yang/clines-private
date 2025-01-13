@@ -7,3 +7,4 @@ setting_env.sh
 *.pyc
 *.pt
 *cache*
+*.db
