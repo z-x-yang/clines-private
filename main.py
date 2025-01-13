@@ -34,7 +34,7 @@ class PIPELINE:
         discharge_date (str): Discharge date extracted from the EHR.
     """
 
-    def __init__(self, model, schema = 'i2b2', save_mode = 'csv'):
+    def __init__(self, model, schema = 'i2b2', format_type = 'csv'):
         """
         Initialize the PIPELINE with a language model and set up necessary components.
 
@@ -63,6 +63,7 @@ class PIPELINE:
         self.prompt_date_single = PROMPT('finddate_single')
         self.prompt_date_multi = PROMPT('finddate_multi')
         self.prompt_date_range = PROMPT('date_range')
+        self.prompt_basic_info = PROMPT('basic_info')
         self.norm_date = PROMPT('norm_date')
 
         self.reinitialize()
@@ -218,6 +219,13 @@ class PIPELINE:
                     'key': key,
                     'admission_date': self.admission_date,
                     'discharge_date': self.discharge_date,
+                    'gender': self.pipeline_result['gender'], 
+                    'death_date': self.pipeline_result['death_date'], 
+                    'birth_date': self.pipeline_result['birth_date'], 
+                    'race': self.pipeline_result['race'], 
+                    
+                    'ethnicity': self.pipeline_result['ethnicity'], 
+                    'zip_code': self.pipeline_result['zip_code'],
                     'mention': self.pipeline_result['parsed_ner_result'][i],
                     'context': self.pipeline_result['parsed_ner_context'][i],
                 }
@@ -303,7 +311,7 @@ class PIPELINE:
             prev_ehr (str, optional): The previous EHR note for context. Defaults to None.
         """
         # Named Entity Recognition
-        print(ehr)
+        # print(ehr)
         query_ner = self.prompt_ner.apply_template({'note': ehr})
         ner_results = self.model(query_ner)
         print("ner_results:", ner_results, "\n####################\n")
@@ -312,7 +320,7 @@ class PIPELINE:
         self.pipeline_result['parsed_ner_context'] += self.parse_ner_context(ner_results)
         print(self.parse_ner_result(ner_results),len(self.parse_ner_result(ner_results)))
         
-        # Entity Cleaning and Linking
+        # # Entity Cleaning and Linking
         self.model.new_chat()
         query_relate = self.prompt_relate.apply_template({'note': ner_results})
         relate_results = self.model(query_relate)
@@ -352,14 +360,24 @@ class PIPELINE:
 
         # Date Extraction
         if prev_ehr is None:
-            # Extract admission and discharge dates
+            # Extract basic information
             self.model.new_chat()
-            query_date = self.prompt_date_range.apply_template({'note': ehr})
-            date_results = self.model(query_date)
-            print("date_results 1:", date_results, "\n####################\n")
-            date_results = demjson3.decode(self.parse_result(date_results))
-            self.admission_date = date_results[0]
-            self.discharge_date = date_results[1]
+            query_basic = self.prompt_basic_info.apply_template({'note': ehr})
+            basic_results = self.model(query_basic)
+            basic_results = demjson3.decode(self.parse_result(basic_results))
+            self.admission_date = basic_results['admission_date']
+            self.discharge_date = basic_results['discharge_date']
+            self.pipeline_result.update(basic_results)
+            print("basic result:", basic_results, "\n####################\n")
+           
+            # Extract admission and discharge dates
+            # self.model.new_chat()
+            # query_date = self.prompt_date_range.apply_template({'note': ehr})
+            # date_results = self.model(query_date)
+            # print("date_results 1:", date_results, "\n####################\n")
+            # date_results = demjson3.decode(self.parse_result(date_results))
+            # self.admission_date = date_results[0]
+            # self.discharge_date = date_results[1]
 
             # Extract dates for each entity
             self.model.new_chat()
@@ -383,6 +401,7 @@ class PIPELINE:
             date_results = demjson3.decode(self.parse_result(date_results))
             date_results = self.deduplication(date_results, 'tag')
             date_results = self.normalize_date(date_results)
+            
         print(date_results)
         
         # Aggregate results
@@ -400,6 +419,7 @@ class PIPELINE:
         for i in range(len(relate_results)):
             relate_results[i]['related'] = list(map(lambda x: x + offset, relate_results[i]['related']))
         self.pipeline_result['relate_results'] += relate_results
+        
         
 
     def normalize_date(self, date_result):
@@ -448,8 +468,9 @@ class PIPELINE:
         # }
         # print(result_dict)
         print("End processing.\n\n")
-        input()
+       # input()
         # return result_dict
+        # raise
 
 def convert_to_serializable(obj):
     """
@@ -484,13 +505,15 @@ if __name__ == '__main__':
     parser.add_argument('--notes_file', type=str, default='./mimic-data-processing/cleaned_mimiciii_notes.csv', help='CSV file containing the notes')
     parser.add_argument('--error_log_file', type=str, help='File to save the error logs')
     parser.add_argument('--start_index', type=int, default=0, help='Index to start processing from')
+    parser.add_argument('--schema', type=str, default="default", help='schema')
+    parser.add_argument('--marker', type=str, default="xx", help='markerfortheoutput')
     
     args = parser.parse_args()
     if not args.error_log_file:
         args.error_log_file = args.results_file.replace('.json', '_error_log.json')
     
     model = LLM(args.model_name)
-    pipeline = PIPELINE(model, 'csv')
+    pipeline = PIPELINE(model, args.schema, 'csv')
 
     notes = pd.read_csv(args.notes_file)
     
@@ -517,8 +540,10 @@ if __name__ == '__main__':
         json.dump(error_log, f, indent=4)        
                         
     for i in tqdm(range(args.start_index, len(notes)), desc="Processing notes"):
-        ehr = notes.iloc[i]['TEXT']
-        key = str(notes.iloc[i]['ROW_ID'])
+        # ehr = notes.iloc[i]['TEXT']
+        # key = str(notes.iloc[i]['ROW_ID'])
+        ehr = notes.iloc[i]['note_text']
+        key = 'coral_'+ args.marker + '_' + str(notes.iloc[i]['coral_idx'])
         if args.debug:   
             result = pipeline(ehr, key)
         else:

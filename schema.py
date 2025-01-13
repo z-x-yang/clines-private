@@ -18,9 +18,17 @@ class Schema():
 
         if self.schema == 'i2b2':
             return self.i2b2_schema(json_data)
+        if self.schema == 'default':
+            return self.default_schema(json_data)
 
         else:
             raise NotImplementedError()
+
+    def default_schema(self, json_data):
+
+            
+        self.output_format(json_data)
+
 
 
     def i2b2_schema(self, json_data):
@@ -33,10 +41,10 @@ class Schema():
                 'patient_num': item.get('patient_num', None),
                 'birth_date': item.get('birth_date', None),
                 'death_date': item.get('death_date', None),
-                'sex_cd': item.get('sex_cd', None),
-                'race_cd': item.get('race_cd', None),
-                'ethnicity_cd': item.get('ethnicity_cd', None),
-                'zip_cd': item.get('zip_cd', None),
+                'sex_cd': item.get('gender', None),
+                'race_cd': item.get('race', None),
+                'ethnicity_cd': item.get('ethnicity', None),
+                'zip_cd': item.get('zip_code', None),
                 'encounter_num': item.get('key', None),
                 'start_date': item.get('begin_date', None),
                 'end_date': item.get('end_date', None),
@@ -63,13 +71,13 @@ class Schema():
                 'nval_num': None, # Used in conjunction with VALTYPE_CD = "N" to store a numerical value
                 'valueflag_cd': None, # An optional flag for outlier or abnormal values
                 'units_cd': None, # Units of measurement for the value in the NVAL_NUM column. Optional. If unit conversions are turned on, this is used to scale results in the query tool.
-                'unitflag_cd': None), # whether the unit is inferred or extracted
+                'unitflag_cd': None, # whether the unit is inferred or extracted
             }
 
-            tmp.append(template)
+            tmp.append(dict(template))
 
             if value is not None:
-                tmp.append(template)
+                tmp.append(dict(template))
                 try:
                     float(value)
                     is_num = True
@@ -87,12 +95,12 @@ class Schema():
                 tmp[-1]['unitflag_cd'] = item.get('infer', None)
 
             if route is not None:
-                tmp.append(template)
+                tmp.append(dict(template))
                 tmp[-1]['modifier_cd'] = 'ROUTE'
                 tmp[-1]['tval_char'] = route
 
             if freq is not None:
-                tmp.append(template)
+                tmp.append(dict(template))
                 tmp[-1]['modifier_cd'] = 'FREQ'
                 tmp[-1]['tval_char'] = freq
 
@@ -106,15 +114,21 @@ class Schema():
             
             df_data = pd.DataFrame(json_data)
             df_data = df_data.replace('(?i)none', pd.NA, regex = True)
-            df_data.to_csv(f"outputs/{json_data[0]["encounter_num"]}.csv")
+            if "encounter_num" in json_data[0]:
+                encounter_num = json_data[0]["encounter_num"]
+            elif "key" in json_data[0]:
+                encounter_num = json_data[0]["key"]
+            else:
+                NotImplementedError
+            df_data.to_csv(f"outputs/{encounter_num}_{self.schema}.csv")
             
         elif self.format_type == 'sqlite':
 
             self.write_sqlit(json_data)
 
         elif self.format_type == 'json':
-
-            with open(f"outputs/{json_data[0]["encounter_num"]}.json", 'w'):
+            encounter_num = json_data[0]["encounter_num"]
+            with open(f"outputs/{encounter_num}.json", 'w'):
                 json.dump(json_data, f)
         
     def write_sqlit(self, json_data):

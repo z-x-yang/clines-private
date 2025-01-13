@@ -27,7 +27,11 @@ def process_lists_based_on_list1(list1, list2, list3, list4, list5):
         "tag": None, 
         "body_location": None, 
         "value": None, 
-        "unit": None
+        "unit": None,
+        "infer": None,
+        "note": None,
+        "freq": None,
+        "route": None,
     })
 
     list3_cleaned = clean_and_fill_list(main_tags, list3, 'tag', {
