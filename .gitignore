@@ -3,8 +3,11 @@
 *.json
 __pycache__/
 *.jsonl
+log/
 setting_env.sh
 *.txt
+*.out
+*.err
 *.log
 *.pyc
 *.pt
