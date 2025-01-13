@@ -8,6 +8,8 @@ setting_env.sh
 *.txt
 *.out
 *.err
+*.zip
+data/
 *.log
 *.pyc
 *.pt
