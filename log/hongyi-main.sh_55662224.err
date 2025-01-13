@@ -1,5 +1,0 @@
-usage: main.py [-h] [--model_name MODEL_NAME] [--results_file RESULTS_FILE]
-               [--max_retries MAX_RETRIES] [--debug DEBUG]
-               [--notes_file NOTES_FILE] [--error_log_file ERROR_LOG_FILE]
-               [--start_index START_INDEX]
-main.py: error: unrecognized arguments: -start_inde 8
