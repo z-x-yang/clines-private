@@ -119,8 +119,11 @@ class LLM():
 
         elif self.model_name in ['llama-3-405b']:
             import tiktoken
+            tiktoken_cache_dir = "./"
+            os.environ["TIKTOKEN_CACHE_DIR"] = tiktoken_cache_dir
             self.chat_func = llama_chat
-            self.tokenizer = tiktoken.encoding_for_model('gpt-4')
+            # self.tokenizer = tiktoken.encoding_for_model('gpt-4')
+            self.tokenizer = tiktoken.get_encoding("cl100k_base")
             self.chunker = semchunk.chunkerify(self.tokenizer, 512)
 
         self.new_chat()
@@ -187,9 +190,9 @@ class Retriever():
         self.term_list_all = []
         with open(file_path, 'r') as f:
             for item in f.readlines():
-                code, term, sty = item.strip().split('||')
+                code, term = item.split('||')
                 self.dict_map[term] = code
-                self.dict_map_sty[term] = sty
+                self.dict_map_sty[term] = "Unknown"
                 self.term_list_all.append(term)
         self.term_list_all = list(set(self.term_list_all))
 
@@ -198,7 +201,7 @@ class Retriever():
         self.term_list_bodyloc = []
         with open(file_path, 'r') as f:
             for item in f.readlines():
-                code, term, _ = item.strip().split('||')
+                code, term = item.split('||')
                 self.term_list_bodyloc.append(term)
         self.term_list_bodyloc = list(set(self.term_list_bodyloc))
 

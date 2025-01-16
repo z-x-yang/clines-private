@@ -1,2 +1,0 @@
-# CUDA_VISIBLE_DEVICES="0,1,2,3,4,5,6,7" CURL_CA_BUNDLE="" python -m sglang.launch_server --model-path meta-llama/Meta-Llama-3.1-405B-Instruct-FP8 --port 30000 --tp 8
-CURL_CA_BUNDLE="" TRANSFORMERS_OFFLINE="1" python -m sglang.launch_server --model-path meta-llama/Meta-Llama-3.1-405B-Instruct-FP8 --port 30000 --tp 8 > server_log.txt 2>&1

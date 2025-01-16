@@ -6,7 +6,7 @@ import sqlite3
 
 class Schema():
 
-    def __init__(self, schema, type = 'csv'):
+    def __init__(self, schema, type='csv'):
 
         self.schema = schema
         self.format_type = type
@@ -22,13 +22,13 @@ class Schema():
         else:
             raise NotImplementedError()
 
-
     def i2b2_schema(self, json_data):
 
         output_data = []
         for item in json_data:
             tmp = []
-            value, route, freq = item.get('value', None), item.get('route', None), item.get('freq', None)
+            value, route, freq = item.get('value', None), item.get(
+                'route', None), item.get('freq', None)
             template = {
                 'patient_num': item.get('patient_num', None),
                 'birth_date': item.get('birth_date', None),
@@ -42,28 +42,34 @@ class Schema():
                 'end_date': item.get('end_date', None),
                 'concept_cd': item.get('code', None),
                 'name_char': item.get('mention', None),
-                'observation_blob': item.get('context', None), # Holds any raw or miscellaneous data that exists, often encrypted PHI or additional information in a parseable format like XML
-                
-                'modifier_cd': item.get('patient_num', '@'), # Code for modifier of interest (i.e. "ROUTE", "DOSE"). Note that the value columns are often used to hold the amounts such as "100" (mg) for the modifier of DOSE or "PO" for the modifier of ROUTE.
-                
-                'instance_num': 1 + (value != None) + (route != None) + (freq != None), # Encoded instance number that allows more than one modifier to be provided for each CONCEPT_CD. Each row will have a different MODIFIER_CD but a similar INSTANCE_NUM.
-                
-                'valtype_cd': None, # N = Numeric, T = Text (enums / short messages), B = Raw Text (notes / reports)
-                'tval_char': None, # Stores the text value of the value Used in conjunction with VALTYPE_CD = "T" or "N"
-# When the VALTYPE_CD = "T"
-# Stores the text value
+                # Holds any raw or miscellaneous data that exists, often encrypted PHI or additional information in a parseable format like XML
+                'observation_blob': item.get('context', None),
 
-# When VALTYPE_CD = "N"
-# E = Equals
-# NE = Not equal
-# L = Less than
-# LE = Less than and Equal to
-# G = Greater than
-# GE = Greater than and Equal to
-                'nval_num': None, # Used in conjunction with VALTYPE_CD = "N" to store a numerical value
-                'valueflag_cd': None, # An optional flag for outlier or abnormal values
-                'units_cd': None, # Units of measurement for the value in the NVAL_NUM column. Optional. If unit conversions are turned on, this is used to scale results in the query tool.
-                'unitflag_cd': None), # whether the unit is inferred or extracted
+                # Code for modifier of interest (i.e. "ROUTE", "DOSE"). Note that the value columns are often used to hold the amounts such as "100" (mg) for the modifier of DOSE or "PO" for the modifier of ROUTE.
+                'modifier_cd': item.get('patient_num', '@'),
+
+                # Encoded instance number that allows more than one modifier to be provided for each CONCEPT_CD. Each row will have a different MODIFIER_CD but a similar INSTANCE_NUM.
+                'instance_num': 1 + (value != None) + (route != None) + (freq != None),
+
+                # N = Numeric, T = Text (enums / short messages), B = Raw Text (notes / reports)
+                'valtype_cd': None,
+                # Stores the text value of the value Used in conjunction with VALTYPE_CD = "T" or "N"
+                'tval_char': None,
+                # When the VALTYPE_CD = "T"
+                # Stores the text value
+
+                # When VALTYPE_CD = "N"
+                # E = Equals
+                # NE = Not equal
+                # L = Less than
+                # LE = Less than and Equal to
+                # G = Greater than
+                # GE = Greater than and Equal to
+                'nval_num': None,  # Used in conjunction with VALTYPE_CD = "N" to store a numerical value
+                'valueflag_cd': None,  # An optional flag for outlier or abnormal values
+                # Units of measurement for the value in the NVAL_NUM column. Optional. If unit conversions are turned on, this is used to scale results in the query tool.
+                'units_cd': None,
+                'unitflag_cd': None,  # whether the unit is inferred or extracted
             }
 
             tmp.append(template)
@@ -77,7 +83,7 @@ class Schema():
                     is_num = False
 
                 tmp[-1]['valtype_cd'] = 'N' if is_num else 'T'
-                if is_num: 
+                if is_num:
                     tmp[-1]['nval_num'] = float(value)
                     tmp[-1]['tval_char'] = item.get('note', None)
                 else:
@@ -97,51 +103,49 @@ class Schema():
                 tmp[-1]['tval_char'] = freq
 
             output_data += tmp
-            
+
             self.output_format(output_data)
 
     def output_format(self, json_data):
 
         if self.format_type == 'csv':
-            
+
             df_data = pd.DataFrame(json_data)
-            df_data = df_data.replace('(?i)none', pd.NA, regex = True)
+            df_data = df_data.replace('(?i)none', pd.NA, regex=True)
             df_data.to_csv(f"outputs/{json_data[0]["encounter_num"]}.csv")
-            
+
         elif self.format_type == 'sqlite':
 
             self.write_sqlit(json_data)
 
         elif self.format_type == 'json':
 
-            with open(f"outputs/{json_data[0]["encounter_num"]}.json", 'w'):
+            with open(f"outputs/{json_data[0]["encounter_num"]}.json", 'w') as f:
                 json.dump(json_data, f)
-        
+
     def write_sqlit(self, json_data):
-        
-        # tables = {'"ehr_id"': "TEXT", 
-        #           '"admission_date"': "TEXT",
-        #           '"discharge_date"': "TEXT"}
+
+        tables = {'"ehr_id"': "TEXT",
+                  '"admission_date"': "TEXT",
+                  '"discharge_date"': "TEXT"}
         for key in json_data[0]:
-            tables[f'"{key}"'] =  "TEXT"
+            tables[f'"{key}"'] = "TEXT"
         create_table_query = [f'{k}'+' '+v for k, v in tables.items()]
-        create_table_query = f"CREATE TABLE IF NOT EXISTS data ({', '.join(create_table_query)});"
+        create_table_query = f"CREATE TABLE IF NOT EXISTS data ({
+            ', '.join(create_table_query)});"
         self.cursor.execute(create_table_query)
         self.connection.commit()
 
-        insert_query = f"INSERT INTO data ({', '.join(tables)}) VALUES ({', '.join(['?' for _ in tables])})"
+        insert_query = f"INSERT INTO data ({', '.join(tables)}) VALUES ({
+            ', '.join(['?' for _ in tables])})"
         data_batch = []
         for item in json_data:
             row = []
             for key in item:
-                row.append(item[key] if key != 'related' else json.dumps(item[key]))
+                row.append(item[key] if key !=
+                           'related' else json.dumps(item[key]))
             data_batch.append(row)
 
         self.cursor.executemany(insert_query, data_batch)
         self.connection.commit()  # Commit in batches
         data_batch.clear()
-        
-
-
-
-

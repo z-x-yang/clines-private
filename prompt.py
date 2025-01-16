@@ -85,16 +85,16 @@ You will receive an electronic health record with named entities marked by <KEY>
 The final answer should be provided in JSON format, a list of Python dictionaries.
 For each entry dictionary, the keys and values will be as follows:
  - tag: the order in which the entities appear. It is the same as the number of **KEY** values in the record.
- - assertion_status: this should be one of the following 6 categories: Present; Absent; Possible; Conditional; Hypothetical; Not associated. 
+ - assertion_status: this should be one of the following 6 categories: Present; Absent; Possible; Conditional; Hypothetical; Not associated.
    The defiitions of each category are: 
-   Present: problems associated with thepatient can be present. Example: history of chest pain; the patient has had increasing weight gain.
-   Absent: the note asserts that the problem does not exist in the patient. Example: patient denies pain; elevated enzymes resolved.
-   Possible: the note asserts that the patient may have a problem, but there is uncertainty expressed in the note. Possible takes precedence over absent, so terms like “probably not” or “unlikely” categorize problems as being possible just as “probably” and “likely” do.  Example: We suspect this is pneumonia; pneumonia unlikely.
-   Conditional: the mention of the medical problem asserts that the patient  experiences the problem only under certain conditions. Allergies can fall into this category. Example: Penicillin causes a rash; Ativan 0.5 mg IV q 4 to 6 hours prn anxiety.
-   Not associated: the mention of the medical problem is associated  with someone who is not the patient. Example: Family history of prostate cancer.
+   Present: problems associated with thepatient can be present. Example: history of chest pain; the patient has had increasing weight gain.
+   Absent: the note asserts that the problem does not exist in the patient. Example: patient denies pain; elevated enzymes resolved.
+   Possible: the note asserts that the patient may have a problem, but there is uncertainty expressed in the note. Possible takes precedence over absent, so terms like “probably not” or “unlikely” categorize problems as being possible just as “probably” and “likely” do.  Example: We suspect this is pneumonia; pneumonia unlikely.
+   Conditional: the mention of the medical problem asserts that the patient  experiences the problem only under certain conditions. Allergies can fall into this category. Example: Penicillin causes a rash; Ativan 0.5 mg IV q 4 to 6 hours prn anxiety.
+   Not associated: the mention of the medical problem is associated  with someone who is not the patient. Example: Family history of prostate cancer.
 
 Example:
-CT showed <1>lesions</1> most likely secondary to <2>metastatic disease</2>. <3>Ativan</3> 0.5 mg IV q 4 to 6 hours prn <4>anxiety</4>.
+CT showed <1>lesions</1> most likely secondary to <2>metastatic disease</2>. <3>Ativan</3> 0.5 mg IV q 4 to 6 hours prn <4>anxiety</4>.
 ```
 [
   {{"tag": "1", "assertion_status": "Present"}},
@@ -213,26 +213,10 @@ Here is the piece of the record for you to extract:
 
 Your json output without comment:
 '''
-# - entity: this is the corresponding extracted entity.
+    # - entity: this is the corresponding extracted entity.
     def apply_template(self, inputs):
         
         return self.template.format(**inputs)
-
-
-
-
-
-
-
-    
-
-            
      
-     
-         .
 
-                 
-     
-     == == 
-     
-     >>            
+
