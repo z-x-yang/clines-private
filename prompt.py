@@ -45,13 +45,25 @@ Your final outputs should be in the JSON format which is a list and the element 
 TAG: the order in which the entities appear. It is the same as the number of KEY value in the record;
 CLEAN: the standard names or synonyms of the entities. 
 
+Example output:
+```
+[
+  {{"TAG": "1", "CLEAN": "Breast Cancer"}},
+  {{"TAG": "2", "CLEAN": "Screening Mammogram"}},
+  {{"TAG": "3", "CLEAN": "Heterogeneously Dense Breast Tissue"}},
+  {{"TAG": "4", "CLEAN": "Malignancy"}},
+  {{"TAG": "5", "CLEAN": "Painful Mass"}},
+]
+```
+
+####################
+
 Here is the record:
 
 {note}
 
 Your json output without comment:
 '''
-
 
         elif self.prompt_name in ['findrelated']:
             # pass
@@ -63,12 +75,16 @@ Your final outputs should be in the JSON format which is a list and the element 
 tag: the order in which the entities appear. It is the same as the number of KEY value in the record;
 related: the list of KEY values of entities related to this entity.
 
-For example:
+Example output:
+```
 [
   {{"tag": "1", "related": ["2", "3"]}},
   {{"tag": "2", "related": ["1"]}},
   {{"tag": "3", "related": ["1"]}},
 ]
+```
+
+####################
 
 Here is the record:
 
@@ -76,7 +92,7 @@ Here is the record:
 
 Your json output without comment:
 '''
-            
+
             # ORIGIN: the original name form of the entity in the record;
 
         elif self.prompt_name in ['findstatus']:
@@ -86,16 +102,20 @@ You will receive an electronic health record with named entities marked by <KEY>
 The final answer should be provided in JSON format, a list of Python dictionaries. 
 For each entry dictionary, the keys and values will be as follows: 
  - tag: the order in which the entities appear. It is the same as the number of **KEY** values in the record.
- - assertion_status: this should be one of the following 6 categories: Present; Absent; Possible; Conditional; Hypothetical; Not associated. 
+ - assertion_status: this should be one of the following 6 categories: Present; Absent; Possible; Conditional; Hypothetical; Notassociated. 
    The definitions of each category are: 
-   Present: problems associated with the patient can be present. Example: history of chest pain; the patient has had increasing weight gain.
-   Absent: the note asserts that the problem does not exist in the patient. Example: patient denies pain; elevated enzymes resolved.
-   Possible: the note asserts that the patient may have a problem, but there is uncertainty expressed in the note. Possible takes precedence over absent, so terms like “probably not” or “unlikely” categorize problems as being possible just as “probably” and “likely” do.  Example: We suspect this is pneumonia; pneumonia unlikely.
-   Conditional: the mention of the medical problem asserts that the patient  experiences the problem only under certain conditions. Allergies can fall into this category. Example: Penicillin causes a rash; Ativan 0.5 mg IV q 4 to 6 hours prn anxiety.
-   Not associated: the mention of the medical problem is associated  with someone who is not the patient. Example: Family history of prostate cancer.
+   Present:problemsassociatedwiththepatientcanbepresent.Example: historyofchestpain; thepatienthashadincreasingweightgain.
+   Absent:thenoteassertsthattheproblemdoesnotexistinthepatient.Example: patientdeniespain; elevatedenzymesresolved.
+   Possible:thenoteassertsthatthepatientmayhaveaproblem,butthereisuncertaintyexpressedinthenote.Possibletakesprecedenceoverabsent,sotermslike“probablynot”or“unlikely”categorizeproblemsasbeingpossiblejustas“probably”and“likely”do. Example: Wesuspectthisispneumonia; pneumoniaunlikely.
+   Conditional:thementionofthemedicalproblemassertsthatthepatient experiencestheproblemonlyundercertainconditions.Allergiescanfallintothiscategory.Example: Penicillincausesarash; Ativan0.5mgIVq4to6hoursprnanxiety.
+   Notassociated:thementionofthemedicalproblemisassociated withsomeonewhoisnotthepatient.Example: Familyhistoryofprostatecancer.
 
 Example:
-CT showed <1>lesions</1> most likely secondary to <2>metastatic disease</2>. <3>Ativan</3> 0.5 mg IV q 4 to 6 hours prn <4>anxiety</4>.
+Here is the record:
+
+CT showed <1>lesions</1> most likely secondary to <2>metastatic disease</2>. <3>Ativan</3>0.5mgIVq4to6hoursprn<4>anxiety</4>.
+
+Your json output without comment:
 ```
 [
   {{"tag": "1", "assertion_status": "Present"}},
@@ -104,6 +124,8 @@ CT showed <1>lesions</1> most likely secondary to <2>metastatic disease</2>. <3>
   {{"tag": "4", "assertion_status": "Conditional"}}
 ]
 ```
+
+####################
 
 Here is the record:
 
@@ -126,7 +148,7 @@ The final answer should be provided in JSON format which is a list of python dic
  - route: this key only presents when the entity is a medication, this should contain the information about how the medication should be taken, for example, p.o. or IV.
  - freq: this key only presents when the entity is a medication, this should contain the information about how frequent the medication should be taken, for example, p.i.d or prn or once every two days. 
  
-Example:
+Example output:
 ```
 [
   {{"tag": "1", "value": "600", "unit": "mg", "note": "equal", 'infer': "False", 'route': "PO", 'freq': "p.i.d"}},
@@ -135,6 +157,8 @@ Example:
   {{"tag": "4", "value": "28", "unit": 'mmol/L', 'infer': "True"}},
 ]
 ```
+
+####################
 
 Here is the record:
 
@@ -183,6 +207,17 @@ Each entry dictionary should contain the keys of
  - tag: the order in which the entities appear. It is the same as the number of KEY value in the record.
  - date: the value will be a list containing two pieces of date information in the format of [YYYY-MM-DD, YYYY-MM-DD], in which the first one is the possible starting time and the second is the end time. If there is only one date information for the entity put the same date to both entries. If there is no corresponding time information, use null as the value (such as {{"tag": "1", "date": [null, null]}}).
 
+Example output:
+```
+[
+  {{"tag": "1", "date": ["2118-06-02", "2118-06-14"]}},
+  {{"tag": "2", "date": [null, null]}},
+  {{"tag": "3", "date": ["2011-11-06", "2011-11-06"]}}
+]
+```
+
+####################
+
 Here is the record:
 
 {note}
@@ -229,10 +264,12 @@ Your output:
 Given an anchor time in the form of YYYY-MM-DD, what is the date range of "{date}" when the anchor time is {anchor}?
 Your answer should be given in the form of [YYYY-MM-DD, YYYY-MM-DD] representing the start and end time.
 Your final answer should be in JSON format.
-Example:
+Example output:
 ```
 ["2118-06-02", "2118-06-14"]
 ```
+
+####################
 
 Your json output without comment:
 '''
@@ -246,7 +283,7 @@ Each entry dictionary should contain two keys:
  - tag: the order in which the entities appear. It is the same as the number of KEY value in the record.
  - date: the value will be a list containing two pieces of date information in the format of [YYYY-MM-DD, YYYY-MM-DD], in which the first one is the possible starting time and the second is the end time. If there is only one date information for the entity put the same date to both entries. If there is no corresponding time information, use [null, null] as the value (such as {{"tag": "1", "date": [null, null]}}).
 
-Example:
+Example output:
 ```
 [
   {{"tag": "1", "date": ["2118-06-02", "2118-06-14"]}},
@@ -255,13 +292,15 @@ Example:
 ]
 ```
 
+####################
+
 Here is the previous piece of the record for you to use as contexts.
 
 {prev_note}
 
 Here are the admission date: {adm_date}, the discharge date: {dis_date}.
 
-Here is the piece of the record for you to extract:
+piece of the record for you to extract:
 
 {note}
 
@@ -281,3 +320,40 @@ Your json output without comment:
     
 
             
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
