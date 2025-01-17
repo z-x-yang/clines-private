@@ -10,7 +10,7 @@ ERROR_LOG_FILE="./logs/${MARKER}_errors.log"
 
 # Model settings
 MODEL_NAME="llama-3-405b"
-START_IDX=10
+START_IDX=0
 MAX_RETRIES=1
 
 CUDA_VISIBLE_DEVICES=7 python main_llama.py \

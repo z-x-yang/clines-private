@@ -191,7 +191,7 @@ class Retriever():
                 self.dict_map[term] = code
                 self.dict_map_sty[term] = sty
                 self.term_list_all.append(term)
-        self.term_list_all = list(set(self.term_list_all))
+        self.term_list_all = sorted(list(set(self.term_list_all)))
 
     def load_dictionary_bodyloc(self, file_path):
 
@@ -200,7 +200,7 @@ class Retriever():
             for item in f.readlines():
                 code, term, _ = item.strip().split('||')
                 self.term_list_bodyloc.append(term)
-        self.term_list_bodyloc = list(set(self.term_list_bodyloc))
+        self.term_list_bodyloc = sorted(list(set(self.term_list_bodyloc)))
 
     def embed_term(self, names, batch_size=256):
         self.encoder.eval()
@@ -241,6 +241,8 @@ class Retriever():
             print("Cache file found. Loading dense embeddings from cache.")
             self.dense_embeds_all = torch.load(
                 cache_file + '/dense_embed_all.pt')
+            self.term_list_all = torch.load(
+                cache_file + '/term_list_all.pt')
         else:
             print("Cache file not found. Embedding terms and saving to cache.")
 
@@ -249,6 +251,8 @@ class Retriever():
                 self.term_list_all, batch_size)
             torch.save(self.dense_embeds_all,
                        cache_file + '/dense_embed_all.pt')
+            torch.save(self.term_list_all,
+                       cache_file + '/term_list_all.pt')
             print("Dense embeddings saved to cache.")
 
         print(
@@ -257,6 +261,8 @@ class Retriever():
             print("Cache file found. Loading dense embeddings from cache.")
             self.dense_embeds_bodyloc = torch.load(
                 cache_file + '/dense_embed_bodyloc.pt')
+            self.term_list_bodyloc = torch.load(
+                cache_file + '/term_list_bodyloc.pt')
         else:
             print("Cache file not found. Embedding terms and saving to cache.")
             self.encoder.eval()
@@ -264,6 +270,8 @@ class Retriever():
                 self.term_list_bodyloc, batch_size)
             torch.save(self.dense_embeds_bodyloc,
                        cache_file + '/dense_embed_bodyloc.pt')
+            torch.save(self.term_list_bodyloc,
+                       cache_file + '/term_list_bodyloc.pt')
             print("Dense embeddings saved to cache.")
 
     def faiss_setup(self, gpu_id=0):

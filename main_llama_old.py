@@ -35,7 +35,7 @@ class PIPELINE:
         discharge_date (str): Discharge date extracted from the EHR.
     """
 
-    def __init__(self, model, schema='i2b2', format_type='csv', marker="", use_gpu=True):
+    def __init__(self, model, schema='i2b2', save_mode='csv'):
         """
         Initialize the PIPELINE with a language model and set up necessary components.
 
@@ -43,14 +43,14 @@ class PIPELINE:
             model (LLM): An instance of the language model.
         """
         self.model = model
-        self.output_schema = Schema(schema, format_type, marker)
+        self.output_schema = Schema(schema, save_mode)
 
         # if self.save_mode == 'sqlite':
         #     self.connection = sqlite3.connect('outputs/sqlite_database.db')
         #     self.cursor = self.connection.cursor()
 
         self.retriever = Retriever(
-            'cambridgeltl/SapBERT-from-PubMedBERT-fulltext', use_gpu=use_gpu)
+            'cambridgeltl/SapBERT-from-PubMedBERT-fulltext')
         self.retriever.load_dictionary_all('./umls_dictionary.txt')
         self.retriever.load_dictionary_bodyloc(
             './umls_body_loc_dictionary.txt')
@@ -65,7 +65,6 @@ class PIPELINE:
         self.prompt_date_single = PROMPT('finddate_single')
         self.prompt_date_multi = PROMPT('finddate_multi')
         self.prompt_date_range = PROMPT('date_range')
-        self.prompt_basic_info = PROMPT('basic_info')
         self.norm_date = PROMPT('norm_date')
 
         self.reinitialize()
@@ -96,7 +95,7 @@ class PIPELINE:
         results = re.findall('```[^`]+```', string)
         if len(results) == 0:
             return string
-        for result in results[::-1]:
+        for result in results:
             result = result.strip('```').lstrip('json')
             result = result.replace('None', 'null')
             result = result.replace('"null"', 'null')
@@ -229,13 +228,6 @@ class PIPELINE:
                     'key': key,
                     'admission_date': self.admission_date,
                     'discharge_date': self.discharge_date,
-                    'gender': self.pipeline_result['gender'],
-                    'death_date': self.pipeline_result['death_date'],
-                    'birth_date': self.pipeline_result['birth_date'],
-                    'race': self.pipeline_result['race'],
-
-                    'ethnicity': self.pipeline_result['ethnicity'],
-                    'zip_code': self.pipeline_result['zip_code'],
                     'mention': self.pipeline_result['parsed_ner_result'][i],
                     'context': self.pipeline_result['parsed_ner_context'][i],
                 }
@@ -277,20 +269,20 @@ class PIPELINE:
 
                 tmp['begin_date'] = self.pipeline_result['date_results'][i]['date'][0]
                 tmp['end_date'] = self.pipeline_result['date_results'][i]['date'][1]
+                aggregated_result.append(tmp)
             except Exception as e:
                 print("tmp:", tmp)
                 print("error:", e)
-                raise e
+                # raise e
 
-            aggregated_result.append(tmp)
-
-        self.output_schema(aggregated_result)
+        # self.output_schema(aggregated_result)
 
         # if self.save_mode == 'csv':
 
-        #     aggregated_result = pd.DataFrame(aggregated_result)
-        #     aggregated_result = aggregated_result.replace('(?i)none', pd.NA, regex = True)
-        #     aggregated_result.to_csv(f"outputs/{key}_{self.admission_date}_{self.discharge_date}.csv")
+        aggregated_result = pd.DataFrame(aggregated_result)
+        aggregated_result = aggregated_result.replace(
+            '(?i)none', pd.NA, regex=True)
+        self.pipeline_result = {}
 
         # elif self.save_mode == 'sqlite':
 
@@ -301,7 +293,7 @@ class PIPELINE:
         #     with open(f"outputs/{key}_{self.admission_date}_{self.discharge_date}.json", 'w'):
         #         json.dump(aggregated_result, f)
 
-        # return aggregated_result
+        return aggregated_result
 
     def deduplication(self, list_of_dict, key):
         """
@@ -333,7 +325,7 @@ class PIPELINE:
             prev_ehr (str, optional): The previous EHR note for context. Defaults to None.
         """
         # Named Entity Recognition
-        # print(ehr)
+        print(ehr)
         query_ner = self.prompt_ner.apply_template({'note': ehr})
         ner_results = self.model(query_ner)
         print("ner_results:", ner_results, "\n####################\n")
@@ -345,21 +337,28 @@ class PIPELINE:
         print(self.parse_ner_result(ner_results),
               len(self.parse_ner_result(ner_results)))
 
-        # # Entity Cleaning and Linking
+        # Entity Cleaning and Linking
         self.model.new_chat()
         query_relate = self.prompt_relate.apply_template({'note': ner_results})
         relate_results = self.model(query_relate)
+        print("relate_results (before parsing):",
+              relate_results, "\n####################\n")
         relate_results = demjson3.decode(self.parse_result(relate_results))
         relate_results = self.deduplication(relate_results, 'tag')
-        print("relate_results:", relate_results, "\n####################\n")
+        print("relate_results (after parsing):",
+              relate_results, "\n####################\n")
         # raise
         self.model.new_chat()
         query_clean = self.prompt_clean.apply_template({'note': ner_results})
         clean_results = self.model(query_clean)
+        print("clean_results (before parsing):",
+              clean_results, "\n####################\n")
         clean_results = demjson3.decode(self.parse_result(clean_results))
         clean_results = self.deduplication(clean_results, 'TAG')
         clean_results = self.entity_linking(clean_results, type='all')
-        print("clean_results:", clean_results, "\n####################\n")
+        print("clean_results (after parsing):",
+              clean_results, "\n####################\n")
+
         # Information Extraction
 
         self.model.new_chat()
@@ -373,35 +372,25 @@ class PIPELINE:
         self.model.new_chat()
         query_info = self.prompt_info.apply_template({'note': ner_results})
         info_results = self.model(query_info)
-        # print("info_results:", self.parse_result(info_results), "\n####################\n")
+        print("info_results (before parsing):", self.parse_result(
+            info_results), "\n####################\n")
         info_results = demjson3.decode(self.parse_result(info_results))
         info_results = self.deduplication(info_results, 'tag')
         info_results = self.entity_linking(info_results, type='bodyloc')
-        print("info_results:", info_results, "\n####################\n")
-        # input()
-
-        # return None
+        print("info_results (after parsing):",
+              info_results, "\n####################\n")
+        # raise
 
         # Date Extraction
         if prev_ehr is None:
-            # Extract basic information
-            self.model.new_chat()
-            query_basic = self.prompt_basic_info.apply_template({'note': ehr})
-            basic_results = self.model(query_basic)
-            basic_results = demjson3.decode(self.parse_result(basic_results))
-            self.admission_date = basic_results['admission_date']
-            self.discharge_date = basic_results['discharge_date']
-            self.pipeline_result.update(basic_results)
-            print("basic result:", basic_results, "\n####################\n")
-
             # Extract admission and discharge dates
-            # self.model.new_chat()
-            # query_date = self.prompt_date_range.apply_template({'note': ehr})
-            # date_results = self.model(query_date)
-            # print("date_results 1:", date_results, "\n####################\n")
-            # date_results = demjson3.decode(self.parse_result(date_results))
-            # self.admission_date = date_results[0]
-            # self.discharge_date = date_results[1]
+            self.model.new_chat()
+            query_date = self.prompt_date_range.apply_template({'note': ehr})
+            date_results = self.model(query_date)
+            print("date_results 1:", date_results, "\n####################\n")
+            date_results = demjson3.decode(self.parse_result(date_results))
+            self.admission_date = date_results[0]
+            self.discharge_date = date_results[1]
 
             # Extract dates for each entity
             self.model.new_chat()
@@ -426,7 +415,6 @@ class PIPELINE:
             date_results = demjson3.decode(self.parse_result(date_results))
             date_results = self.deduplication(date_results, 'tag')
             date_results = self.normalize_date(date_results)
-
         print(date_results)
 
         # Aggregate results
@@ -486,17 +474,15 @@ class PIPELINE:
                 else:
                     self.call_single(chunked_ehr[i], chunked_ehr[i-1])
 
-        self.result_aggregation(key)
-        # result_dict = {
-        #     "result_aggregation": self.result_aggregation(), #.to_dict(orient='records'),
-        #     "admission_date": self.admission_date,
-        #     "discharge_date": self.discharge_date
-        # }
-        # print(result_dict)
+        result_dict = {
+            # .to_dict(orient='records'),
+            "result_aggregation": self.result_aggregation(key),
+            "admission_date": self.admission_date,
+            "discharge_date": self.discharge_date
+        }
+        print(result_dict)
         print("End processing.\n\n")
-       # input()
-        # return result_dict
-        # raise
+        return result_dict
 
 
 def convert_to_serializable(obj):
@@ -514,8 +500,8 @@ def convert_to_serializable(obj):
     """
     if isinstance(obj, np.float32):
         return float(obj)
-    raise TypeError(
-        f"Object of type {obj.__class__.__name__} is not JSON serializable")
+    raise TypeError(f"Object of type {
+                    obj.__class__.__name__} is not JSON serializable")
 
 
 if __name__ == '__main__':
@@ -525,8 +511,9 @@ if __name__ == '__main__':
     from tqdm import tqdm
     import torch
     import traceback
+    import os
 
-    parser = argparse.ArgumentParser(description='Process some EHR notes.')
+    parser = argparse.ArgumentParser(description='Process EHR text files.')
     parser.add_argument('--model_name', type=str,
                         default='llama-3-405b', help='Name of the model to use')
     parser.add_argument('--results_file', type=str,
@@ -534,109 +521,80 @@ if __name__ == '__main__':
     parser.add_argument('--max_retries', type=int, default=1,
                         help='Maximum number of retries for processing each note')
     parser.add_argument('--debug', type=bool, default=False, help='Debug mode')
-    parser.add_argument('--notes_dir', type=str,
-                        default='./mimic-data-processing/cleaned_mimiciii_notes.csv', help='CSV file containing the notes')
+    parser.add_argument('--ehr_dir', type=str, required=True,
+                        help='Directory containing EHR text files')
     parser.add_argument('--error_log_file', type=str,
                         help='File to save the error logs')
     parser.add_argument('--start_index', type=int, default=0,
                         help='Index to start processing from')
-    parser.add_argument('--schema', type=str, default="default", help='schema')
-    parser.add_argument('--marker', type=str, default="xx",
-                        help='markerfortheoutput')
+    parser.add_argument('--output_dir', type=str, required=True,
+                        help='Directory to save output files')
 
     args = parser.parse_args()
     if not args.error_log_file:
         args.error_log_file = args.results_file.replace(
             '.json', '_error_log.json')
 
+    if not os.path.exists(args.output_dir):
+        os.makedirs(args.output_dir)
+        print(f"Folder '{args.output_dir}' created.")
+
     model = LLM(args.model_name)
-    pipeline = PIPELINE(model, args.schema, 'csv', args.marker, use_gpu=False if args.model_name ==
-                        'llama-3-405b' else True)
+    pipeline = PIPELINE(model)
 
-    # Load existing results if start_index > 0
-    if args.start_index > 0 and os.path.exists(args.results_file):
-        try:
-            with open(args.results_file, 'r') as f:
-                all_results = json.load(f)
-            all_results = [result for result in all_results if int(
-                result.get('result_index', float('inf'))) < args.start_index]
-        except Exception as e:
-            print("error:", e)
-            all_results = []
-        try:
-            with open(args.error_log_file, 'r') as f:
-                error_log = json.load(f)
-            error_log = [error for error in error_log if int(
-                error.get('result_index', float('inf'))) < args.start_index]
-        except Exception as e:
-            print("error:", e)
-            error_log = []
-    else:
-        all_results = []
-        error_log = []
+    # Get list of text files in directory
+    ehr_files = [f for f in os.listdir(args.ehr_dir) if f.endswith('.txt')]
 
-    # Save the updated results file
-    with open(args.results_file, 'w') as f:
-        json.dump(all_results, f, indent=4)
+    all_results = []
+    error_log = []
 
-    # Save the updated error log file
-    with open(args.error_log_file, 'w') as f:
-        json.dump(error_log, f, indent=4)
+    for filename in tqdm(ehr_files[args.start_index:], desc="Processing EHR files"):
+        file_path = os.path.join(args.ehr_dir, filename)
 
-    notes = [item for item in os.listdir(
-        args.notes_dir) if item.endswith('.txt')]
+        # Read EHR text file
+        with open(file_path, 'r') as f:
+            ehr = f.read()
 
-    for i in tqdm(range(args.start_index, len(notes)), desc="Processing notes"):
-        # ehr = notes.iloc[i]['TEXT']
-        # key = str(notes.iloc[i]['ROW_ID'])
-        print(os.path.join(args.notes_dir, notes[i]))
-        try:
-            # First try UTF-8
-            with open(os.path.join(args.notes_dir, notes[i]), 'r', encoding='utf-8') as f:
-                ehr = ''.join(f.readlines())
-        except UnicodeDecodeError:
-            # If UTF-8 fails, try latin-1 (which can read any byte sequence)
-            with open(os.path.join(args.notes_dir, notes[i]), 'r', encoding='latin-1') as f:
-                ehr = ''.join(f.readlines())
-        key = args.marker + '_' + notes[i].rstrip('.txt')
-        # print(key)
-        # print(ehr)
-        # input()
         if args.debug:
-            print("debug mode")
-            result = pipeline(ehr, key)
+            result = pipeline(ehr)
         else:
-            print("not debug mode")
             for attempt in range(args.max_retries):
                 try:
-                    result = pipeline(ehr, key)
+                    pipeline.reinitialize()
+                    result = pipeline(ehr, key="NA")
                     break
                 except Exception as e:
                     if attempt < args.max_retries - 1:
                         print(
                             f"Attempt {attempt + 1} failed: {e}. Retrying...")
                     else:
+                        result = {"error": str(e)}
                         # Get traceback string
                         traceback_str = traceback.format_exc()
                         # Append new error
                         error_log.append(
-                            {"index": i, "key": key, "error": str(e), "traceback": traceback_str})
+                            {"filename": filename, "error": str(e), "traceback": traceback_str})
                         print("error:", str(e))
                         print("traceback:", traceback_str)
                         # Save updated error log
                         with open(args.error_log_file, 'w') as f:
                             json.dump(error_log, f, indent=4)
 
-        # # Add index to result
-        # result['result_index'] = str(notes.iloc[i]['ROW_ID'])
-        # result["result_aggregation"].to_csv(f"outputs/{notes.iloc[i]['ROW_ID']}_{result['admission_date']}_{result['discharge_date']}.csv")
-        # result["result_aggregation"] = result["result_aggregation"].to_dict(orient='records')
-        # # Append new result
-        # all_results.append(result)
-        # print(all_results)
-        # # Save updated results
-        # with open(args.results_file, 'w') as f:
-        #     json.dump(all_results, f, indent=4, default=convert_to_serializable)
+        # Add filename to result
+        result['filename'] = filename
+        # Save CSV with filename
+        output_filename = os.path.splitext(filename)[0]
+        output_dir = os.path.join(args.output_dir, f"{output_filename}.csv")
+        if "result_aggregation" in result.keys():
+            result["result_aggregation"].to_csv(output_dir)
+            result["result_aggregation"] = result["result_aggregation"].to_dict(
+                orient='records')
+            # Append new result
+            all_results.append(result)
+        # Save updated results
+        with open(args.results_file, 'w') as f:
+            json.dump(all_results, f, indent=4,
+                      default=convert_to_serializable)
 
         # Release GPU memory
         if torch.cuda.is_available():
