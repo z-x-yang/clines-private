@@ -219,33 +219,6 @@ class PIPELINE:
 
         return results
 
-    # def write_sqlit(self, aggregated_result, key):
-
-    #     tables = {'"ehr_id"': "TEXT",
-    #               '"admission_date"': "TEXT",
-    #               '"discharge_date"': "TEXT"}
-    #     for key in aggregated_result[0]:
-    #         tables[f'"{key}"'] =  "TEXT"
-    #     create_table_query = [f'{k}'+' '+v for k, v in tables.items()]
-    #     create_table_query = f"CREATE TABLE IF NOT EXISTS data ({', '.join(create_table_query)});"
-    #     print(create_table_query)
-    #     self.cursor.execute(create_table_query)
-    #     self.connection.commit()
-
-    #     insert_query = f"INSERT INTO data ({', '.join(tables)}) VALUES ({', '.join(['?' for _ in tables])})"
-    #     print(insert_query)
-    #     data_batch = []
-    #     for item in aggregated_result:
-    #         row = [key, self.admission_date, self.discharge_date]
-    #         for key in item:
-    #             row.append(item[key] if key != 'related' else json.dumps(item[key]))
-    #         print(row)
-    #         data_batch.append(row)
-
-    #     self.cursor.executemany(insert_query, data_batch)
-    #     self.connection.commit()  # Commit in batches
-    #     data_batch.clear()
-
     def result_aggregation(self, key):
         """
         Aggregate results from various pipeline steps into a single DataFrame.
@@ -318,23 +291,6 @@ class PIPELINE:
 
         self.output_schema(aggregated_result)
 
-        # if self.save_mode == 'csv':
-
-        #     aggregated_result = pd.DataFrame(aggregated_result)
-        #     aggregated_result = aggregated_result.replace('(?i)none', pd.NA, regex = True)
-        #     aggregated_result.to_csv(f"outputs/{key}_{self.admission_date}_{self.discharge_date}.csv")
-
-        # elif self.save_mode == 'sqlite':
-
-        #     self.write_sqlit(aggregated_result, key)
-
-        # elif self.save_mode == 'json':
-
-        #     with open(f"outputs/{key}_{self.admission_date}_{self.discharge_date}.json", 'w'):
-        #         json.dump(aggregated_result, f)
-
-        # return aggregated_result
-
     def deduplication(self, list_of_dict, key, parsed_ner_tags=None):
         """
         Remove duplicates from a list of dictionaries based on a specific key.
@@ -387,13 +343,87 @@ class PIPELINE:
                                 for i in filtered_indices]
         return filtered_ner_results, filtered_ner_context
 
+    def _process_llm_query(self, prompt_obj, template_vars, parse_json=True, max_retries=3):
+        """
+        Helper method to process LLM queries with standard pattern of:
+        new chat -> apply template -> get model response -> parse JSON result
+
+        Args:
+            prompt_obj (PROMPT): The prompt object to use
+            template_vars (dict): Variables to apply to the template
+            parse_json (bool): Whether to parse the result as JSON (default: True)
+            max_retries (int): Maximum number of retries for decoding JSON (default: 3)
+
+        Returns:
+            The processed result (parsed JSON if parse_json=True, otherwise raw string)
+        """
+        self.model.new_chat()
+        query = prompt_obj.apply_template(template_vars)
+        result = self.model(query)
+        if parse_json:
+            parsed_result = self.parse_result(result)
+            for attempt in range(max_retries):
+                try:
+                    json_result = demjson3.decode(parsed_result)
+                    return json_result
+                except Exception as e:
+                    print(f"Error decoding JSON: {e}")
+                    print(f"Error result: {parsed_result}")
+                    print(f"Retrying... ({attempt + 1}/{max_retries})")
+            raise Exception("Failed to decode JSON after multiple retries")
+        return result
+
     def call_single(self, ehr, prev_ehr=None):
         """
-        Process a single EHR note through the pipeline.
+        Process a single Electronic Health Record (EHR) through the complete NLP pipeline.
+        This method orchestrates multiple processing steps including entity recognition,
+        cleaning, relationship extraction, and date normalization.
+
+        Args:
+            ehr (str): The full EHR text to process. This contains the medical notes
+                      and records that need to be analyzed.
+            prev_ehr (str, optional): The previous EHR context, used for date extraction
+                                    in sequential records. Defaults to None.
+
+        Processing Steps:
+            1. Named Entity Recognition (NER):
+               - Identifies and tags medical entities in the text
+               - Normalizes entity tags to sequential numbers
+               - Extracts context around each entity
+
+            2. Entity Processing:
+               - Extracts relationships between entities
+               - Cleans and normalizes entity mentions
+               - Links entities to standard medical codes (UMLS)
+
+            3. Information Extraction:
+               - Determines assertion status (present, absent, etc.)
+               - Extracts additional attributes (body location, values, units)
+               - Links body locations to standard codes
+
+            4. Date Processing:
+               - For first EHR (prev_ehr=None):
+                 * Extracts basic patient information
+                 * Determines admission/discharge dates
+               - For subsequent EHRs:
+                 * Uses previous context for date extraction
+               - Normalizes all extracted dates
+
+            5. Result Aggregation:
+               - Combines all extracted information
+               - Updates the pipeline's result storage
+               - Maintains entity relationships across chunks
+
+        Note:
+            This method updates the pipeline_result dictionary with extracted information,
+            which can be later used for final result aggregation.
         """
         # Named Entity Recognition
-        query_ner = self.prompt_ner.apply_template({'note': ehr})
-        ner_results = self.model(query_ner)
+        ner_results = self._process_llm_query(
+            self.prompt_ner,
+            {'note': ehr},
+            parse_json=False
+        )
         print("ner_results:", ner_results, "\n####################\n")
 
         # Parse results and get updated string with sequential tags
@@ -404,91 +434,97 @@ class PIPELINE:
         self.pipeline_result['ner_result'].append(updated_ner_results)
         parsed_ner_context = self.parse_ner_context(updated_ner_results)
 
-        print("parsed_ner_results:", parsed_ner_results,
-              len(parsed_ner_results), "\n####################\n")
-        print("parsed_ner_tags:", parsed_ner_tags,
-              len(parsed_ner_tags), "\n####################\n")
+        print("parsed_ner_results:", parsed_ner_results, len(
+            parsed_ner_results), "\n####################\n")
+        print("parsed_ner_tags:", parsed_ner_tags, len(
+            parsed_ner_tags), "\n####################\n")
 
         ner_results = updated_ner_results
 
         # Entity Cleaning and Linking
-        self.model.new_chat()
-        query_relate = self.prompt_relate.apply_template({'note': ner_results})
-        relate_results = self.model(query_relate)
-        relate_results = demjson3.decode(self.parse_result(relate_results))
+        relate_results = self._process_llm_query(
+            self.prompt_relate,
+            {'note': ner_results}
+        )
         relate_results = self.deduplication(
             relate_results, 'tag', parsed_ner_tags)
         print("relate_results:", relate_results, "\n####################\n")
-        # raise
-        self.model.new_chat()
-        query_clean = self.prompt_clean.apply_template({'note': ner_results})
-        clean_results = self.model(query_clean)
-        clean_results = demjson3.decode(self.parse_result(clean_results))
+
+        clean_results = self._process_llm_query(
+            self.prompt_clean,
+            {'note': ner_results}
+        )
         clean_results = self.deduplication(
             clean_results, 'TAG', parsed_ner_tags)
-        print("clean_results 1:", clean_results, "\n####################\n")
+        print("clean_results before linking:",
+              clean_results, "\n####################\n")
         clean_results = self.entity_linking(clean_results, type='all')
-        print("clean_results 2:", clean_results, "\n####################\n")
-        # Information Extraction
+        print("clean_results after linking:",
+              clean_results, "\n####################\n")
 
-        self.model.new_chat()
-        query_info = self.prompt_status.apply_template({'note': ner_results})
-        status_results = self.model(query_info)
-        status_results = demjson3.decode(self.parse_result(status_results))
+        # Information Extraction
+        status_results = self._process_llm_query(
+            self.prompt_status,
+            {'note': ner_results}
+        )
         status_results = self.deduplication(
             status_results, 'tag', parsed_ner_tags)
         print("status_results:", status_results, "\n####################\n")
-        # raise
 
-        self.model.new_chat()
-        query_info = self.prompt_info.apply_template({'note': ner_results})
-        info_results = self.model(query_info)
-        info_results = demjson3.decode(self.parse_result(info_results))
+        info_results = self._process_llm_query(
+            self.prompt_info,
+            {'note': ner_results}
+        )
         info_results = self.deduplication(info_results, 'tag', parsed_ner_tags)
-        print("info_results 1:", info_results, "\n####################\n")
+        print("info_results before linking:",
+              info_results, "\n####################\n")
+
         if len(info_results) > 0:
             info_results = self.entity_linking(info_results, type='bodyloc')
-            print("info_results 2:", info_results, "\n####################\n")
+            print("info_results after linking:",
+                  info_results, "\n####################\n")
+        else:
+            print("info_results is empty")
 
         # Date Extraction
         if prev_ehr is None:
             # Extract basic information
-            self.model.new_chat()
-            query_basic = self.prompt_basic_info.apply_template({'note': ehr})
-            basic_results = self.model(query_basic)
-            basic_results = demjson3.decode(self.parse_result(basic_results))
+            basic_results = self._process_llm_query(
+                self.prompt_basic_info,
+                {'note': ehr}
+            )
             self.admission_date = basic_results['admission_date']
             self.discharge_date = basic_results['discharge_date']
             self.pipeline_result.update(basic_results)
             print("basic result:", basic_results, "\n####################\n")
 
             # Extract dates for each entity
-            self.model.new_chat()
-            query_date = self.prompt_date_single.apply_template(
-                {'note': ner_results})
-            date_results = self.model(query_date)
-            print("date_results 2:", date_results, "\n####################\n")
-            date_results = demjson3.decode(self.parse_result(date_results))
+            date_results = self._process_llm_query(
+                self.prompt_date_single,
+                {'note': ner_results}
+            )
+            print("Initial date_results:", date_results,
+                  "\n####################\n")
             date_results = self.deduplication(
                 date_results, 'tag', parsed_ner_tags)
-
             date_results = self.normalize_date(date_results)
 
         else:
             # Extract dates considering previous EHR context
-            self.model.new_chat()
-            query_date = self.prompt_date_multi.apply_template({'note': ner_results,
-                                                                'prev_note': prev_ehr,
-                                                                'adm_date': self.admission_date,
-                                                                'dis_date': self.discharge_date})
-            date_results = self.model(query_date)
-            print("date_results 3:", date_results, "\n####################\n")
-            date_results = demjson3.decode(self.parse_result(date_results))
+            date_results = self._process_llm_query(
+                self.prompt_date_multi,
+                {
+                    'note': ner_results,
+                    'prev_note': prev_ehr,
+                    'adm_date': self.admission_date,
+                    'dis_date': self.discharge_date
+                }
+            )
+            print("Middle date_results:", date_results,
+                  "\n####################\n")
             date_results = self.deduplication(
                 date_results, 'tag', parsed_ner_tags)
             date_results = self.normalize_date(date_results)
-
-        print(date_results)
 
         # Aggregate results
         self.pipeline_result['clean_results'] += clean_results
@@ -518,7 +554,9 @@ class PIPELINE:
         self.pipeline_result['parsed_ner_context'] += filtered_ner_context
 
     def normalize_date(self, date_result):
-
+        """
+        Normalize date results by querying the model for each date.
+        """
         for item in date_result:
             if item['date'][0] is not None and item['date'][1] is not None and len(re.findall(r'[0-9]+-[0-9]+-[0-9]+', item['date'][0])) == 0:
                 query = self.norm_date.apply_template(

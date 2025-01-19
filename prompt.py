@@ -32,6 +32,7 @@ Here is the record:
 
 {note}
 
+Please respond with valid annotated record only, no additional text.
 Your annotated record:
 '''
         elif self.prompt_name in ['recoverentity']:
@@ -62,7 +63,8 @@ Here is the record:
 
 {note}
 
-Your json output without comment:
+Please respond with valid JSON only, no additional text.
+Your JSON output:
 '''
 
         elif self.prompt_name in ['findrelated']:
@@ -90,7 +92,8 @@ Here is the record:
 
 {note}
 
-Your json output without comment:
+Please respond with valid JSON only, no additional text.
+Your JSON output:
 '''
 
             # ORIGIN: the original name form of the entity in the record;
@@ -115,7 +118,8 @@ Here is the record:
 
 CT showed <1>lesions</1> most likely secondary to <2>metastatic disease</2>. <3>Ativan</3> 0.5 mg IV q 4 to 6 hours prn <4>anxiety</4>.
 
-Your json output without comment:
+Please respond with valid JSON only, no additional text.
+Your JSON output:
 ```
 [
   {{"tag": "1", "assertion_status": "Present"}},
@@ -131,7 +135,8 @@ Here is the record:
 
 {note}
 
-Your json output without comment:
+Please respond with valid JSON only, no additional text.
+Your JSON output:
 '''
 
         elif self.prompt_name in ['findinfo']:
@@ -164,7 +169,8 @@ Here is the record:
 
 {note}
 
-Your json output without comment:
+Please respond with valid JSON only, no additional text.
+Your JSON output:
 '''
 
 #         elif self.prompt_name in ['findinfo_i2b2']:
@@ -221,7 +227,8 @@ Here is the record:
 
 {note}
 
-Json output:
+Please respond with valid JSON only, no additional text.
+Your JSON output:
 '''
             # - entity: this is the corresponding extracted entity.
 
@@ -244,6 +251,7 @@ Here is the record:
 
 {note}
 
+Please respond with valid JSON only, no additional text.
 Your JSON output:
 '''
 
@@ -256,7 +264,8 @@ Here is the record:
 
 {note}
 
-Your output:
+Please respond with valid JSON only, no additional text.
+Your JSON output:
 '''
         elif self.prompt_name in ['norm_date']:
             self.template = '''
@@ -270,7 +279,8 @@ Example output:
 
 ####################
 
-Your json output without comment:
+Please respond with valid JSON only, no additional text.
+Your JSON output:
 '''
 
         elif self.prompt_name in ['finddate_multi']:
@@ -303,7 +313,8 @@ piece of the record for you to extract:
 
 {note}
 
-Your json output without comment:
+Please respond with valid JSON only, no additional text.
+Your JSON output:
 '''
 # - entity: this is the corresponding extracted entity.
 
