@@ -127,7 +127,7 @@ class Schema():
             else:
                 NotImplementedError
             df_data.to_csv(
-                f"outputs/{marker}_{encounter_num}_{self.schema}.csv")
+                f"outputs/{encounter_num}_{self.schema}.csv")
 
         elif self.format_type == 'sqlite':
 
@@ -135,7 +135,7 @@ class Schema():
 
         elif self.format_type == 'json':
             encounter_num = json_data[0]["encounter_num"]
-            with open(f"outputs/{marker}_{encounter_num}.json", 'w'):
+            with open(f"outputs/{encounter_num}.json", 'w'):
                 json.dump(json_data, f)
 
     def write_sqlit(self, json_data):

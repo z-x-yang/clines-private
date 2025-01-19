@@ -12,6 +12,7 @@ from check import process_lists_based_on_list1
 import traceback
 import sqlite3
 from schema import Schema
+from datetime import datetime
 
 
 class PIPELINE:
@@ -102,6 +103,13 @@ class PIPELINE:
             result = result.replace('"null"', 'null')
             # result = result.replace('""', 'null')
             result = result.replace('"NA"', 'null')
+
+            # Remove inline comments
+            result = re.sub(r'\s*#.*$', '', result, flags=re.MULTILINE)
+            # Remove C-style comments (both single-line and multi-line)
+            result = re.sub(r'//.*?$|/\*.*?\*/', '', result,
+                            flags=re.MULTILINE | re.DOTALL)
+
             try:
                 _ = demjson3.decode(result)
                 return result
@@ -111,20 +119,45 @@ class PIPELINE:
 
     def parse_ner_result(self, string):
         """
-        Extract named entities from the NER result string.
+        Extract named entities and their tags from the NER result string.
+        Converts tags to sequential numbers and updates the original string.
 
         Args:
             string (str): The NER result string.
 
         Returns:
-            list: List of extracted named entities.
+            tuple: (entities_list, tags_list, updated_string) containing:
+                - entities_list: List of extracted named entities
+                - tags_list: List of corresponding sequential tags
+                - updated_string: NER string with updated sequential tags
         """
-
         result = re.findall(r'<([^<>]+)>(.*?)</\1>', string, re.DOTALL)
-        result = [item[-1] for item in result]
-        # print(len(result), result)
+        entities = [item[1] for item in result]
+        old_tags = [item[0] for item in result]
 
-        return result
+        # Create sequential tags
+        new_tags = [str(i+1) for i in range(len(old_tags))]
+
+        # Create mapping from old tags to new tags
+        tag_mapping = dict(zip(old_tags, new_tags))
+
+        # Print tag mapping if any tags were changed
+        changes_made = any(old != new for old, new in tag_mapping.items())
+        if changes_made:
+            print("Tag corrections made:")
+            for old_tag, new_tag in tag_mapping.items():
+                if old_tag != new_tag:
+                    print(f"  Tag {old_tag} -> {new_tag}")
+
+        # Update the original string with new tags
+        updated_string = string
+        for old_tag, new_tag in tag_mapping.items():
+            updated_string = updated_string.replace(
+                f'<{old_tag}>', f'<{new_tag}>')
+            updated_string = updated_string.replace(
+                f'</{old_tag}>', f'</{new_tag}>')
+
+        return entities, new_tags, updated_string
 
     def parse_ner_context(self, string):
         """
@@ -277,12 +310,11 @@ class PIPELINE:
 
                 tmp['begin_date'] = self.pipeline_result['date_results'][i]['date'][0]
                 tmp['end_date'] = self.pipeline_result['date_results'][i]['date'][1]
+                aggregated_result.append(tmp)
             except Exception as e:
                 print("tmp:", tmp)
                 print("error:", e)
                 raise e
-
-            aggregated_result.append(tmp)
 
         self.output_schema(aggregated_result)
 
@@ -303,13 +335,15 @@ class PIPELINE:
 
         # return aggregated_result
 
-    def deduplication(self, list_of_dict, key):
+    def deduplication(self, list_of_dict, key, parsed_ner_tags=None):
         """
         Remove duplicates from a list of dictionaries based on a specific key.
+        Also removes entries if their key value is not in parsed_ner_tags.
 
         Args:
             list_of_dict (list): List of dictionaries.
             key (str): Key to use for deduplication.
+            parsed_ner_tags (list, optional): List of valid tags. Defaults to None.
 
         Returns:
             list: Deduplicated list of dictionaries.
@@ -317,70 +351,104 @@ class PIPELINE:
         unique_list = []
         seen = set()
         for d in list_of_dict[::-1]:
-            if d[key] not in seen:
+            # Convert key value to string for consistent comparison
+            key_value = str(d[key])
+
+            # Skip if key value not in parsed_ner_tags (when provided)
+            if parsed_ner_tags is not None and key_value not in map(str, parsed_ner_tags):
+                continue
+
+            if key_value not in seen:
                 if 'related' in d:
                     d['related'] = list(map(int, d['related']))
                 unique_list.append(d)
-                seen.add(d[key])
+                seen.add(key_value)
         return unique_list[::-1]
+
+    def filter_parsed_results(self, parsed_ner_results, parsed_ner_context, parsed_ner_tags, clean_results):
+        """
+        Filter parsed NER results and context based on clean results tags.
+
+        Args:
+            parsed_ner_results (list): List of parsed NER results
+            parsed_ner_context (list): List of parsed NER contexts
+            parsed_ner_tags (list): List of parsed NER tags
+            clean_results (list): List of clean results with TAGs
+
+        Returns:
+            tuple: (filtered_ner_results, filtered_ner_context)
+        """
+        clean_result_tags = [item['TAG'] for item in clean_results]
+        filtered_indices = [i for i, tag in enumerate(
+            parsed_ner_tags) if tag in clean_result_tags]
+        filtered_ner_results = [parsed_ner_results[i]
+                                for i in filtered_indices]
+        filtered_ner_context = [parsed_ner_context[i]
+                                for i in filtered_indices]
+        return filtered_ner_results, filtered_ner_context
 
     def call_single(self, ehr, prev_ehr=None):
         """
         Process a single EHR note through the pipeline.
-
-        Args:
-            ehr (str): The EHR note to process.
-            prev_ehr (str, optional): The previous EHR note for context. Defaults to None.
         """
         # Named Entity Recognition
-        # print(ehr)
         query_ner = self.prompt_ner.apply_template({'note': ehr})
         ner_results = self.model(query_ner)
         print("ner_results:", ner_results, "\n####################\n")
-        self.pipeline_result['ner_result'].append(ner_results)
-        self.pipeline_result['parsed_ner_result'] += self.parse_ner_result(
-            ner_results)
-        self.pipeline_result['parsed_ner_context'] += self.parse_ner_context(
-            ner_results)
-        print(self.parse_ner_result(ner_results),
-              len(self.parse_ner_result(ner_results)))
 
-        # # Entity Cleaning and Linking
+        # Parse results and get updated string with sequential tags
+        parsed_ner_results, parsed_ner_tags, updated_ner_results = self.parse_ner_result(
+            ner_results)
+
+        # Store the updated string instead of the original
+        self.pipeline_result['ner_result'].append(updated_ner_results)
+        parsed_ner_context = self.parse_ner_context(updated_ner_results)
+
+        print("parsed_ner_results:", parsed_ner_results,
+              len(parsed_ner_results), "\n####################\n")
+        print("parsed_ner_tags:", parsed_ner_tags,
+              len(parsed_ner_tags), "\n####################\n")
+
+        ner_results = updated_ner_results
+
+        # Entity Cleaning and Linking
         self.model.new_chat()
         query_relate = self.prompt_relate.apply_template({'note': ner_results})
         relate_results = self.model(query_relate)
         relate_results = demjson3.decode(self.parse_result(relate_results))
-        relate_results = self.deduplication(relate_results, 'tag')
+        relate_results = self.deduplication(
+            relate_results, 'tag', parsed_ner_tags)
         print("relate_results:", relate_results, "\n####################\n")
         # raise
         self.model.new_chat()
         query_clean = self.prompt_clean.apply_template({'note': ner_results})
         clean_results = self.model(query_clean)
         clean_results = demjson3.decode(self.parse_result(clean_results))
-        clean_results = self.deduplication(clean_results, 'TAG')
+        clean_results = self.deduplication(
+            clean_results, 'TAG', parsed_ner_tags)
+        print("clean_results 1:", clean_results, "\n####################\n")
         clean_results = self.entity_linking(clean_results, type='all')
-        print("clean_results:", clean_results, "\n####################\n")
+        print("clean_results 2:", clean_results, "\n####################\n")
         # Information Extraction
 
         self.model.new_chat()
         query_info = self.prompt_status.apply_template({'note': ner_results})
         status_results = self.model(query_info)
         status_results = demjson3.decode(self.parse_result(status_results))
-        status_results = self.deduplication(status_results, 'tag')
+        status_results = self.deduplication(
+            status_results, 'tag', parsed_ner_tags)
         print("status_results:", status_results, "\n####################\n")
         # raise
 
         self.model.new_chat()
         query_info = self.prompt_info.apply_template({'note': ner_results})
         info_results = self.model(query_info)
-        # print("info_results:", self.parse_result(info_results), "\n####################\n")
         info_results = demjson3.decode(self.parse_result(info_results))
-        info_results = self.deduplication(info_results, 'tag')
-        info_results = self.entity_linking(info_results, type='bodyloc')
-        print("info_results:", info_results, "\n####################\n")
-        # input()
-
-        # return None
+        info_results = self.deduplication(info_results, 'tag', parsed_ner_tags)
+        print("info_results 1:", info_results, "\n####################\n")
+        if len(info_results) > 0:
+            info_results = self.entity_linking(info_results, type='bodyloc')
+            print("info_results 2:", info_results, "\n####################\n")
 
         # Date Extraction
         if prev_ehr is None:
@@ -394,15 +462,6 @@ class PIPELINE:
             self.pipeline_result.update(basic_results)
             print("basic result:", basic_results, "\n####################\n")
 
-            # Extract admission and discharge dates
-            # self.model.new_chat()
-            # query_date = self.prompt_date_range.apply_template({'note': ehr})
-            # date_results = self.model(query_date)
-            # print("date_results 1:", date_results, "\n####################\n")
-            # date_results = demjson3.decode(self.parse_result(date_results))
-            # self.admission_date = date_results[0]
-            # self.discharge_date = date_results[1]
-
             # Extract dates for each entity
             self.model.new_chat()
             query_date = self.prompt_date_single.apply_template(
@@ -410,7 +469,8 @@ class PIPELINE:
             date_results = self.model(query_date)
             print("date_results 2:", date_results, "\n####################\n")
             date_results = demjson3.decode(self.parse_result(date_results))
-            date_results = self.deduplication(date_results, 'tag')
+            date_results = self.deduplication(
+                date_results, 'tag', parsed_ner_tags)
 
             date_results = self.normalize_date(date_results)
 
@@ -424,7 +484,8 @@ class PIPELINE:
             date_results = self.model(query_date)
             print("date_results 3:", date_results, "\n####################\n")
             date_results = demjson3.decode(self.parse_result(date_results))
-            date_results = self.deduplication(date_results, 'tag')
+            date_results = self.deduplication(
+                date_results, 'tag', parsed_ner_tags)
             date_results = self.normalize_date(date_results)
 
         print(date_results)
@@ -445,6 +506,16 @@ class PIPELINE:
             relate_results[i]['related'] = list(
                 map(lambda x: x + offset, relate_results[i]['related']))
         self.pipeline_result['relate_results'] += relate_results
+
+        # Filter parsed results and add to pipeline result
+        filtered_ner_results, filtered_ner_context = self.filter_parsed_results(
+            parsed_ner_results,
+            parsed_ner_context,
+            parsed_ner_tags,
+            clean_results
+        )
+        self.pipeline_result['parsed_ner_result'] += filtered_ner_results
+        self.pipeline_result['parsed_ner_context'] += filtered_ner_context
 
     def normalize_date(self, date_result):
 
@@ -487,16 +558,8 @@ class PIPELINE:
                     self.call_single(chunked_ehr[i], chunked_ehr[i-1])
 
         self.result_aggregation(key)
-        # result_dict = {
-        #     "result_aggregation": self.result_aggregation(), #.to_dict(orient='records'),
-        #     "admission_date": self.admission_date,
-        #     "discharge_date": self.discharge_date
-        # }
-        # print(result_dict)
+
         print("End processing.\n\n")
-       # input()
-        # return result_dict
-        # raise
 
 
 def convert_to_serializable(obj):
@@ -525,6 +588,7 @@ if __name__ == '__main__':
     from tqdm import tqdm
     import torch
     import traceback
+    from datetime import datetime
 
     parser = argparse.ArgumentParser(description='Process some EHR notes.')
     parser.add_argument('--model_name', type=str,
@@ -545,12 +609,16 @@ if __name__ == '__main__':
                         help='markerfortheoutput')
 
     args = parser.parse_args()
+
+    # Add timestamp to results and error log filenames
+    base_results_file = args.results_file.rsplit('.', 1)[0]
+    args.results_file = f"{base_results_file}.json"
+
     if not args.error_log_file:
-        args.error_log_file = args.results_file.replace(
-            '.json', '_error_log.json')
+        args.error_log_file = f"{base_results_file}_errors.log"
 
     model = LLM(args.model_name)
-    pipeline = PIPELINE(model, args.schema, 'csv', args.marker, use_gpu=False if args.model_name ==
+    pipeline = PIPELINE(model, args.schema, 'csv', use_gpu=False if args.model_name ==
                         'llama-3-405b' else True)
 
     # Load existing results if start_index > 0
@@ -587,9 +655,14 @@ if __name__ == '__main__':
         args.notes_dir) if item.endswith('.txt')]
 
     for i in tqdm(range(args.start_index, len(notes)), desc="Processing notes"):
-        # ehr = notes.iloc[i]['TEXT']
-        # key = str(notes.iloc[i]['ROW_ID'])
-        print(os.path.join(args.notes_dir, notes[i]))
+        key = args.marker + '_' + notes[i].rstrip('.txt')
+
+        # Check if output file already exists
+        output_file = f"outputs/{key}_{args.schema}.csv"
+        if os.path.exists(output_file):
+            print(f"Skipping {key} - output file already exists")
+            continue
+
         try:
             # First try UTF-8
             with open(os.path.join(args.notes_dir, notes[i]), 'r', encoding='utf-8') as f:
@@ -598,10 +671,7 @@ if __name__ == '__main__':
             # If UTF-8 fails, try latin-1 (which can read any byte sequence)
             with open(os.path.join(args.notes_dir, notes[i]), 'r', encoding='latin-1') as f:
                 ehr = ''.join(f.readlines())
-        key = args.marker + '_' + notes[i].rstrip('.txt')
-        # print(key)
-        # print(ehr)
-        # input()
+
         if args.debug:
             print("debug mode")
             result = pipeline(ehr, key)
@@ -627,19 +697,8 @@ if __name__ == '__main__':
                         with open(args.error_log_file, 'w') as f:
                             json.dump(error_log, f, indent=4)
 
-        # # Add index to result
-        # result['result_index'] = str(notes.iloc[i]['ROW_ID'])
-        # result["result_aggregation"].to_csv(f"outputs/{notes.iloc[i]['ROW_ID']}_{result['admission_date']}_{result['discharge_date']}.csv")
-        # result["result_aggregation"] = result["result_aggregation"].to_dict(orient='records')
-        # # Append new result
-        # all_results.append(result)
-        # print(all_results)
-        # # Save updated results
-        # with open(args.results_file, 'w') as f:
-        #     json.dump(all_results, f, indent=4, default=convert_to_serializable)
+        print(f"Processing of {key} complete.")
 
         # Release GPU memory
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
-
-    print("Processing complete.")

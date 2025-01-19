@@ -1,12 +1,15 @@
+# Add timestamp variable at the beginning
+TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+
 # Other settings
 SCHEMA="default"
 MARKER="4CE"
 
 # Data and output paths
 NOTES_DIR="/home/zoy043/Works/language-into-clinical-data/data/4CE"
-LOG_FILE="./logs/${MARKER}.log"
+LOG_FILE="./logs/${MARKER}_${TIMESTAMP}.log"
 RESULTS_FILE="./results/${MARKER}.json"
-ERROR_LOG_FILE="./logs/${MARKER}_errors.log"
+ERROR_LOG_FILE="./logs/${MARKER}_errors_${TIMESTAMP}.log"
 
 # Model settings
 MODEL_NAME="llama-3-405b"
@@ -24,12 +27,13 @@ CUDA_VISIBLE_DEVICES=7 python main_llama.py \
     --marker ${MARKER} \
     2>&1 | tee ${LOG_FILE}
 
+TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 
 MARKER="coral_annotated_breastca"
 NOTES_DIR="/home/zoy043/Works/language-into-clinical-data/data/coral_annotated_breastca"
-LOG_FILE="./logs/${MARKER}.log"
+LOG_FILE="./logs/${MARKER}_${TIMESTAMP}.log"
 RESULTS_FILE="./results/${MARKER}.json"
-ERROR_LOG_FILE="./logs/${MARKER}_errors.log"
+ERROR_LOG_FILE="./logs/${MARKER}_errors_${TIMESTAMP}.log"
 START_IDX=0
 
 CUDA_VISIBLE_DEVICES=7 python main_llama.py \
@@ -43,11 +47,13 @@ CUDA_VISIBLE_DEVICES=7 python main_llama.py \
     --marker ${MARKER} \
     2>&1 | tee ${LOG_FILE}
 
+TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+
 MARKER="coral_annotated_pdac"
 NOTES_DIR="/home/zoy043/Works/language-into-clinical-data/data/coral_annotated_pdac"
-LOG_FILE="./logs/${MARKER}.log"
+LOG_FILE="./logs/${MARKER}_${TIMESTAMP}.log"
 RESULTS_FILE="./results/${MARKER}.json"
-ERROR_LOG_FILE="./logs/${MARKER}_errors.log"
+ERROR_LOG_FILE="./logs/${MARKER}_errors_${TIMESTAMP}.log"
 START_IDX=0
 
 CUDA_VISIBLE_DEVICES=7 python main_llama.py \
