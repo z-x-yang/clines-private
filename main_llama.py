@@ -13,6 +13,10 @@ import traceback
 import sqlite3
 from schema import Schema
 from datetime import datetime
+from dataclasses import dataclass
+from typing import List, Optional, Dict, Any
+from data_types import NERData, EntityData, InfoData, DateData
+import time
 
 
 class PIPELINE:
@@ -46,10 +50,6 @@ class PIPELINE:
         self.model = model
         self.output_schema = Schema(schema, format_type, marker)
 
-        # if self.save_mode == 'sqlite':
-        #     self.connection = sqlite3.connect('outputs/sqlite_database.db')
-        #     self.cursor = self.connection.cursor()
-
         self.retriever = Retriever(
             'cambridgeltl/SapBERT-from-PubMedBERT-fulltext', use_gpu=use_gpu)
         self.retriever.load_dictionary_all('./umls_dictionary.txt')
@@ -67,6 +67,7 @@ class PIPELINE:
         self.prompt_date_multi = PROMPT('finddate_multi')
         self.prompt_date_range = PROMPT('date_range')
         self.prompt_basic_info = PROMPT('basic_info')
+        self.prompt_json_debug = PROMPT('json_debug')
         self.norm_date = PROMPT('norm_date')
 
         self.reinitialize()
@@ -97,30 +98,25 @@ class PIPELINE:
         results = re.findall('```[^`]+```', string)
         if len(results) == 0:
             return string
-        for result in results[::-1]:
-            result = result.strip('```').lstrip('json')
-            result = result.replace('None', 'null')
-            result = result.replace('"null"', 'null')
-            # result = result.replace('""', 'null')
-            result = result.replace('"NA"', 'null')
 
-            # Remove inline comments
-            result = re.sub(r'\s*#.*$', '', result, flags=re.MULTILINE)
-            # Remove C-style comments (both single-line and multi-line)
-            result = re.sub(r'//.*?$|/\*.*?\*/', '', result,
-                            flags=re.MULTILINE | re.DOTALL)
+        result = results[-1]
+        result = result.strip('```').lstrip('json')
+        result = result.replace('None', 'null')
+        result = result.replace('"null"', 'null')
+        result = result.replace('"NA"', 'null')
 
-            try:
-                _ = demjson3.decode(result)
-                return result
-            except:
-                continue
-        return string
+        # Remove inline comments
+        result = re.sub(r'\s*#.*$', '', result, flags=re.MULTILINE)
+        # Remove C-style comments (both single-line and multi-line)
+        result = re.sub(r'//.*?$|/\*.*?\*/', '', result,
+                        flags=re.MULTILINE | re.DOTALL)
+        return result
 
     def parse_ner_result(self, string):
         """
         Extract named entities and their tags from the NER result string.
         Converts tags to sequential numbers and updates the original string.
+        Handles repeated tags by assigning new sequential numbers to each instance.
 
         Args:
             string (str): The NER result string.
@@ -131,31 +127,65 @@ class PIPELINE:
                 - tags_list: List of corresponding sequential tags
                 - updated_string: NER string with updated sequential tags
         """
-        result = re.findall(r'<([^<>]+)>(.*?)</\1>', string, re.DOTALL)
-        entities = [item[1] for item in result]
-        old_tags = [item[0] for item in result]
+        # Find all tag positions and content
+        matches = list(re.finditer(r'<([^<>]+)>(.*?)</\1>', string, re.DOTALL))
 
-        # Create sequential tags
-        new_tags = [str(i+1) for i in range(len(old_tags))]
+        # Filter out none/null/empty entities and remove their tags
+        valid_matches = []
+        updated_string = string
 
-        # Create mapping from old tags to new tags
-        tag_mapping = dict(zip(old_tags, new_tags))
+        # Process matches in reverse order to avoid position shifts
+        for match in matches[::-1]:
+            if match.group(2).lower() not in ['none', 'null', '']:
+                # Insert at beginning to maintain original order
+                valid_matches.insert(0, match)
+            else:
+                # Remove the tags but keep the content for invalid matches
+                start, end = match.span()
+                content = match.group(2)
+                updated_string = updated_string[:start] + \
+                    content + updated_string[end:]
 
-        # Print tag mapping if any tags were changed
-        changes_made = any(old != new for old, new in tag_mapping.items())
+        if not valid_matches:
+            return [], [], updated_string
+
+        # Extract entities and prepare for sequential numbering
+        entities = [match.group(2) for match in valid_matches]
+        old_tags = [match.group(1) for match in valid_matches]
+        new_tags = [str(i+1) for i in range(len(valid_matches))]
+
+        # Create list of replacements (position, old tag, new tag)
+        replacements = []
+        for i, match in enumerate(valid_matches):
+            start = match.start()
+            replacements.append((start, old_tags[i], new_tags[i]))
+
+        # Sort replacements by position in reverse order
+        replacements.sort(reverse=True)
+
+        # Apply replacements from end to start to avoid position shifts
+        for _, old_tag, new_tag in replacements:
+            # Replace closing tag first, then opening tag
+            updated_string = re.sub(
+                f'</({old_tag})>',
+                f'</{new_tag}>',
+                updated_string,
+                count=1
+            )
+            updated_string = re.sub(
+                f'<({old_tag})>',
+                f'<{new_tag}>',
+                updated_string,
+                count=1
+            )
+
+        # Print tag mapping if changes were made
+        changes_made = any(old != new for old, new in zip(old_tags, new_tags))
         if changes_made:
             print("Tag corrections made:")
-            for old_tag, new_tag in tag_mapping.items():
-                if old_tag != new_tag:
-                    print(f"  Tag {old_tag} -> {new_tag}")
-
-        # Update the original string with new tags
-        updated_string = string
-        for old_tag, new_tag in tag_mapping.items():
-            updated_string = updated_string.replace(
-                f'<{old_tag}>', f'<{new_tag}>')
-            updated_string = updated_string.replace(
-                f'</{old_tag}>', f'</{new_tag}>')
+            for old, new in zip(old_tags, new_tags):
+                if old != new:
+                    print(f"  Tag {old} -> {new}")
 
         return entities, new_tags, updated_string
 
@@ -343,7 +373,26 @@ class PIPELINE:
                                 for i in filtered_indices]
         return filtered_ner_results, filtered_ner_context
 
-    def _process_llm_query(self, prompt_obj, template_vars, parse_json=True, max_retries=3):
+    def safe_json_decode(self, json_string, max_retries=3):
+        if max_retries > 0:
+            max_retries = max_retries - 1
+            try:
+                output = demjson3.decode(json_string)
+                return output
+            except Exception as e:
+                print(f"Error decoding JSON: {e}")
+                print(f"Error result: {json_string}")
+                print(f"Retrying... (remaining retries: {max_retries})")
+                debug_query = self.prompt_json_debug.apply_template(
+                    {'error_message': str(e), 'json_content': json_string})
+                corrected_json = self.model(debug_query)
+                corrected_json = self.parse_result(corrected_json)
+                print("corrected json:", corrected_json)
+                return self.safe_json_decode(corrected_json, max_retries)
+        else:
+            raise Exception("Failed to decode JSON after multiple retries")
+
+    def _process_llm_query(self, prompt_obj, template_vars, parse_json=True, new_chat=True):
         """
         Helper method to process LLM queries with standard pattern of:
         new chat -> apply template -> get model response -> parse JSON result
@@ -357,68 +406,84 @@ class PIPELINE:
         Returns:
             The processed result (parsed JSON if parse_json=True, otherwise raw string)
         """
-        self.model.new_chat()
+        if new_chat:
+            self.model.new_chat()
         query = prompt_obj.apply_template(template_vars)
         result = self.model(query)
         if parse_json:
             parsed_result = self.parse_result(result)
-            for attempt in range(max_retries):
-                try:
-                    json_result = demjson3.decode(parsed_result)
-                    return json_result
-                except Exception as e:
-                    print(f"Error decoding JSON: {e}")
-                    print(f"Error result: {parsed_result}")
-                    print(f"Retrying... ({attempt + 1}/{max_retries})")
-            raise Exception("Failed to decode JSON after multiple retries")
+            return self.safe_json_decode(parsed_result)
         return result
 
-    def call_single(self, ehr, prev_ehr=None):
+    def call_single(self, ehr: str, prev_ehr: Optional[str] = None) -> None:
         """
         Process a single Electronic Health Record (EHR) through the complete NLP pipeline.
-        This method orchestrates multiple processing steps including entity recognition,
-        cleaning, relationship extraction, and date normalization.
 
         Args:
-            ehr (str): The full EHR text to process. This contains the medical notes
-                      and records that need to be analyzed.
-            prev_ehr (str, optional): The previous EHR context, used for date extraction
-                                    in sequential records. Defaults to None.
-
-        Processing Steps:
-            1. Named Entity Recognition (NER):
-               - Identifies and tags medical entities in the text
-               - Normalizes entity tags to sequential numbers
-               - Extracts context around each entity
-
-            2. Entity Processing:
-               - Extracts relationships between entities
-               - Cleans and normalizes entity mentions
-               - Links entities to standard medical codes (UMLS)
-
-            3. Information Extraction:
-               - Determines assertion status (present, absent, etc.)
-               - Extracts additional attributes (body location, values, units)
-               - Links body locations to standard codes
-
-            4. Date Processing:
-               - For first EHR (prev_ehr=None):
-                 * Extracts basic patient information
-                 * Determines admission/discharge dates
-               - For subsequent EHRs:
-                 * Uses previous context for date extraction
-               - Normalizes all extracted dates
-
-            5. Result Aggregation:
-               - Combines all extracted information
-               - Updates the pipeline's result storage
-               - Maintains entity relationships across chunks
-
-        Note:
-            This method updates the pipeline_result dictionary with extracted information,
-            which can be later used for final result aggregation.
+            ehr: The full EHR text to process
+            prev_ehr: Optional previous EHR context for date extraction
         """
-        # Named Entity Recognition
+        print("\n=== Starting Single EHR Processing ===")
+        print(f"Input EHR length: {len(ehr)} characters")
+        print(f"Previous EHR provided: {prev_ehr is not None}")
+
+        # 1. Named Entity Recognition
+        print("\n1. Starting Named Entity Recognition...")
+        ner_data = self._process_ner(ehr)
+        print(f"Found {len(ner_data.parsed_tags)} entities")
+
+        if len(ner_data.parsed_tags) == 0:
+            print("No entities found - skipping further processing")
+            return
+
+        # 2. Entity Processing
+        print("\n2. Starting Entity Processing...")
+        entity_data = self._process_entities(
+            ner_data.ner_results,
+            ner_data.parsed_tags
+        )
+        print(f"Processed {len(entity_data.clean_results)} cleaned entities")
+        print(f"Found {len(entity_data.relate_results)} entity relationships")
+
+        # 3. Information Extraction
+        print("\n3. Starting Information Extraction...")
+        info_data = self._process_information(
+            ner_data.ner_results,
+            ner_data.parsed_tags
+        )
+        print(f"Extracted status for {len(info_data.status_results)} entities")
+        print(
+            f"Extracted additional info for {len(info_data.info_results)} entities")
+
+        # 4. Date Processing
+        print("\n4. Starting Date Processing...")
+        date_data = self._process_dates(
+            ehr,
+            ner_data.ner_results,
+            prev_ehr,
+            ner_data.parsed_tags
+        )
+        print(f"Processed {len(date_data.date_results)} date entries")
+        if date_data.basic_results:
+            print(
+                f"Admission date: {date_data.basic_results.get('admission_date')}")
+            print(
+                f"Discharge date: {date_data.basic_results.get('discharge_date')}")
+
+        # 5. Aggregate and store results
+        print("\n5. Aggregating Results...")
+        self._aggregate_results(
+            ner_data=ner_data,
+            entity_data=entity_data,
+            info_data=info_data,
+            date_data=date_data
+        )
+        print("Results aggregation complete")
+        print("\n=== Single EHR Processing Complete ===\n")
+
+    def _process_ner(self, ehr: str) -> NERData:
+        """Process Named Entity Recognition step."""
+        # Get NER results from model
         ner_results = self._process_llm_query(
             self.prompt_ner,
             {'note': ehr},
@@ -430,18 +495,24 @@ class PIPELINE:
         parsed_ner_results, parsed_ner_tags, updated_ner_results = self.parse_ner_result(
             ner_results)
 
-        # Store the updated string instead of the original
-        self.pipeline_result['ner_result'].append(updated_ner_results)
+        # Get context for entities
         parsed_ner_context = self.parse_ner_context(updated_ner_results)
 
-        print("parsed_ner_results:", parsed_ner_results, len(
-            parsed_ner_results), "\n####################\n")
-        print("parsed_ner_tags:", parsed_ner_tags, len(
-            parsed_ner_tags), "\n####################\n")
+        print("parsed_ner_results:", parsed_ner_results,
+              len(parsed_ner_results), "\n####################\n")
+        print("parsed_ner_tags:", parsed_ner_tags,
+              len(parsed_ner_tags), "\n####################\n")
 
-        ner_results = updated_ner_results
+        return NERData(
+            ner_results=updated_ner_results,
+            parsed_results=parsed_ner_results,
+            parsed_tags=parsed_ner_tags,
+            parsed_context=parsed_ner_context
+        )
 
-        # Entity Cleaning and Linking
+    def _process_entities(self, ner_results: str, parsed_ner_tags: List[str]) -> EntityData:
+        """Process entity relationships and cleaning."""
+        # Process relationships
         relate_results = self._process_llm_query(
             self.prompt_relate,
             {'note': ner_results}
@@ -450,6 +521,7 @@ class PIPELINE:
             relate_results, 'tag', parsed_ner_tags)
         print("relate_results:", relate_results, "\n####################\n")
 
+        # Process cleaning
         clean_results = self._process_llm_query(
             self.prompt_clean,
             {'note': ner_results}
@@ -458,11 +530,19 @@ class PIPELINE:
             clean_results, 'TAG', parsed_ner_tags)
         print("clean_results before linking:",
               clean_results, "\n####################\n")
+
         clean_results = self.entity_linking(clean_results, type='all')
         print("clean_results after linking:",
               clean_results, "\n####################\n")
 
-        # Information Extraction
+        return EntityData(
+            relate_results=relate_results,
+            clean_results=clean_results
+        )
+
+    def _process_information(self, ner_results: str, parsed_ner_tags: List[str]) -> InfoData:
+        """Process status and additional information extraction."""
+        # Process status
         status_results = self._process_llm_query(
             self.prompt_status,
             {'note': ner_results}
@@ -471,6 +551,7 @@ class PIPELINE:
             status_results, 'tag', parsed_ner_tags)
         print("status_results:", status_results, "\n####################\n")
 
+        # Process additional information
         info_results = self._process_llm_query(
             self.prompt_info,
             {'note': ner_results}
@@ -486,69 +567,101 @@ class PIPELINE:
         else:
             print("info_results is empty")
 
-        # Date Extraction
+        return InfoData(
+            status_results=status_results,
+            info_results=info_results
+        )
+
+    def _process_dates(self, ehr: str, ner_results: str, prev_ehr: Optional[str], parsed_ner_tags: List[str]) -> DateData:
+        """Process date extraction and normalization."""
         if prev_ehr is None:
-            # Extract basic information
-            basic_results = self._process_llm_query(
-                self.prompt_basic_info,
-                {'note': ehr}
-            )
-            self.admission_date = basic_results['admission_date']
-            self.discharge_date = basic_results['discharge_date']
-            self.pipeline_result.update(basic_results)
-            print("basic result:", basic_results, "\n####################\n")
-
-            # Extract dates for each entity
-            date_results = self._process_llm_query(
-                self.prompt_date_single,
-                {'note': ner_results}
-            )
-            print("Initial date_results:", date_results,
-                  "\n####################\n")
-            date_results = self.deduplication(
-                date_results, 'tag', parsed_ner_tags)
-            date_results = self.normalize_date(date_results)
-
+            date_data = self._process_initial_dates(
+                ehr, ner_results, parsed_ner_tags)
         else:
-            # Extract dates considering previous EHR context
-            date_results = self._process_llm_query(
-                self.prompt_date_multi,
-                {
-                    'note': ner_results,
-                    'prev_note': prev_ehr,
-                    'adm_date': self.admission_date,
-                    'dis_date': self.discharge_date
-                }
-            )
-            print("Middle date_results:", date_results,
-                  "\n####################\n")
-            date_results = self.deduplication(
-                date_results, 'tag', parsed_ner_tags)
-            date_results = self.normalize_date(date_results)
+            date_data = self._process_subsequent_dates(
+                ner_results, prev_ehr, parsed_ner_tags)
 
-        # Aggregate results
-        self.pipeline_result['clean_results'] += clean_results
-        info_results, status_results, date_results, relate_results = process_lists_based_on_list1(clean_results,
-                                                                                                  info_results,
-                                                                                                  status_results,
-                                                                                                  date_results,
-                                                                                                  relate_results,
-                                                                                                  )
+        return date_data
+
+    def _process_initial_dates(self, ehr: str, ner_results: str, parsed_ner_tags: List[str]) -> DateData:
+        """Process dates for the first EHR."""
+        # Extract basic information
+        basic_results = self._process_llm_query(
+            self.prompt_basic_info,
+            {'note': ehr}
+        )
+        self.admission_date = basic_results['admission_date']
+        self.discharge_date = basic_results['discharge_date']
+        self.pipeline_result.update(basic_results)
+        print("basic result:", basic_results, "\n####################\n")
+
+        # Extract dates for each entity
+        date_results = self._process_llm_query(
+            self.prompt_date_single,
+            {'note': ner_results}
+        )
+        print("Initial date_results:", date_results, "\n####################\n")
+        date_results = self.deduplication(date_results, 'tag', parsed_ner_tags)
+        date_results = self.normalize_date(date_results)
+
+        return DateData(
+            basic_results=basic_results,
+            date_results=date_results
+        )
+
+    def _process_subsequent_dates(self, ner_results: str, prev_ehr: str, parsed_ner_tags: List[str]) -> DateData:
+        """Process dates for subsequent EHRs."""
+        date_results = self._process_llm_query(
+            self.prompt_date_multi,
+            {
+                'note': ner_results,
+                'prev_note': prev_ehr,
+                'adm_date': self.admission_date,
+                'dis_date': self.discharge_date
+            }
+        )
+        print("Middle date_results:", date_results, "\n####################\n")
+        date_results = self.deduplication(date_results, 'tag', parsed_ner_tags)
+        date_results = self.normalize_date(date_results)
+
+        return DateData(
+            basic_results=None,
+            date_results=date_results
+        )
+
+    def _aggregate_results(self, ner_data: NERData, entity_data: EntityData,
+                           info_data: InfoData, date_data: DateData) -> None:
+        """Aggregate all results into pipeline_result."""
+        # Add clean results
+        self.pipeline_result['clean_results'] += entity_data.clean_results
+
+        # Process and align all results
+        info_results, status_results, date_results, relate_results = process_lists_based_on_list1(
+            entity_data.clean_results,
+            info_data.info_results,
+            info_data.status_results,
+            date_data.date_results,
+            entity_data.relate_results,
+        )
+
+        # Update pipeline results
         self.pipeline_result['info_results'] += info_results
         self.pipeline_result['status_results'] += status_results
         self.pipeline_result['date_results'] += date_results
+
+        # Update relate results with offset
         offset = len(self.pipeline_result['relate_results'])
-        for i in range(len(relate_results)):
-            relate_results[i]['related'] = list(
-                map(lambda x: x + offset, relate_results[i]['related']))
+        for result in relate_results:
+            result['related'] = list(
+                map(lambda x: x + offset, result['related']))
         self.pipeline_result['relate_results'] += relate_results
 
-        # Filter parsed results and add to pipeline result
+        # Filter and add parsed results
         filtered_ner_results, filtered_ner_context = self.filter_parsed_results(
-            parsed_ner_results,
-            parsed_ner_context,
-            parsed_ner_tags,
-            clean_results
+            ner_data.parsed_results,
+            ner_data.parsed_context,
+            ner_data.parsed_tags,
+            entity_data.clean_results
         )
         self.pipeline_result['parsed_ner_result'] += filtered_ner_results
         self.pipeline_result['parsed_ner_context'] += filtered_ner_context
@@ -559,12 +672,17 @@ class PIPELINE:
         """
         for item in date_result:
             if item['date'][0] is not None and item['date'][1] is not None and len(re.findall(r'[0-9]+-[0-9]+-[0-9]+', item['date'][0])) == 0:
+                print(f"\nNormalizing date: {item['date'][0]}")
+                print(f"Admission date anchor: {self.admission_date}")
+
                 query = self.norm_date.apply_template(
                     {'date': item['date'][0], 'anchor': self.admission_date})
-                print(query)
-                item['date'] = demjson3.decode(
+                print(f"Generated query for normalization:\n{query}")
+
+                normalized_date = self.safe_json_decode(
                     self.parse_result(self.model(query)))
-                print(item['date'])
+                item['date'] = normalized_date
+                print(f"Normalized result: {normalized_date}\n")
 
         return date_result
 
@@ -579,25 +697,35 @@ class PIPELINE:
             dict: A dictionary containing the aggregated results and admission/discharge dates.
         """
         self.reinitialize()
-        print("Start processing:\n\n")
+        print(f"\n====== Starting EHR chunking process... ======")
         chunked_ehr = [""]
         for item in self.model.chunker(ehr):
             if len(chunked_ehr[-1]) < 200 or len(item) < 300:
                 chunked_ehr[-1] += item
             else:
                 chunked_ehr.append(item)
+
+        print(f"Chunking complete. Split into {len(chunked_ehr)} chunks:")
+        for i, chunk in enumerate(chunked_ehr):
+            print(f"Chunk {i+1}: {len(chunk)} characters")
+
         if len(chunked_ehr) == 1:
+            print("\nProcessing single chunk...")
             self.call_single(ehr)
         else:
+            print("\nProcessing multiple chunks sequentially...")
             for i in range(len(chunked_ehr)):
+                print(f"\nProcessing chunk {i+1}/{len(chunked_ehr)}")
                 if i == 0:
+                    print("Processing first chunk (no previous context)")
                     self.call_single(chunked_ehr[i])
                 else:
+                    print(f"Processing with previous chunk as context")
                     self.call_single(chunked_ehr[i], chunked_ehr[i-1])
-
+        print("\n====== Chunk processing complete. ======")
+        print("\n====== Starting result aggregation... ======")
         self.result_aggregation(key)
-
-        print("End processing.\n\n")
+        print("\n====== Aggregation processing complete. ======")
 
 
 def convert_to_serializable(obj):
@@ -692,9 +820,15 @@ if __name__ == '__main__':
     notes = [item for item in os.listdir(
         args.notes_dir) if item.endswith('.txt')]
 
-    for i in tqdm(range(args.start_index, len(notes)), desc="Processing notes"):
-        key = args.marker + '_' + notes[i].rstrip('.txt')
+    # Add variables to track total time and count
+    total_processing_time = 0
+    processed_notes_count = 0
 
+    for i in tqdm(range(args.start_index, len(notes)), desc="Processing notes"):
+        start_time = time.time()
+        key = args.marker + '_' + notes[i].rstrip('.txt')
+        print(
+            f"\n========= Processing note {i+1}/{len(notes)}: {key} ==========")
         # Check if output file already exists
         output_file = f"outputs/{key}_{args.schema}.csv"
         if os.path.exists(output_file):
@@ -711,10 +845,10 @@ if __name__ == '__main__':
                 ehr = ''.join(f.readlines())
 
         if args.debug:
-            print("debug mode")
+            print("Debug mode")
             result = pipeline(ehr, key)
         else:
-            print("not debug mode")
+            print("Not debug mode")
             for attempt in range(args.max_retries):
                 try:
                     result = pipeline(ehr, key)
@@ -735,7 +869,17 @@ if __name__ == '__main__':
                         with open(args.error_log_file, 'w') as f:
                             json.dump(error_log, f, indent=4)
 
-        print(f"Processing of {key} complete.")
+        print(f"========= Processing of {key} complete. ==========")
+        # Calculate and track timing information
+        elapsed_time = time.time() - start_time
+        total_processing_time += elapsed_time
+        processed_notes_count += 1
+        avg_time = total_processing_time / processed_notes_count
+
+        print(
+            f"Time taken: {elapsed_time:.2f} seconds ({elapsed_time/60:.2f} minutes)")
+        print(
+            f"Average processing time so far: {avg_time:.2f} seconds ({avg_time/60:.2f} minutes)")
 
         # Release GPU memory
         if torch.cuda.is_available():

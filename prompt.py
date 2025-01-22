@@ -12,28 +12,36 @@ class PROMPT():
         if self.prompt_name in ['findentity']:
             self.template = '''
 You will receive an electronic health record for a patient. Your task is to thoroughly identify and extract all biomedical entities or concepts mentioned in the record. These entities include, but are not limited to, lab tests, procedures, symptoms, diseases, allergies, medications, and more that relates to the patient, ignore the general terms. Be aware that some entities might be abbreviated or acronyms or name-omitted in some test panels, and you should extract these abbreviations or numbers as well. 
-
 For your final output, annotate the original record by marking each extracted entity with <KEY> tags on both sides. Assign an integer to the value of KEY to indicate the order in which the entities appear, such as <1>...</1>, <2>...</2>, <3>...</3>, etc.
+-------------------
+Examples:
 
 Example 1:
-The patient was taken to the Operating Room
-for <1>wound exploration</1> directly from the <2>Trauma Room</2>.  The
-patient was taken to the Operating Room for <3>chest CT</3>, as mentioned above,
-for an <4>exploratory laparotomy</4>, <5>extensive lysis of adhesions</5>.
-<6>TUMOR SIZE</6>: 4 x 3.2 x 3 cm, 
-<7>Chem-7</7>: <8>127</8>, <9>3.6</9>, <10>88</10>, <11>29</11>, <12>16.5</12>, <13>0.6</13>, <14>143</14>.
+Input:
+The patient was taken to the Operating Room for wound exploration directly from the Trauma Room. The patient was taken to the Operating Room for chest CT, as mentioned above, for an exploratory laparotomy, extensive lysis of adhesions.
+TUMOR SIZE: 4 x 3.2 x 3 cm, Chem-7: 127, 3.6, 88, 29, 16.5, 0.6, 143.
+
+Please respond with only the annotated record. Do not include any additional text. Output:
+The patient was taken to the Operating Room for <1>wound exploration</1> directly from the <2>Trauma Room</2>. The patient was taken to the Operating Room for <3>chest CT</3>, as mentioned above, for an <4>exploratory laparotomy</4>, <5>extensive lysis of adhesions</5>.
+<6>TUMOR SIZE</6>: 4 x 3.2 x 3 cm, <7>Chem-7</7>: <8>127</8>, <9>3.6</9>, <10>88</10>, <11>29</11>, <12>16.5</12>, <13>0.6</13>, <14>143</14>.
 
 Example 2:
-<1>Hydrocodone</1> 7.5mg + <2>Apap</2> 325mg 7.5-325MG TABLETS take 1 PO as directed PRN <3>arthritis</3>; No Change  
-<4>Lisinopril</4> 20 mg (20 MG TABLET Take 1) PO QD; No Change  
-<5>Multivitamins</5> 1 TAB (TABLET) PO QD; No Change 
+Input:
+Hydrocodone 7.5mg + Apap 325mg 7.5-325MG TABLETS take 1 PO as directed PRN arthritis; No Change
+Lisinopril 20 mg (20 MG TABLET Take 1) PO QD; No Change
+Multivitamins 1 TAB (TABLET) PO QD; No Change
 
-Here is the record:
+Please respond with only the annotated record. Do not include any additional text. Output:
+<1>Hydrocodone</1> 7.5mg + <2>Apap</2> 325mg 7.5-325MG TABLETS take 1 PO as directed PRN <3>arthritis</3>; No Change
+<4>Lisinopril</4> 20 mg (20 MG TABLET Take 1) PO QD; No Change
+<5>Multivitamins</5> 1 TAB (TABLET) PO QD; No Change
+-------------------
+Start!
 
+Input:
 {note}
 
-Please respond with valid annotated record only, no additional text.
-Your annotated record:
+Please respond with only the annotated record. Do not include any additional text. Output:
 '''
         elif self.prompt_name in ['recoverentity']:
             self.template = '''
@@ -46,7 +54,12 @@ Your final outputs should be in the JSON format which is a list and the element 
 TAG: the order in which the entities appear. It is the same as the number of KEY value in the record;
 CLEAN: the standard names or synonyms of the entities. 
 
-Example output:
+-------------------
+Example:
+Input:
+The patient reported <1>Breast Cancer</1> history and underwent <2>Screening Mammogram</2> which showed <3>Heterogeneously Dense Breast Tissue</3>. Follow-up tests ruled out <4>Malignancy</4>, but a <5>Painful Mass</5> was detected.
+
+Please respond with valid JSON only, no additional text. Output:
 ```
 [
   {{"TAG": "1", "CLEAN": "Breast Cancer"}},
@@ -56,15 +69,13 @@ Example output:
   {{"TAG": "5", "CLEAN": "Painful Mass"}},
 ]
 ```
+-------------------
+Start!
 
-####################
-
-Here is the record:
-
+Input:
 {note}
 
-Please respond with valid JSON only, no additional text.
-Your JSON output:
+Please respond with valid JSON only, no additional text. Output:
 '''
 
         elif self.prompt_name in ['findrelated']:
@@ -83,6 +94,7 @@ Example output:
   {{"tag": "1", "related": ["2", "3"]}},
   {{"tag": "2", "related": ["1"]}},
   {{"tag": "3", "related": ["1"]}},
+  {{"tag": "4", "related": []}},
 ]
 ```
 
@@ -316,6 +328,67 @@ piece of the record for you to extract:
 Please respond with valid JSON only, no additional text.
 Your JSON output:
 '''
+        elif self.prompt_name in ['json_debug']:
+            self.template = '''
+I have a JSON file with errors that cannot be parsed. When I tried to parse it using `demjson3.decode`, I received specific error messages. Please correct the JSON and respond with only the corrected JSON content—do not include any explanations, comments, or additional text.
+
+Here are some examples:
+
+---
+
+Error: Unexpected character at line 3, column 15  
+Input JSON:
+```
+{{
+  "name": "John Doe,
+  "age": 30,
+  "hobbies": ["reading", "coding", hiking]
+}}
+```
+
+Corrected JSON:
+```
+{{
+  "name": "John Doe",
+  "age": 30,
+  "hobbies": ["reading", "coding", "hiking"]
+}}
+```
+
+---
+
+Error: Unexpected EOF while parsing at line 4  
+Input JSON:
+```
+{{
+  "id": 123,
+  "details": {{
+    "name": "Bob",
+    "age": 40
+  }}
+```
+
+Corrected JSON:
+```
+{{
+  "id": 123,
+  "details": {{
+    "name": "Bob",
+    "age": 40
+  }}
+}}
+```
+
+---
+
+Now, correct the following JSON based on the provided error message. Respond with only the corrected JSON:
+
+Error: {error_message}  
+Input JSON:
+{json_content}
+Corrected JSON:
+'''
+
 # - entity: this is the corresponding extracted entity.
 
     def apply_template(self, inputs):
