@@ -40,7 +40,7 @@ class PIPELINE:
         discharge_date (str): Discharge date extracted from the EHR.
     """
 
-    def __init__(self, model, schema='i2b2', format_type='csv', marker="", use_gpu=True):
+    def __init__(self, model, schema='i2b2', format_type='csv', marker="", use_gpu=True, use_faiss_gpu=None):
         """
         Initialize the PIPELINE with a language model and set up necessary components.
 
@@ -51,7 +51,7 @@ class PIPELINE:
         self.output_schema = Schema(schema, format_type, marker)
 
         self.retriever = Retriever(
-            'cambridgeltl/SapBERT-from-PubMedBERT-fulltext', use_gpu=use_gpu)
+            'cambridgeltl/SapBERT-from-PubMedBERT-fulltext', use_gpu=use_gpu, use_faiss_gpu=use_faiss_gpu)
         self.retriever.load_dictionary_all('./umls_dictionary.txt')
         self.retriever.load_dictionary_bodyloc(
             './umls_body_loc_dictionary.txt')
@@ -104,6 +104,7 @@ class PIPELINE:
         result = result.replace('None', 'null')
         result = result.replace('"null"', 'null')
         result = result.replace('"NA"', 'null')
+        result = result.replace('```', '')
 
         # Remove inline comments
         result = re.sub(r'\s*#.*$', '', result, flags=re.MULTILINE)
@@ -205,8 +206,8 @@ class PIPELINE:
             # print(match)
             # input()
             start, end = match.span()
-            before_start = max(0, start - 50)
-            after_end = min(len(string), end + 50)
+            before_start = max(0, start - 100)
+            after_end = min(len(string), end + 100)
             context = string[before_start:after_end]
             context = re.sub(r'<[^>]+>', '', context).replace('\n', ' ')
             context = re.sub(r'[^\s]*>', '', context, 1)
@@ -771,8 +772,10 @@ if __name__ == '__main__':
     parser.add_argument('--start_index', type=int, default=0,
                         help='Index to start processing from')
     parser.add_argument('--schema', type=str, default="default", help='schema')
-    parser.add_argument('--marker', type=str, default="xx",
+    parser.add_argument('--marker', type=str, default="Test",
                         help='markerfortheoutput')
+    parser.add_argument('--output_type', type=str, default="csv",
+                        help='output type')
 
     args = parser.parse_args()
 
@@ -783,9 +786,17 @@ if __name__ == '__main__':
     if not args.error_log_file:
         args.error_log_file = f"{base_results_file}_errors.log"
 
+    print("Start initializing model")
     model = LLM(args.model_name)
-    pipeline = PIPELINE(model, args.schema, 'csv', use_gpu=False if args.model_name ==
-                        'llama-3-405b' else True)
+    print("Model initialized")
+    print("Start initializing pipeline")
+    if args.model_name in ['llama-3-405b', 'deepseek']:
+        use_faiss_gpu = False
+    else:
+        use_faiss_gpu = None
+    pipeline = PIPELINE(model, args.schema, args.output_type,
+                        use_faiss_gpu=use_faiss_gpu)
+    print("Pipeline initialized")
 
     # Load existing results if start_index > 0
     if args.start_index > 0 and os.path.exists(args.results_file):

@@ -11,7 +11,7 @@ class PROMPT():
 
         if self.prompt_name in ['findentity']:
             self.template = '''
-You will receive an electronic health record for a patient. Your task is to thoroughly identify and extract all biomedical entities or concepts mentioned in the record. These entities include, but are not limited to, lab tests, procedures, symptoms, diseases, allergies, medications, and more that relates to the patient, ignore the general terms. Be aware that some entities might be abbreviated or acronyms or name-omitted in some test panels, and you should extract these abbreviations or numbers as well. 
+You will receive an electronic health record for a patient. Your task is to thoroughly identify and extract all biomedical entities or concepts mentioned in the record. These entities include, but are not limited to, lab tests, procedures, symptoms, diseases, allergies, medications, and more that relate to the patient. Focus on extracting key biomedical terms, such as abbreviations (e.g., T, HR, RR, BP) and full names of tests or conditions, while ignoring associated numerical values (e.g., 37.1, 98) unless the numbers themselves explicitly define a test, range, or measurement category. Be aware that some entities might be abbreviated, acronyms, or name-omitted in some test panels, and you should extract these abbreviations or acronyms as well. 
 For your final output, annotate the original record by marking each extracted entity with <KEY> tags on both sides. Assign an integer to the value of KEY to indicate the order in which the entities appear, such as <1>...</1>, <2>...</2>, <3>...</3>, etc.
 -------------------
 Examples:
@@ -47,6 +47,8 @@ Please respond with only the annotated record. Do not include any additional tex
             self.template = '''
 You will receive an electronic health record with named entities marked by <KEY> and </KEY>. Your task is to recover the standard names or synonyms of the marked entities. If the marked entity is a value such as Yes, Normal, 20, etc, find and recover the corresponding biomedical concept. You should select the standard name that is as similar to the marked entities as possible. For example, if the marked entity is a medication brand name, just keep the brand name.
 
+If the marked entity is an abbreviation, recover its full form where applicable.
+
 If the marked entity is a number or unit, you should infer based on the context what is the biomedical concept it indicates. 
 
 Your final outputs should be in the JSON format which is a list and the element in it should be a dictionary containing the keys of 
@@ -57,16 +59,18 @@ CLEAN: the standard names or synonyms of the entities.
 -------------------
 Example:
 Input:
-The patient reported <1>Breast Cancer</1> history and underwent <2>Screening Mammogram</2> which showed <3>Heterogeneously Dense Breast Tissue</3>. Follow-up tests ruled out <4>Malignancy</4>, but a <5>Painful Mass</5> was detected.
+The patient reported <1>HTN</1> history and underwent <2>BP Measurement</2>, which showed <3>150/90 mmHg</3>. Labs revealed <4>Elevated A1C</4> at <5>7.5%</5>. Follow-up tests ruled out <6>CAD</6>, but a <7>1.5 cm Mass</7> was detected.
 
 Please respond with valid JSON only, no additional text. Output:
 ```
 [
-  {{"TAG": "1", "CLEAN": "Breast Cancer"}},
-  {{"TAG": "2", "CLEAN": "Screening Mammogram"}},
-  {{"TAG": "3", "CLEAN": "Heterogeneously Dense Breast Tissue"}},
-  {{"TAG": "4", "CLEAN": "Malignancy"}},
-  {{"TAG": "5", "CLEAN": "Painful Mass"}},
+  {{"TAG": "1", "CLEAN": "Hypertension"}},
+  {{"TAG": "2", "CLEAN": "Blood Pressure Measurement"}},
+  {{"TAG": "3", "CLEAN": "Hypertensive Blood Pressure (150/90 mmHg)"}},
+  {{"TAG": "4", "CLEAN": "Increased Hemoglobin A1C Level"}},
+  {{"TAG": "5", "CLEAN": "Glycated Hemoglobin Measurement (7.5%)"}},
+  {{"TAG": "6", "CLEAN": "Coronary Artery Disease"}},
+  {{"TAG": "7", "CLEAN": "Mass (1.5 cm)"}}
 ]
 ```
 -------------------

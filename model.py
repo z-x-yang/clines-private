@@ -32,8 +32,7 @@ import semchunk
 import json
 
 
-def openai_chat(inputs_message):
-    # print(inputs_message)
+def openai_chat(inputs_message, retry=True):
     from openai import AzureOpenAI
     GPT4V_KEY = os.getenv("OPENAIKEY")
     GPT4V_ENDPOINT = os.getenv("OPENAIENDPOINT")
@@ -42,12 +41,25 @@ def openai_chat(inputs_message):
                          api_key=GPT4V_KEY)
     engine_name = "gpt-4o"
 
-    response = client.chat.completions.create(model=engine_name,
-                                              messages=inputs_message,
-                                              max_tokens=4096,
-                                              temperature=0.,)
-    # print(response)
-    return response.choices[0].message.content.strip()
+    try:
+        response = client.chat.completions.create(model=engine_name,
+                                                  messages=inputs_message,
+                                                  max_tokens=4096,
+                                                  temperature=0.6)
+
+        if not response or not response.choices or not response.choices[0].message:
+            print(response)
+            raise ValueError("Invalid response format from API")
+
+        return response.choices[0].message.content.strip()
+    except Exception as e:
+        print(f"Error in openai_chat: {e}")
+        print(response)
+        if retry:
+            print("Retrying...")
+            return openai_chat(inputs_message, retry=False)
+        else:
+            raise Exception(f"Failed after retry: {e}")
 
 
 def llama_chat(inputs_message):
@@ -60,10 +72,32 @@ def llama_chat(inputs_message):
         model="default",
         messages=inputs_message,
         temperature=0,
-        max_tokens=4096,
+        max_tokens=8192,  # 4096,
     )
 
     return response.choices[0].message.content.strip()
+
+
+def deepseek_chat(inputs_message):
+    import openai
+    client = openai.Client(
+        base_url="http://127.0.0.1:30000/v1", api_key="EMPTY")
+
+    # Chat completion
+    response = client.chat.completions.create(
+        model="default",
+        messages=inputs_message,
+        temperature=0.6,
+        max_tokens=32768,  # 4096,
+    )
+
+    output = response.choices[0].message.content.strip()
+    # Remove the <think> section if present
+    if "</think>" in output:
+        think_end = output.find("</think>") + len("</think>")
+        output = output[think_end:].strip()
+
+    return output
 
 
 def huggingface_chat(input_message):
@@ -123,6 +157,12 @@ class LLM():
             self.tokenizer = tiktoken.encoding_for_model('gpt-4')
             self.chunker = semchunk.chunkerify(self.tokenizer, 512)
 
+        elif self.model_name in ['deepseek']:
+            import tiktoken
+            self.chat_func = deepseek_chat
+            self.tokenizer = tiktoken.encoding_for_model('gpt-4')
+            self.chunker = semchunk.chunkerify(self.tokenizer, 512)
+
         self.new_chat()
 
     def new_chat(self):
@@ -158,6 +198,9 @@ class LLM():
                 "content": "You are an AI assistant that follows people's instructions."
             })
 
+        elif self.model_name in ['deepseek']:
+            pass
+
     def __call__(self, query):
 
         self.message_buffer.append({'role': 'user', 'content': query})
@@ -169,7 +212,7 @@ class LLM():
 
 class Retriever():
 
-    def __init__(self, path, use_gpu=True):
+    def __init__(self, path, use_gpu=True, use_faiss_gpu=None):
 
         import transformers
         self.tokenizer = transformers.AutoTokenizer.from_pretrained(
@@ -177,7 +220,8 @@ class Retriever():
         self.encoder = transformers.AutoModel.from_pretrained(
             path, trust_remote_code=True)
         self.use_gpu = use_gpu
-        if torch.cuda.is_available():
+        self.use_faiss_gpu = use_faiss_gpu if use_faiss_gpu is not None else use_gpu
+        if torch.cuda.is_available() and self.use_gpu:
             self.encoder = self.encoder.cuda()
 
     def load_dictionary_all(self, file_path):
@@ -240,9 +284,9 @@ class Retriever():
         if os.path.exists(cache_file + '/dense_embed_all.pt'):
             print("Cache file found. Loading dense embeddings from cache.")
             self.dense_embeds_all = torch.load(
-                cache_file + '/dense_embed_all.pt')
+                cache_file + '/dense_embed_all.pt', weights_only=True)
             self.term_list_all = torch.load(
-                cache_file + '/term_list_all.pt')
+                cache_file + '/term_list_all.pt', weights_only=True)
         else:
             print("Cache file not found. Embedding terms and saving to cache.")
 
@@ -260,9 +304,9 @@ class Retriever():
         if os.path.exists(cache_file + '/dense_embed_bodyloc.pt'):
             print("Cache file found. Loading dense embeddings from cache.")
             self.dense_embeds_bodyloc = torch.load(
-                cache_file + '/dense_embed_bodyloc.pt')
+                cache_file + '/dense_embed_bodyloc.pt', weights_only=True)
             self.term_list_bodyloc = torch.load(
-                cache_file + '/term_list_bodyloc.pt')
+                cache_file + '/term_list_bodyloc.pt', weights_only=True)
         else:
             print("Cache file not found. Embedding terms and saving to cache.")
             self.encoder.eval()
@@ -276,27 +320,27 @@ class Retriever():
 
     def faiss_setup(self, gpu_id=0):
         import faiss
-        if self.use_gpu:
-            res = faiss.StandardGpuResources()  # 使用单个GPU
+        if self.use_faiss_gpu:
+            print("Using GPU for FAISS setup")
+            res = faiss.StandardGpuResources()  # 使用单个GPU资源
             # 为所有术语的索引指定GPU
             index = faiss.IndexFlatIP(self.dense_embeds_all.shape[-1])
-            self.index_flat_all = faiss.index_cpu_to_gpu(
-                res, gpu_id, index)  # 使用指定的gpu_id
+            self.index_flat_all = faiss.index_cpu_to_gpu(res, gpu_id, index)
             self.index_flat_all.add(self.dense_embeds_all)
-
             # 为身体位置术语的索引指定GPU
             index = faiss.IndexFlatIP(self.dense_embeds_bodyloc.shape[-1])
             self.index_flat_bodyloc = faiss.index_cpu_to_gpu(
-                res, gpu_id, index)  # 使用指定的gpu_id
+                res, gpu_id, index)
             self.index_flat_bodyloc.add(self.dense_embeds_bodyloc)
         else:
+            print("Using CPU for FAISS setup")
             self.index_flat_all = faiss.IndexFlatIP(
                 self.dense_embeds_all.shape[-1])
             self.index_flat_all.add(self.dense_embeds_all)
-
             self.index_flat_bodyloc = faiss.IndexFlatIP(
                 self.dense_embeds_bodyloc.shape[-1])
             self.index_flat_bodyloc.add(self.dense_embeds_bodyloc)
+        print("FAISS setup completed")
 
     def embedding_retrieval_all(self, term, batch_size=256):
         if term and all(x is None for x in term):
