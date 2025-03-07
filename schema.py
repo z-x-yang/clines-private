@@ -6,13 +6,14 @@ import sqlite3
 
 class Schema():
 
-    def __init__(self, schema, type='csv', marker=""):
+    def __init__(self, schema, type='csv', marker="", output_dir='outputs'):
 
         self.schema = schema
         self.format_type = type
         self.marker = marker
+        self.output_dir = output_dir
         if self.format_type == 'sqlite':
-            self.connection = sqlite3.connect('outputs/sqlite_database.db')
+            self.connection = sqlite3.connect(f"{self.output_dir}/sqlite_database.db")
             self.cursor = self.connection.cursor()
 
     def __call__(self, json_data):
@@ -126,8 +127,7 @@ class Schema():
                 encounter_num = json_data[0]["key"]
             else:
                 NotImplementedError
-            df_data.to_csv(
-                f"outputs/{encounter_num}_{self.schema}.csv")
+            df_data.to_csv(f"{self.output_dir}/{encounter_num}_{self.schema}.csv")
 
         elif self.format_type == 'sqlite':
 
@@ -135,7 +135,7 @@ class Schema():
 
         elif self.format_type == 'json':
             encounter_num = json_data[0]["encounter_num"]
-            with open(f"outputs/{encounter_num}.json", 'w'):
+            with open(f"{self.output_dir}/{encounter_num}.json", 'w') as f:
                 json.dump(json_data, f)
 
     def write_sqlit(self, json_data):
