@@ -1,0 +1,5 @@
+bash run_inference_deepseek.sh
+bash run_inference_deepseek.sh
+bash run_inference_deepseek.sh
+bash run_inference_deepseek.sh
+bash run_inference_deepseek.sh
