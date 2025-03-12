@@ -47,10 +47,6 @@ def merge_and_sort_csv(file1, file2, output_file):
 
 def main():
 
-    # files = ["/home/zoy043/Works/LLM_Info_Extract/language-into-clinical-data/outputs/4CE_BCH_1_deepseek_with_positions.csv",
-    #          "/home/zoy043/Works/LLM_Info_Extract/language-into-clinical-data/outputs/4CE_BCH_1_genie_with_positions.csv",
-    #          "/home/zoy043/Works/LLM_Info_Extract/language-into-clinical-data/outputs/4CE_BCH_1_gpt4o_with_positions.csv",
-    #          "/home/zoy043/Works/LLM_Info_Extract/language-into-clinical-data/outputs/4CE_BCH_1_llama_with_positions.csv"]
     files = ["/home/zoy043/Works/LLM_Info_Extract/language-into-clinical-data/outputs/coral_breastcancer_gpt4o_with_positions.csv",
              "/home/zoy043/Works/LLM_Info_Extract/language-into-clinical-data/outputs/coral_breastcancer_llama_with_positions.csv",
              "/home/zoy043/Works/LLM_Info_Extract/language-into-clinical-data/outputs/coral_breastcancer_deepseek_with_positions.csv",

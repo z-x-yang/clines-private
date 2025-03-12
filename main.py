@@ -40,7 +40,7 @@ class PIPELINE:
         discharge_date (str): Discharge date extracted from the EHR.
     """
 
-    def __init__(self, model, schema='i2b2', format_type='csv', marker="", use_gpu=True, use_faiss_gpu=None):
+    def __init__(self, model, schema='i2b2', format_type='csv', marker="", use_gpu=True, use_faiss_gpu=None, output_dir="outputs"):
         """
         Initialize the PIPELINE with a language model and set up necessary components.
 
@@ -48,7 +48,7 @@ class PIPELINE:
             model (LLM): An instance of the language model.
         """
         self.model = model
-        self.output_schema = Schema(schema, format_type, marker)
+        self.output_schema = Schema(schema, format_type, marker, output_dir)
 
         self.retriever = Retriever(
             'cambridgeltl/SapBERT-from-PubMedBERT-fulltext', use_gpu=use_gpu, use_faiss_gpu=use_faiss_gpu)
@@ -190,29 +190,51 @@ class PIPELINE:
 
         return entities, new_tags, updated_string
 
-    def parse_ner_context(self, string):
+    def parse_ner_context(self, string, tag_list):
         """
-        Extract context around named entities from the NER result string.
+        Extract context around named entities from the NER result string for specific tags.
 
         Args:
             string (str): The NER result string.
+            tag_list (list): List of tags to extract context for.
 
         Returns:
-            list: List of context strings for each named entity.
+            list: List of context strings for each tag in tag_list. If a tag is not found,
+                 its corresponding context will be an empty string. If multiple matches are found
+                 for a tag, only the first match's context is returned to maintain alignment with tag_list.
         """
-        matches = re.finditer(r'<([^<>]+)>(.*?)</\1>', string, re.DOTALL)
         result = []
-        for match in matches:
-            # print(match)
-            # input()
-            start, end = match.span()
-            before_start = max(0, start - 100)
-            after_end = min(len(string), end + 100)
-            context = string[before_start:after_end]
-            context = re.sub(r'<[^>]+>', '', context).replace('\n', ' ')
-            context = re.sub(r'[^\s]*>', '', context, 1)
-            context = re.sub(r'<[^\s]*', '', context, 1)
-            result.append(context)
+
+        # Create a dictionary to store all matches for each tag
+        all_matches = {}
+
+        # Find all tag patterns in the string first
+        for match in re.finditer(r'<([^<>]+)>(.*?)</\1>', string, re.DOTALL):
+            tag = match.group(1)
+            if tag not in all_matches:
+                all_matches[tag] = []
+            all_matches[tag].append(match)
+
+        # Process each tag in tag_list
+        for tag in tag_list:
+            if tag in all_matches and all_matches[tag]:
+                # Use the first match for this tag
+                match = all_matches[tag][0]
+
+                # Extract context around the match
+                start, end = match.span()
+                before_start = max(0, start - 200)
+                after_end = min(len(string), end + 200)
+                context = string[before_start:after_end]
+
+                # Clean up the context by removing tags
+                context = re.sub(r'<[^>]+>', '', context).replace('\n', ' ')
+                context = re.sub(r'[^\s]*>', '', context, 1)
+                context = re.sub(r'<[^\s]*', '', context, 1)
+                result.append(context)
+            else:
+                # If tag not found, add empty string
+                result.append("")
 
         return result
 
@@ -497,7 +519,8 @@ class PIPELINE:
             ner_results)
 
         # Get context for entities
-        parsed_ner_context = self.parse_ner_context(updated_ner_results)
+        parsed_ner_context = self.parse_ner_context(
+            updated_ner_results, parsed_ner_tags)
 
         print("parsed_ner_results:", parsed_ner_results,
               len(parsed_ner_results), "\n####################\n")
@@ -776,6 +799,8 @@ if __name__ == '__main__':
                         help='markerfortheoutput')
     parser.add_argument('--output_type', type=str, default="csv",
                         help='output type')
+    parser.add_argument('--output_dir', type=str, default="outputs",
+                        help='Output directory for schema outputs')
 
     args = parser.parse_args()
 
@@ -795,7 +820,7 @@ if __name__ == '__main__':
     else:
         use_faiss_gpu = None
     pipeline = PIPELINE(model, args.schema, args.output_type,
-                        use_faiss_gpu=use_faiss_gpu)
+                        args.marker, args.output_dir, use_faiss_gpu=use_faiss_gpu, output_dir=args.output_dir)
     print("Pipeline initialized")
 
     # Load existing results if start_index > 0
@@ -841,7 +866,8 @@ if __name__ == '__main__':
         print(
             f"\n========= Processing note {i+1}/{len(notes)}: {key} ==========")
         # Check if output file already exists
-        output_file = f"outputs/{key}_{args.schema}.csv"
+        output_file = f"{args.output_dir}/{key}_{args.schema}.csv"
+
         if os.path.exists(output_file):
             print(f"Skipping {key} - output file already exists")
             continue

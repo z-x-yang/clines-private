@@ -3,10 +3,10 @@ SCHEMA="default"
 
 # Model settings
 # MODEL_NAME="llama-3-405b"
-# MODEL_NAME="gpt4o"
-MODEL_NAME="deepseek"
+MODEL_NAME="gpt4o"
+# MODEL_NAME="deepseek"
 MAX_RETRIES=1
-OPENAIKEY="95611e3e803c4f49b8735f8c899572c5"
+OPENAIKEY="***REVOKED_OLD_AZURE_KEY***"
 OPENAIENDPOINT="https://azure-ai-dev.hms.edu"
 
 # Add timestamp variable at the beginning

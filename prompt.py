@@ -127,7 +127,7 @@ For each entry dictionary, the keys and values will be as follows:
    Absent: the note asserts that the problem does not exist in the patient. Example: patient denies pain; elevated enzymes resolved.
    Possible: the note asserts that the patient may have a problem, but there is uncertainty expressed in the note. Possible takes precedence over absent, so terms like “probably not” or “unlikely” categorize problems as being possible just as “probably” and “likely” do.  Example: We suspect this is pneumonia; pneumonia unlikely.
    Conditional: the mention of the medical problem asserts that the patient  experiences the problem only under certain conditions. Allergies can fall into this category. Example: Penicillin causes a rash; Ativan 0.5 mg IV q 4 to 6 hours prn anxiety.
-   Not associated: the mention of the medical problem is associated  with someone who is not the patient. Example: Family history of prostate cancer.
+   Not associated: the mention of the medical problem is associated with someone who is not the patient. Example: Family history of prostate cancer.
 
 Example:
 Here is the record:

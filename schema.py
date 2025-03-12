@@ -13,7 +13,8 @@ class Schema():
         self.marker = marker
         self.output_dir = output_dir
         if self.format_type == 'sqlite':
-            self.connection = sqlite3.connect(f"{self.output_dir}/sqlite_database.db")
+            self.connection = sqlite3.connect(
+                f"{self.output_dir}/sqlite_database.db")
             self.cursor = self.connection.cursor()
 
     def __call__(self, json_data):
@@ -127,7 +128,8 @@ class Schema():
                 encounter_num = json_data[0]["key"]
             else:
                 NotImplementedError
-            df_data.to_csv(f"{self.output_dir}/{encounter_num}_{self.schema}.csv")
+            df_data.to_csv(
+                f"{self.output_dir}/{encounter_num}_{self.schema}.csv")
 
         elif self.format_type == 'sqlite':
 
