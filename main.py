@@ -801,6 +801,8 @@ if __name__ == '__main__':
                         help='output type')
     parser.add_argument('--output_dir', type=str, default="outputs",
                         help='Output directory for schema outputs')
+    parser.add_argument('--chunk_size', type=int, default=512,
+                        help='Chunk size for the model')
 
     args = parser.parse_args()
 
@@ -812,13 +814,16 @@ if __name__ == '__main__':
         args.error_log_file = f"{base_results_file}_errors.log"
 
     print("Start initializing model")
-    model = LLM(args.model_name)
+    model = LLM(args.model_name, chunk_size=args.chunk_size)
     print("Model initialized")
     print("Start initializing pipeline")
     if args.model_name in ['llama-3-405b', 'deepseek']:
         use_faiss_gpu = False
     else:
         use_faiss_gpu = None
+
+    if not os.path.exists(args.output_dir):
+        os.makedirs(args.output_dir)
     pipeline = PIPELINE(model, args.schema, args.output_type,
                         args.marker, args.output_dir, use_faiss_gpu=use_faiss_gpu, output_dir=args.output_dir)
     print("Pipeline initialized")

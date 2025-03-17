@@ -17,3 +17,7 @@ data/
 *.db
 *.html
 *.yml
+run_inference_gene_data.sh
+slurm_job.sh
+scripts/run_pipeline.sh
+slurm_job.sh

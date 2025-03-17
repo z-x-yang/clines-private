@@ -1,5 +1,6 @@
 import pandas as pd
 import sys
+import argparse
 
 
 def merge_and_sort_csv(file1, file2, output_file):
@@ -42,26 +43,37 @@ def merge_and_sort_csv(file1, file2, output_file):
 
     # 保存合并后的CSV
     merged_df.to_csv(output_file, index=False)
-    print(f"合并后的文件已保存到 {output_file}")
+    print(f"Merged file saved to {output_file}")
+    return output_file
 
 
 def main():
+    parser = argparse.ArgumentParser(
+        description='Merge two CSV files with entity positions.')
+    parser.add_argument('file1', help='First CSV file to merge')
+    parser.add_argument('file2', help='Second CSV file to merge')
+    parser.add_argument(
+        'output_file', help='Output file path for the merged CSV')
 
-    files = ["/home/zoy043/Works/LLM_Info_Extract/language-into-clinical-data/outputs/coral_breastcancer_gpt4o_with_positions.csv",
-             "/home/zoy043/Works/LLM_Info_Extract/language-into-clinical-data/outputs/coral_breastcancer_llama_with_positions.csv",
-             "/home/zoy043/Works/LLM_Info_Extract/language-into-clinical-data/outputs/coral_breastcancer_deepseek_with_positions.csv",
-             "/home/zoy043/Works/LLM_Info_Extract/language-into-clinical-data/outputs/annotations/coral_annotated_breastca_21.csv"]
-    output_file = "../outputs/coral_breastcancer_all_with_positions.csv"
-    # Start with first file
-    merged_df = files[0]
+    # If no arguments are provided, use the default files
+    if len(sys.argv) == 1:
+        files = ["/home/zoy043/Works/LLM_Info_Extract/language-into-clinical-data/outputs/coral_breastcancer_gpt4o_with_positions.csv",
+                 "/home/zoy043/Works/LLM_Info_Extract/language-into-clinical-data/outputs/coral_breastcancer_llama_with_positions.csv",
+                 "/home/zoy043/Works/LLM_Info_Extract/language-into-clinical-data/outputs/coral_breastcancer_deepseek_with_positions.csv",
+                 "/home/zoy043/Works/LLM_Info_Extract/language-into-clinical-data/outputs/annotations/coral_annotated_breastca_21.csv"]
+        output_file = "../outputs/coral_breastcancer_all_with_positions.csv"
+        # Start with first file
+        merged_df = files[0]
 
-    # Merge remaining files one by one
-    for file in files[1:]:
-        print(f"Merging {file} with {merged_df}")
-        merge_and_sort_csv(merged_df, file, output_file)
-        merged_df = output_file
+        # Merge remaining files one by one
+        for file in files[1:]:
+            print(f"Merging {file} with {merged_df}")
+            merge_and_sort_csv(merged_df, file, output_file)
+            merged_df = output_file
+    else:
+        args = parser.parse_args()
+        merge_and_sort_csv(args.file1, args.file2, args.output_file)
 
 
 if __name__ == "__main__":
-    print("Starting merge")
     main()

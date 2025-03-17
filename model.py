@@ -129,7 +129,7 @@ def claude_chat(input_message):
 
 class LLM():
 
-    def __init__(self, model_name):
+    def __init__(self, model_name, chunk_size=512):
 
         self.model_name = model_name
         if self.model_name in ['gpt3.5', 'gpt4', 'gpt4o', 'gpt4omini']:
@@ -137,7 +137,7 @@ class LLM():
             import tiktoken
             self.chat_func = openai_chat
             self.tokenizer = tiktoken.encoding_for_model('gpt-4')
-            self.chunker = semchunk.chunkerify(self.tokenizer, 512)
+            self.chunker = semchunk.chunkerify(self.tokenizer, chunk_size)
 
         elif self.model_name in ['gemini']:
 
