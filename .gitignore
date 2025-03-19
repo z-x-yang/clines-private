@@ -21,3 +21,11 @@ run_inference_gene_data.sh
 slurm_job.sh
 scripts/run_pipeline.sh
 slurm_job.sh
+run.sh
+deepseek_server.sh
+eval.ipynb
+keep_run_deepseek.sh
+keep_run.sh
+make_umls_dictionary.ipynb
+process_coral_breastcancer.sh
+run_inference_deepseek.sh
