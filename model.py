@@ -223,6 +223,8 @@ class Retriever():
         self.use_faiss_gpu = use_faiss_gpu if use_faiss_gpu is not None else use_gpu
         if torch.cuda.is_available() and self.use_gpu:
             self.encoder = self.encoder.cuda()
+        else:
+            self.encoder = self.encoder.cpu()
 
     def load_dictionary_all(self, file_path):
 
@@ -261,7 +263,10 @@ class Retriever():
                     padding="max_length", return_tensors='pt')
                 batch_tokenized_names_cuda = {}
                 for k, v in batch_tokenized_names.items():
-                    batch_tokenized_names_cuda[k] = v.cuda()
+                    if self.use_gpu:
+                        batch_tokenized_names_cuda[k] = v.cuda()
+                    else:
+                        batch_tokenized_names_cuda[k] = v.cpu()
 
                 batch_dense_embeds = self.encoder(
                     **batch_tokenized_names_cuda).last_hidden_state[:, 0, :]
@@ -318,35 +323,50 @@ class Retriever():
                        cache_file + '/term_list_bodyloc.pt')
             print("Dense embeddings saved to cache.")
 
+        if self.use_gpu:
+            self.dense_embeds_all = self.dense_embeds_all.cuda()
+            self.dense_embeds_bodyloc = self.dense_embeds_bodyloc.cuda()
+        else:
+            self.dense_embeds_all = self.dense_embeds_all.cpu()
+            self.dense_embeds_bodyloc = self.dense_embeds_bodyloc.cpu()
+
     def faiss_setup(self, gpu_id=0):
         import faiss
+        import numpy as np
+
+        # Convert PyTorch tensors to numpy arrays
+        dense_embeds_all_np = self.dense_embeds_all.numpy()
+        dense_embeds_bodyloc_np = self.dense_embeds_bodyloc.numpy()
+
         if self.use_faiss_gpu:
             print("Using GPU for FAISS setup")
             res = faiss.StandardGpuResources()  # 使用单个GPU资源
             # 为所有术语的索引指定GPU
-            index = faiss.IndexFlatIP(self.dense_embeds_all.shape[-1])
+            index = faiss.IndexFlatIP(dense_embeds_all_np.shape[-1])
             self.index_flat_all = faiss.index_cpu_to_gpu(res, gpu_id, index)
-            self.index_flat_all.add(self.dense_embeds_all)
+            self.index_flat_all.add(dense_embeds_all_np)
             # 为身体位置术语的索引指定GPU
-            index = faiss.IndexFlatIP(self.dense_embeds_bodyloc.shape[-1])
+            index = faiss.IndexFlatIP(dense_embeds_bodyloc_np.shape[-1])
             self.index_flat_bodyloc = faiss.index_cpu_to_gpu(
                 res, gpu_id, index)
-            self.index_flat_bodyloc.add(self.dense_embeds_bodyloc)
+            self.index_flat_bodyloc.add(dense_embeds_bodyloc_np)
         else:
             print("Using CPU for FAISS setup")
             self.index_flat_all = faiss.IndexFlatIP(
-                self.dense_embeds_all.shape[-1])
-            self.index_flat_all.add(self.dense_embeds_all)
+                dense_embeds_all_np.shape[-1])
+            self.index_flat_all.add(dense_embeds_all_np)
             self.index_flat_bodyloc = faiss.IndexFlatIP(
-                self.dense_embeds_bodyloc.shape[-1])
-            self.index_flat_bodyloc.add(self.dense_embeds_bodyloc)
+                dense_embeds_bodyloc_np.shape[-1])
+            self.index_flat_bodyloc.add(dense_embeds_bodyloc_np)
         print("FAISS setup completed")
 
     def embedding_retrieval_all(self, term, batch_size=256):
         if term and all(x is None for x in term):
             return []
         embed_for_test = self.embed_term(term, batch_size)
-        D, I = self.index_flat_all.search(embed_for_test, 1)  # actual search
+        embed_for_test_np = embed_for_test.numpy()
+        D, I = self.index_flat_all.search(
+            embed_for_test_np, 1)  # actual search
         preds_fortest = []
         for i, (idx, ds) in enumerate(zip(I, D)):
             # preds_fortest.append(json.dumps({self.dict_map[self.term_list_all[j]]: [self.term_list_all[j].strip(), float(d)] for j, d in zip(idx, ds)}))
@@ -355,13 +375,13 @@ class Retriever():
         return preds_fortest
 
     def embedding_retrieval_bodyloc(self, term, batch_size=256):
-
         if term and all(x is None for x in term):
             return []
         _term = [item for item in term if item is not None]
         embed_for_test = self.embed_term(_term, batch_size)
+        embed_for_test_np = embed_for_test.numpy()
         D, I = self.index_flat_bodyloc.search(
-            embed_for_test, 1)  # actual search
+            embed_for_test_np, 1)  # actual search
         _preds_fortest = []
         for i, (idx, ds) in enumerate(zip(I, D)):
             # _preds_fortest.append(json.dumps({self.dict_map[self.term_list_bodyloc[j]]: [self.term_list_bodyloc[j].strip(), float(d)] for j, d in zip(idx, ds)}))
