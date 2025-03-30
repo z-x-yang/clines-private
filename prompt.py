@@ -121,12 +121,13 @@ You will receive an electronic health record with named entities marked by <KEY>
 The final answer should be provided in JSON format, a list of Python dictionaries. 
 For each entry dictionary, the keys and values will be as follows: 
  - tag: the order in which the entities appear. It is the same as the number of **KEY** values in the record.
- - assertion_status: this should be one of the following 6 categories: Present; Absent; Possible; Conditional; Hypothetical; Notassociated. 
+ - assertion_status: this should be one of the following 6 categories: Present; Absent; Possible; Conditional; Hypothetical; Not associated. 
    The definitions of each category are: 
-   Present: problems associated with thepatient can be present. Example: history of chest pain; the patient has had increasing weight gain.
+   Present: problems associated with the patient can be present. Example: history of chest pain; the patient has had increasing weight gain.
    Absent: the note asserts that the problem does not exist in the patient. Example: patient denies pain; elevated enzymes resolved.
    Possible: the note asserts that the patient may have a problem, but there is uncertainty expressed in the note. Possible takes precedence over absent, so terms like “probably not” or “unlikely” categorize problems as being possible just as “probably” and “likely” do.  Example: We suspect this is pneumonia; pneumonia unlikely.
-   Conditional: the mention of the medical problem asserts that the patient  experiences the problem only under certain conditions. Allergies can fall into this category. Example: Penicillin causes a rash; Ativan 0.5 mg IV q 4 to 6 hours prn anxiety.
+   Conditional: the mention of the medical problem asserts that the patient experiences the problem only under certain conditions. Allergies can fall into this category. Example: Penicillin causes a rash; Ativan 0.5 mg IV q 4 to 6 hours prn anxiety.
+   Hypothetical: refers to problems that are mentioned only in a hypothetical or theoretical context, rather than as a definitive assertion about the patient’s current condition. These are often encountered in diagnostic reasoning or clinical decision-making scenarios. Example: If the patient were to experience chest pain, it could indicate a myocardial infarction。
    Not associated: the mention of the medical problem is associated with someone who is not the patient. Example: Family history of prostate cancer.
 
 Example:
