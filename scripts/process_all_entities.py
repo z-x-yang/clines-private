@@ -18,7 +18,7 @@ DATA_PATHS = {
 MODEL_OUTPUTS = {
     "deepseek": os.path.join(BASE_PATH, "outputs/deepseek_output"),
     "gpt4o": os.path.join(BASE_PATH, "outputs/gpt4o_output"),
-    "llama": os.path.join(BASE_PATH, "outputs/llama-405b_output")
+    "llama": os.path.join(BASE_PATH, "outputs/llama-405b-output")
 }
 SCRIPTS_PATH = os.path.join(BASE_PATH, "scripts")
 OUTPUT_PATH = os.path.join(BASE_PATH, "outputs")

@@ -66,19 +66,30 @@ def compare_entities(original_df, reviewed_df):
                 # Compare codes for matching positions
                 original_row = original_positions[pos_key]
                 if original_row['code'] != reviewed_row['code']:
+                    code = str(reviewed_row['code'])
+                    if code == '' or code == 'nan':
+                        code = reviewed_row['mention']
                     changes.append({
                         'position': pos_key,
                         'mention': reviewed_row['mention'],
                         'original_code': original_row['code'],
-                        'reviewed_code': reviewed_row['code']
+                        'reviewed_code': code
                     })
+                    print(f"Changed entity: {reviewed_row['mention']}")
+                    print(f"Original code: {original_row['code']}")
+                    print(f"Reviewed code: {code}")
             else:
                 # New entity found
+                code = str(reviewed_row['code'])
+                if code == '' or code == 'nan':
+                    code = reviewed_row['mention']
                 new_entities.append({
                     'position': pos_key,
                     'mention': reviewed_row['mention'],
-                    'code': reviewed_row['code']
+                    'code': code
                 })
+                print(f"New entity: {reviewed_row['mention']}")
+                print(f"Code: {code}")
 
     return changes, new_entities
 
@@ -109,8 +120,8 @@ def get_umls_info(mentions, retriever):
 def update_csv_with_umls(reviewed_df, changes, new_entities, retriever):
     """Update reviewed CSV with UMLS information only for changed and new entities."""
     # Get mentions from changes and new entities
-    changed_mentions = [c['mention'] for c in changes]
-    new_mentions = [e['mention'] for e in new_entities]
+    changed_mentions = [c['reviewed_code'] for c in changes]
+    new_mentions = [e['code'] for e in new_entities]
     all_mentions = changed_mentions + new_mentions
 
     if not all_mentions:
@@ -122,9 +133,24 @@ def update_csv_with_umls(reviewed_df, changes, new_entities, retriever):
     # Create a mapping from mention to UMLS info
     umls_map = {info['mention']: info for info in umls_info}
 
+    # Create position-based mappings for changes and new entities
+    change_positions = {(c['position'][0], c['position'][1],
+                         c['mention']): c['reviewed_code'] for c in changes}
+    new_positions = {(e['position'][0], e['position'][1],
+                      e['mention']): e['code'] for e in new_entities}
+
     # Update code and type columns only for changed and new entities
     for idx, row in reviewed_df.iterrows():
-        mention = row['mention']
+        pos_key = (row['start_pos'], row['end_pos'], row['mention'])
+
+        # Check if this position corresponds to a changed or new entity
+        if pos_key in change_positions:
+            mention = change_positions[pos_key]
+        elif pos_key in new_positions:
+            mention = new_positions[pos_key]
+        else:
+            continue
+
         if mention in umls_map:
             info = umls_map[mention]
             reviewed_df.at[idx,
@@ -207,34 +233,6 @@ def main():
                 reviewed_file).replace('_reviewed.csv', '_updated.csv'))
             updated_df.to_csv(output_file, index=False)
             print(f"✓ Saved updated CSV to: {output_file}")
-
-        # Get UMLS info for changes and new entities
-        if changes:
-            print(f"\nFound {len(changes)} changed entities:")
-            changed_mentions = [c['mention'] for c in changes]
-            changed_umls = get_umls_info(changed_mentions, retriever)
-
-            for change, umls in zip(changes, changed_umls):
-                print(f"\nMention: {change['mention']}")
-                print(f"Position: {change['position']}")
-                print(f"Original code: {change['original_code']}")
-                print(f"Reviewed code: {change['reviewed_code']}")
-                print(f"UMLS CUI: {umls['cui']}")
-                print(f"Standard term: {umls['standard_term']}")
-                print(f"Semantic type: {umls['semantic_type']}")
-
-        if new_entities:
-            print(f"\nFound {len(new_entities)} new entities:")
-            new_mentions = [e['mention'] for e in new_entities]
-            new_umls = get_umls_info(new_mentions, retriever)
-
-            for entity, umls in zip(new_entities, new_umls):
-                print(f"\nMention: {entity['mention']}")
-                print(f"Position: {entity['position']}")
-                print(f"Code: {entity['code']}")
-                print(f"UMLS CUI: {umls['cui']}")
-                print(f"Standard term: {umls['standard_term']}")
-                print(f"Semantic type: {umls['semantic_type']}")
 
     # Print summary
     print("\n" + "="*50)

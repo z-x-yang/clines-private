@@ -251,7 +251,7 @@ class Retriever():
     def embed_term(self, names, batch_size=256):
         self.encoder.eval()
         dense_embeds = []
-        names = [item.lower() for item in names]
+        names = [str(item).lower() for item in names]
         with torch.no_grad():
             iterations = tqdm(range(0, len(names), batch_size))
             for start in iterations:
@@ -335,8 +335,8 @@ class Retriever():
         import numpy as np
 
         # Convert PyTorch tensors to numpy arrays
-        dense_embeds_all_np = self.dense_embeds_all.numpy()
-        dense_embeds_bodyloc_np = self.dense_embeds_bodyloc.numpy()
+        dense_embeds_all_np = self.dense_embeds_all.cpu().numpy()
+        dense_embeds_bodyloc_np = self.dense_embeds_bodyloc.cpu().numpy()
 
         if self.use_faiss_gpu:
             print("Using GPU for FAISS setup")
