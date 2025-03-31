@@ -43,6 +43,9 @@ def process_lists_based_on_list1(list1, list2, list3, list4, list5):
         "tag": None,
         "assertion_status": None,
     })
+    for idx, item in enumerate(list3_cleaned):
+        if item["assertion_status"] == "Not associated":
+            list3_cleaned[idx]["assertion_status"] = "Notassociated"
 
     # Clean and fill list3 based on tags from list1
     list4_cleaned = clean_and_fill_list(main_tags, list4, 'tag', {

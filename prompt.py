@@ -121,7 +121,7 @@ You will receive an electronic health record with named entities marked by <KEY>
 The final answer should be provided in JSON format, a list of Python dictionaries. 
 For each entry dictionary, the keys and values will be as follows: 
  - tag: the order in which the entities appear. It is the same as the number of **KEY** values in the record.
- - assertion_status: this should be one of the following 6 categories: Present; Absent; Possible; Conditional; Hypothetical; Not associated. 
+ - assertion_status: this should be one of the following 6 categories: Present; Absent; Possible; Conditional; Hypothetical; Notassociated. 
    The definitions of each category are: 
    Present: problems associated with the patient can be present. Example: history of chest pain; the patient has had increasing weight gain.
    Absent: the note asserts that the problem does not exist in the patient. Example: patient denies pain; elevated enzymes resolved.
