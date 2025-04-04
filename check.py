@@ -37,6 +37,7 @@ def process_lists_based_on_list1(list1, list2, list3, list4, list5):
         "note": None,
         "freq": None,
         "route": None,
+        "other": None,
     })
 
     list3_cleaned = clean_and_fill_list(main_tags, list3, 'tag', {
@@ -50,12 +51,13 @@ def process_lists_based_on_list1(list1, list2, list3, list4, list5):
     # Clean and fill list3 based on tags from list1
     list4_cleaned = clean_and_fill_list(main_tags, list4, 'tag', {
         "tag": None,
-        "date": [None, None]
+        "date": [None, None],
+        "inferred": [None, None]
     })
 
     list5_cleaned = clean_and_fill_list(main_tags, list5, 'tag', {
         "tag": None,
-        "related": []  # This is now a list of objects with entity_tag and relation_type
+        "related": {}  # Changed from list to dictionary
     })
 
     return list2_cleaned, list3_cleaned, list4_cleaned, list5_cleaned

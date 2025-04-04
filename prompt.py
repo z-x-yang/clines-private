@@ -45,7 +45,7 @@ Output:
 
 Input:
 ```
-{node}
+{note}
 ```
 
 Please respond with only the annotated record. Do not include any additional text. Output:
@@ -98,9 +98,7 @@ Identify relationships between marked entities in this health record. Find which
 
 Output a JSON list of dictionaries with:
 - tag: entity order number (from KEY tags)
-- related: list of dictionaries showing related entities with:
-  * entity_tag: tag number of the related entity
-  * relation_type: type of relationship
+- related: a dictionary where the keys are the tags of related entities and the values are the relationship types
 
 Relationship types include:
 1. Treatment relationships:
@@ -154,26 +152,11 @@ Patient with <1>hypertension</1> takes <2>lisinopril</2> 20mg daily. <3>Blood pr
 Output:
 ```
 [
-  {{"tag": "1", "related": [
-    {{"entity_tag": "2", "relation_type": "treated_by"}}, 
-    {{"entity_tag": "3", "relation_type": "measured_by"}}
-  ]}},
-  {{"tag": "2", "related": [
-    {{"entity_tag": "1", "relation_type": "treats"}}
-  ]}},
-  {{"tag": "3", "related": [
-    {{"entity_tag": "1", "relation_type": "measures"}},
-    {{"entity_tag": "4", "relation_type": "has_value"}},
-    {{"entity_tag": "5", "relation_type": "has_unit"}}
-  ]}},
-  {{"tag": "4", "related": [
-    {{"entity_tag": "3", "relation_type": "value_of"}},
-    {{"entity_tag": "5", "relation_type": "measured_in"}}
-  ]}},
-  {{"tag": "5", "related": [
-    {{"entity_tag": "3", "relation_type": "unit_of"}},
-    {{"entity_tag": "4", "relation_type": "unit_for"}}
-  ]}}
+  {{"tag": "1", "related": {{"2": "treated_by", "3": "measured_by"}}}},
+  {{"tag": "2", "related": {{"1": "treats"}}}},
+  {{"tag": "3", "related": {{"1": "measures", "4": "has_value", "5": "has_unit"}}}},
+  {{"tag": "4", "related": {{"3": "value_of", "5": "measured_in"}}}},
+  {{"tag": "5", "related": {{"3": "unit_of", "4": "unit_for"}}}}
 ]
 ```
 
@@ -187,7 +170,7 @@ Please respond with valid JSON only, no additional text. Output:
 
         elif self.prompt_name in ['findstatus']:
             self.template = '''
-Determine the assertion status for each marked entity in this health record.
+Determine the assertion status for every entity marked by <KEY> and </KEY> in this health record.
 
 Output a JSON list of dictionaries with:
 - tag: entity order number (from KEY tags)
@@ -208,10 +191,23 @@ Ambiguity guidelines:
 - "Cannot rule out X" = Possible
 - For family history, classify conditions as Notassociated
 
+IMPORTANT CLARIFICATION:
+- "Presenting with a history of X" or "X-day history of Y" typically means the symptom/problem Y is PRESENT and has been occurring for X time period
+- Only classify symptoms as Historical when there is clear indication the problem has resolved
+- Key phrases indicating PRESENT status despite "history" wording:
+  * "presenting with history of..." = Present
+  * "recent history of..." = Present
+  * "with X day/week history of..." = Present
+  * "comes with history of..." = Present
+- Key phrases indicating HISTORICAL status:
+  * "past medical history significant for..." = Historical
+  * "previous history of... now resolved" = Historical
+  * "history of... that has since improved" = Historical
+
 Example:
 Input:
 ```
-CT showed <1>lesions</1> most likely secondary to <2>metastatic disease</2>. <3>Ativan</3> 0.5 mg IV q 4 to 6 hours prn <4>anxiety</4>.
+CT showed <1>lesions</1> most likely secondary to <2>metastatic disease</2>. <3>Ativan</3> 0.5 mg IV q 4 to 6 hours prn <4>anxiety</4>. Patient presenting with a 7 day history of <5>headaches</5> and <6>fever</6>.
 ```
 
 Output:
@@ -220,7 +216,9 @@ Output:
   {{"tag": "1", "assertion_status": "Present"}},
   {{"tag": "2", "assertion_status": "Possible"}},
   {{"tag": "3", "assertion_status": "Present"}},
-  {{"tag": "4", "assertion_status": "Conditional"}}
+  {{"tag": "4", "assertion_status": "Conditional"}},
+  {{"tag": "5", "assertion_status": "Present"}},
+  {{"tag": "6", "assertion_status": "Present"}}
 ]
 ```
 
@@ -245,6 +243,7 @@ The final answer should be provided in JSON format which is a list of python dic
  - infer: this relates to the unit key. If the value under "unit" key is inferred, put true under this key, otherwise false. For multiple units, use an array of booleans that corresponds to each unit. This key has to co-occur with the unit key.
  - route: this key only presents when the entity is a medication, this should contain the information about how the medication should be taken, for example, p.o. or IV.
  - freq: this key only presents when the entity is a medication, this should contain the information about how frequent the medication should be taken, for example, p.i.d or prn or once every two days.
+ - other: this key captures descriptive information about the entity that doesn't fit into other fields (like value or note). Examples include severity descriptions, duration, characteristics, or contextual details about the entity.
 
 Special handling:
 - For panel tests, individual values are marked as separate entities
@@ -262,7 +261,7 @@ Output:
 ```
 [
   {{"tag": "1", "value": "50", "unit": "mg", "route": "PO", "freq": "BID", "infer": false}},
-  {{"tag": "2", "body_location": null}},
+  {{"tag": "2", "body_location": null, "other": "being treated with Metoprolol"}},
   {{"tag": "3", "value": null}},
   {{"tag": "4", "value": "127", "unit": "mEq/L", "note": "equal", "infer": true}},
   {{"tag": "5", "value": "3.6", "unit": "mEq/L", "note": "equal", "infer": true}},
@@ -279,8 +278,8 @@ Input:
 Output:
 ```
 [
-  {{"tag": "1", "value": ["112", "145"], "unit": ["mg/dL", "mg/dL"], "note": ["equal", "equal"], "infer": [false, false]}},
-  {{"tag": "2", "value": ["8/10", "6/10"], "body_location": "lower back", "infer": [false, false]}},
+  {{"tag": "1", "value": ["112", "145"], "unit": ["mg/dL", "mg/dL"], "note": ["equal", "equal"], "infer": [false, false], "other": "first reading was fasting, second was after meal"}},
+  {{"tag": "2", "value": ["8/10", "6/10"], "body_location": "lower back", "infer": [false, false], "other": "worse in morning, improves in evening"}},
   {{"tag": "3", "body_location": "lower back"}}
 ]
 ```
@@ -325,21 +324,23 @@ Please respond with valid JSON only, no additional text. Output:
             # - entity: this is the corresponding extracted entity.
         elif self.prompt_name in ['finddate_single']:
             self.template = '''
-You will receive an electronic health record with named entities marked by <KEY> and </KEY>. Your task is to find the event date for each entity.
+Extract event dates for entities marked by <KEY> tags in this health record.
 
-The final answer should be provided in JSON format which is a list of python dictionary.
-Each entry dictionary should contain the keys of
- - tag: the order in which the entities appear. It is the same as the number of KEY value in the record.
- - date: the value will be a list containing two pieces of date information in the format of [YYYY-MM-DD, YYYY-MM-DD], in which the first one is the possible starting time and the second is the end time. If there is only one date information for the entity put the same date to both entries. If there is no corresponding time information, use null as the value (such as {{"tag": "1", "date": [null, null]}}).
+Output JSON list of dictionaries with:
+ - tag: entity order number from KEY tags
+ - date: [YYYY-MM-DD, YYYY-MM-DD] for start and end dates (use same date for single events, null for unknown)
+ - inferred: [true/false, true/false] indicating if each date was inferred rather than explicitly stated
 
-Guidelines for ambiguous dates:
-- Convert relative references (e.g., "yesterday", "last week", "before 10 years") to absolute dates when possible
-- Use first/last day of season for seasonal references (e.g., "last summer")
-- For vague time periods (e.g., "for several weeks"), estimate a reasonable date range
-- For chronic conditions without specific dates (e.g., "for many years"), use [null, null]
-- For acute events with specific date, use same date for start/end
+Key Rules:
+- "Presenting with X day history of Y" → END = visit date, START = END minus X days, both inferred=true
+- "X-day history of", "for past X days" → Calculate precise start date
+- "Has been [action] for X years" → END = visit date, START = END minus X years
+- Acute events with specific date → Use same date for start/end
+- Explicitly recorded dates → inferred=false
+- Chronic conditions without specific dates → [null, null]
+- When symptoms share time reference → Apply same date range to all
 
-Example:
+Example 1:
 Input:
 ```
 Patient was admitted on <1>2023-05-15</1> with complaints of <2>chest pain</2> that started 3 days prior. <3>CBC</3> was done on admission. Patient has a history of <4>hypertension</4> for many years.
@@ -348,10 +349,40 @@ Patient was admitted on <1>2023-05-15</1> with complaints of <2>chest pain</2> t
 Output:
 ```
 [
-  {{"tag": "1", "date": ["2023-05-15", "2023-05-15"]}},
-  {{"tag": "2", "date": ["2023-05-12", "2023-05-15"]}},
-  {{"tag": "3", "date": ["2023-05-15", "2023-05-15"]}},
-  {{"tag": "4", "date": [null, null]}}
+  {{"tag": "1", "date": ["2023-05-15", "2023-05-15"], "inferred": [false, false]}},
+  {{"tag": "2", "date": ["2023-05-12", "2023-05-15"], "inferred": [true, false]}},
+  {{"tag": "3", "date": ["2023-05-15", "2023-05-15"], "inferred": [false, false]}},
+  {{"tag": "4", "date": [null, null], "inferred": [false, false]}}
+]
+```
+
+Example 2:
+Input:
+```
+On 2023-07-10, patient presenting with a 7 day history of <1>headaches</1>, <2>sore throat</2>, <3>cough</3>, and <4>fever</4>.
+```
+
+Output:
+```
+[
+  {{"tag": "1", "date": ["2023-07-03", "2023-07-10"], "inferred": [true, true]}},
+  {{"tag": "2", "date": ["2023-07-03", "2023-07-10"], "inferred": [true, true]}},
+  {{"tag": "3", "date": ["2023-07-03", "2023-07-10"], "inferred": [true, true]}},
+  {{"tag": "4", "date": ["2023-07-03", "2023-07-10"], "inferred": [true, true]}}
+]
+```
+
+Example 3:
+Input:
+```
+As of 2023-08-15, patient has been managing <1>hypertension</1> for the past 10 years and started <2>metformin</2> 3 months ago.
+```
+
+Output:
+```
+[
+  {{"tag": "1", "date": ["2013-08-15", "2023-08-15"], "inferred": [true, true]}},
+  {{"tag": "2", "date": ["2023-05-15", "2023-08-15"], "inferred": [true, true]}}
 ]
 ```
 
@@ -445,43 +476,65 @@ Please respond with valid JSON only, no additional text. Output:
 
         elif self.prompt_name in ['finddate_multi']:
             self.template = '''
-You will be provided with a piece of texts from a electronic health record of a patient with the entities extracted (marked by <KEY> and </KEY>), and the previous piece from the same note, the admission date, and the discharge date are also provided as contexts. Your task is to find the happening time for each entity and you can refer to the context information if necessary. 
+Extract event dates for entities marked by <KEY> tags in this health record, using the contexts provided.
 
-The final answer should be provided in JSON format which is a list of python dictionary.
-Each entry dictionary should contain two keys:
- - tag: the order in which the entities appear. It is the same as the number of KEY value in the record.
- - date: the value will be a list containing two pieces of date information in the format of [YYYY-MM-DD, YYYY-MM-DD], in which the first one is the possible starting time and the second is the end time. If there is only one date information for the entity put the same date to both entries. If there is no corresponding time information, use [null, null] as the value (such as {{"tag": "1", "date": [null, null]}}).
+Output JSON list of dictionaries with:
+ - tag: entity order number from KEY tags
+ - date: [YYYY-MM-DD, YYYY-MM-DD] for start and end dates (use same date for single events, null for unknown)
+ - inferred: [true/false, true/false] indicating if each date was inferred rather than explicitly stated
 
-### Handling Ambiguous Cases:
-- For relative time references (e.g., "yesterday", "last week", "before 10 years"), convert to an absolute date when the note date is available
-- For seasonal references (e.g., "last summer"), use the first and last day of that season
-- For chronic conditions without specific dates, set both start and end dates to null
-- For acute events with a specific date, use the same date for both start and end
-- For ongoing conditions with a known start, use the start date and set the end date to the note date
-- For vague time periods (e.g., "for several weeks"), estimate a reasonable date range
-- For historical events without precise dates (e.g., "many years ago"), use null rather than making assumptions
+Key Rules:
+- "Presenting with X day history of Y" → END = admission date, START = END minus X days, both inferred=true
+- "X-day history of", "for past X days" → Calculate precise start date
+- "Has been [action] for X years" → END = admission date, START = END minus X years
+- Use admission date as reference for relative dates
+- Consider previous note for context but prioritize current segment
+- Explicitly recorded dates → inferred=false
+- Chronic conditions without dates → [null, null]
+- When symptoms share time reference → Apply same date range to all
 
----
+Example 1:
+Input:
+```
+Previous note (2023-07-05): Patient initially presented with chest pain.
+Admission date: 2023-07-05, Discharge date: 2023-07-12
+Current note: Patient presenting with a 7 day history of <1>headaches</1>, <2>sore throat</2>, and <3>cough</3>. <4>Blood tests</4> were done today.
+```
 
-### Example:
-
+Output:
 ```
 [
-  {{"tag": "1", "date": ["2118-06-02", "2118-06-14"]}},
-  {{"tag": "2", "date": [null, null]}},
-  {{"tag": "3", "date": ["2110-06-02", "2110-06-02"]}}
+  {{"tag": "1", "date": ["2023-06-28", "2023-07-05"], "inferred": [true, true]}},
+  {{"tag": "2", "date": ["2023-06-28", "2023-07-05"], "inferred": [true, true]}},
+  {{"tag": "3", "date": ["2023-06-28", "2023-07-05"], "inferred": [true, true]}},
+  {{"tag": "4", "date": ["2023-07-05", "2023-07-05"], "inferred": [false, false]}}
 ]
 ```
 
----
+Example 2:
+Input:
+```
+Previous note (2023-01-10): No mention of hypertension.
+Admission date: 2023-01-15, Discharge date: 2023-01-22
+Current note: Patient has been managing <1>hypertension</1> for the past 10 years and started <2>metformin</2> 3 months ago.
+```
 
-Previous piece of the record (context):
-{prev_note}
-
-Admission date: {adm_date}, Discharge date: {dis_date}
+Output:
+```
+[
+  {{"tag": "1", "date": ["2013-01-15", "2023-01-15"], "inferred": [true, true]}},
+  {{"tag": "2", "date": ["2022-10-15", "2023-01-15"], "inferred": [true, true]}}
+]
+```
 
 Input:
+```
+Previous piece of the record (context):
+{prev_note}
+Admission date: {adm_date}, Discharge date: {dis_date}
+Current note:
 {note}
+```
 
 Please respond with valid JSON only, no additional text. Output:
 '''

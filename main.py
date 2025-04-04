@@ -330,6 +330,8 @@ class PIPELINE:
                     'route', None)
                 tmp['note'] = self.pipeline_result['info_results'][i].get(
                     'note', None)
+                tmp['other'] = self.pipeline_result['info_results'][i].get(
+                    'other', None)
                 tmp['related'] = self.pipeline_result['relate_results'][i].get(
                     'related', None)
                 # Convert related objects to JSON strings for easier storage/processing
@@ -339,6 +341,12 @@ class PIPELINE:
 
                 tmp['begin_date'] = self.pipeline_result['date_results'][i]['date'][0]
                 tmp['end_date'] = self.pipeline_result['date_results'][i]['date'][1]
+
+                # Add date inferred information if available
+                if 'inferred' in self.pipeline_result['date_results'][i]:
+                    tmp['begin_date_inferred'] = self.pipeline_result['date_results'][i]['inferred'][0]
+                    tmp['end_date_inferred'] = self.pipeline_result['date_results'][i]['inferred'][1]
+
                 aggregated_result.append(tmp)
             except Exception as e:
                 print("tmp:", tmp)
@@ -681,10 +689,13 @@ class PIPELINE:
         offset = len(self.pipeline_result['relate_results'])
         for result in relate_results:
             # Convert the related entities' tags with offset
-            for relation in result['related']:
-                # entity_tag comes as a string, so convert to int, add offset, then back to string
-                entity_tag = int(relation['entity_tag'])
-                relation['entity_tag'] = str(entity_tag + offset)
+            if result['related'] and isinstance(result['related'], dict):
+                new_related = {}
+                for tag, rel_type in result['related'].items():
+                    # Convert tag to int, add offset, then back to string
+                    new_tag = str(int(tag) + offset)
+                    new_related[new_tag] = rel_type
+                result['related'] = new_related
         self.pipeline_result['relate_results'] += relate_results
 
         # Filter and add parsed results
@@ -712,7 +723,17 @@ class PIPELINE:
 
                 normalized_date = self.safe_json_decode(
                     self.parse_result(self.model(query)))
+
+                # Save the inferred status if it exists, otherwise default to [true, true]
+                inferred_status = item.get('inferred', [True, True])
+
+                # Update the date
                 item['date'] = normalized_date
+
+                # Make sure inferred field is preserved or set
+                if 'inferred' not in item:
+                    item['inferred'] = inferred_status
+
                 print(f"Normalized result: {normalized_date}\n")
 
         return date_result
@@ -808,7 +829,7 @@ if __name__ == '__main__':
                         help='output type')
     parser.add_argument('--output_dir', type=str, default="outputs",
                         help='Output directory for schema outputs')
-    parser.add_argument('--chunk_size', type=int, default=1024,
+    parser.add_argument('--chunk_size', type=int, default=768,
                         help='Chunk size for the model')
 
     args = parser.parse_args()
