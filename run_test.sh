@@ -33,5 +33,5 @@ CUDA_VISIBLE_DEVICES=0 OPENAIKEY=${OPENAIKEY} OPENAIENDPOINT=${OPENAIENDPOINT} p
     --marker ${MARKER} \
     --debug true \
     --output_dir ${OUTPUT_DIR} \
-    --chunk_size 10000 \
+    --chunk_size 1024 \
     2>&1 | tee ${LOG_FILE}

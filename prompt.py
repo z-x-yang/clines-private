@@ -234,22 +234,23 @@ Please respond with valid JSON only, no additional text. Output:
             self.template = '''
 Extract detailed information for each marked entity in this health record.
 
-The final answer should be provided in JSON format which is a list of python dictionary. For each entry dictionary, the value will be the related information which have to be a dictionary of keys:
- - tag: the order in which the entities appear. It is the same as the number of **KEY** value in the record.
- - body_location: this should be the body location related to the entity. This should be a short and clean phrase associated with a human body part, extracted from the origianl record. If this is not a suitable key for the entities, ignore this key in the dictionary.
- - value: this should be the value or values associated with the entity in the text, even if they are not explicitly marked. For entities with multiple values, use an array. This should also contain the possible text-based short phrase value such as negative x2, positive, or decreasing. If this is not a suitable key for the entities, ignore this key in the dictionary.
- - note: if there is a numerical value, you should put 'greater', 'lower', or 'equal' to this key. To indicate whether the actual value is greater, lower or equals to the recorded value. For multiple values, use an array that corresponds to each value.
- - unit: this should be the unit corresponding to the value. If there is a value but no unit, you can infer the unit for the value. For multiple values, use an array that corresponds to each value. If this is not a suitable key for the entities, ignore this key in the dictionary.
- - infer: this relates to the unit key. If the value under "unit" key is inferred, put true under this key, otherwise false. For multiple units, use an array of booleans that corresponds to each unit. This key has to co-occur with the unit key.
- - route: this key only presents when the entity is a medication, this should contain the information about how the medication should be taken, for example, p.o. or IV.
- - freq: this key only presents when the entity is a medication, this should contain the information about how frequent the medication should be taken, for example, p.i.d or prn or once every two days.
- - other: this key captures descriptive information about the entity that doesn't fit into other fields (like value or note). Examples include severity descriptions, duration, characteristics, or contextual details about the entity.
+Output JSON as a list of dictionaries with these keys:
+ - tag: entity's order number (matching the KEY number in the text)
+ - body_location: anatomical location related to the entity (omit if not applicable)
+ - value: value or values associated with the entity, even if they are not explicitly marked. This should also contain the possible text-based short phrase value such as negative x2, positive, or decreasing. (use array for multiple values, exclude time information, omit if not applicable)
+ - note: for numerical values, indicate if value is "greater", "lower", or "equal" (use array for multiple values, omit if not applicable)
+ - unit: units of measurement (infer if missing, use array for multiple values, omit if not applicable)
+ - infer: boolean indicating if unit was inferred (true) or explicit (false), as array if multiple units (omit if not applicable)
+ - route: administration route for medications (e.g., "PO", "IV") (omit if not applicable)
+ - freq: medication frequency (e.g., "BID", "PRN", "daily") (omit if not applicable)
+ - other: descriptive details not fitting other fields (omit if not applicable)
 
 Special handling:
 - For panel tests, individual values are marked as separate entities
 - For entities with multiple values, use arrays for value/unit/note/infer
 - Infer units only when clear from context
 - For qualitative terms (e.g., "elevated"), use exact term as value
+- All time-related information should be placed in the "other" field, not in "value"
 
 Example 1:
 Input:
