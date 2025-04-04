@@ -332,6 +332,9 @@ class PIPELINE:
                     'note', None)
                 tmp['related'] = self.pipeline_result['relate_results'][i].get(
                     'related', None)
+                # Convert related objects to JSON strings for easier storage/processing
+                if tmp['related'] is not None:
+                    tmp['related'] = json.dumps(tmp['related'])
                 # tmp['related'] = [json.dumps(item) if item is not None else None for item in tmp['related']]
 
                 tmp['begin_date'] = self.pipeline_result['date_results'][i]['date'][0]
@@ -368,8 +371,9 @@ class PIPELINE:
                 continue
 
             if key_value not in seen:
-                if 'related' in d:
-                    d['related'] = list(map(int, d['related']))
+                # No need to convert 'related' field anymore as it's now a list of objects
+                # if 'related' in d:
+                #     d['related'] = list(map(int, d['related']))
                 unique_list.append(d)
                 seen.add(key_value)
         return unique_list[::-1]
@@ -676,8 +680,11 @@ class PIPELINE:
         # Update relate results with offset
         offset = len(self.pipeline_result['relate_results'])
         for result in relate_results:
-            result['related'] = list(
-                map(lambda x: x + offset, result['related']))
+            # Convert the related entities' tags with offset
+            for relation in result['related']:
+                # entity_tag comes as a string, so convert to int, add offset, then back to string
+                entity_tag = int(relation['entity_tag'])
+                relation['entity_tag'] = str(entity_tag + offset)
         self.pipeline_result['relate_results'] += relate_results
 
         # Filter and add parsed results
@@ -801,7 +808,7 @@ if __name__ == '__main__':
                         help='output type')
     parser.add_argument('--output_dir', type=str, default="outputs",
                         help='Output directory for schema outputs')
-    parser.add_argument('--chunk_size', type=int, default=512,
+    parser.add_argument('--chunk_size', type=int, default=1024,
                         help='Chunk size for the model')
 
     args = parser.parse_args()

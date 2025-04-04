@@ -55,7 +55,7 @@ def process_lists_based_on_list1(list1, list2, list3, list4, list5):
 
     list5_cleaned = clean_and_fill_list(main_tags, list5, 'tag', {
         "tag": None,
-        "related": []
+        "related": []  # This is now a list of objects with entity_tag and relation_type
     })
 
     return list2_cleaned, list3_cleaned, list4_cleaned, list5_cleaned

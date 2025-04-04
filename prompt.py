@@ -1,3 +1,4 @@
+from platform import node
 
 
 class PROMPT():
@@ -11,73 +12,81 @@ class PROMPT():
 
         if self.prompt_name in ['findentity']:
             self.template = '''
-You will receive an electronic health record for a patient. Your task is to thoroughly identify and extract all biomedical entities or concepts mentioned in the record. These entities include, but are not limited to, lab tests, procedures, symptoms, diseases, allergies, medications, and more that relate to the patient. Focus on extracting key biomedical terms, such as abbreviations (e.g., T, HR, RR, BP) and full names of tests or conditions, while ignoring associated numerical values (e.g., 37.1, 98) unless the numbers themselves explicitly define a test, range, or measurement category. Be aware that some entities might be abbreviated, acronyms, or name-omitted in some test panels, and you should extract these abbreviations or acronyms as well. 
-For your final output, annotate the original record by marking each extracted entity with <KEY> tags on both sides. Assign an integer to the value of KEY to indicate the order in which the entities appear, such as <1>...</1>, <2>...</2>, <3>...</3>, etc.
--------------------
+Extract biomedical entities from the electronic health record below. Include tests, procedures, symptoms, diseases, allergies, medications, etc. Mark each entity with <KEY> tags (e.g., <1>entity</1>, <2>entity</2>).
+
+Rules:
+- Generally DO NOT mark values/units/routes/frequencies associated with primary entities
+- EXCEPTION: For panel tests (Chem-7, CMP, CBC), mark each value as separate entity
+- Include the main entity name even with abbreviations
+- For overlapping entities, prioritize the most specific concept
+- Mark negated findings (e.g., "no fever" → mark "fever")
+
 Examples:
 
-Example 1:
 Input:
-The patient was taken to the Operating Room for wound exploration directly from the Trauma Room. The patient was taken to the Operating Room for chest CT, as mentioned above, for an exploratory laparotomy, extensive lysis of adhesions.
-TUMOR SIZE: 4 x 3.2 x 3 cm, Chem-7: 127, 3.6, 88, 29, 16.5, 0.6, 143.
+```
+The patient was taken to the Operating Room for wound exploration directly from the Trauma Room. TUMOR SIZE: 4 x 3.2 x 3 cm, Chem-7: 127, 3.6, 88, 29, 16.5, 0.6, 143.
+```
 
-Please respond with only the annotated record. Do not include any additional text. Output:
-The patient was taken to the Operating Room for <1>wound exploration</1> directly from the <2>Trauma Room</2>. The patient was taken to the Operating Room for <3>chest CT</3>, as mentioned above, for an <4>exploratory laparotomy</4>, <5>extensive lysis of adhesions</5>.
-<6>TUMOR SIZE</6>: 4 x 3.2 x 3 cm, <7>Chem-7</7>: <8>127</8>, <9>3.6</9>, <10>88</10>, <11>29</11>, <12>16.5</12>, <13>0.6</13>, <14>143</14>.
-
-Example 2:
-Input:
-Hydrocodone 7.5mg + Apap 325mg 7.5-325MG TABLETS take 1 PO as directed PRN arthritis; No Change
-Lisinopril 20 mg (20 MG TABLET Take 1) PO QD; No Change
-Multivitamins 1 TAB (TABLET) PO QD; No Change
-
-Please respond with only the annotated record. Do not include any additional text. Output:
-<1>Hydrocodone</1> 7.5mg + <2>Apap</2> 325mg 7.5-325MG TABLETS take 1 PO as directed PRN <3>arthritis</3>; No Change
-<4>Lisinopril</4> 20 mg (20 MG TABLET Take 1) PO QD; No Change
-<5>Multivitamins</5> 1 TAB (TABLET) PO QD; No Change
--------------------
-Start!
+Output:
+```
+The patient was taken to the <1>Operating Room</1> for <2>wound exploration</2> directly from the <3>Trauma Room</3>. <4>TUMOR SIZE</4>: 4 x 3.2 x 3 cm, <5>Chem-7</5>: <6>127</6>, <7>3.6</7>, <8>88</8>, <9>29</9>, <10>16.5</10>, <11>0.6</11>, <12>143</12>.
+```
 
 Input:
-{note}
+```
+Hydrocodone 7.5mg + Apap 325mg 7.5-325MG take 1 PO PRN arthritis; Pt c/o SOB and CP. EKG showed NSR. CBC with WNL RBC but WBC 12.4.
+```
+
+Output:
+```
+<1>Hydrocodone</1> 7.5mg + <2>Apap</2> 325mg 7.5-325MG take 1 PO PRN <3>arthritis</3>; <4>Pt</4> <5>c/o</5> <6>SOB</6> and <7>CP</7>. <8>EKG</8> showed <9>NSR</9>. <10>CBC</10> with <11>WNL</11> <12>RBC</12> but <13>WBC</13> 12.4.
+```
+
+Input:
+```
+{node}
+```
 
 Please respond with only the annotated record. Do not include any additional text. Output:
 '''
         elif self.prompt_name in ['recoverentity']:
             self.template = '''
-You will receive an electronic health record with named entities marked by <KEY> and </KEY>. Your task is to recover the standard names or synonyms of the marked entities. If the marked entity is a value such as Yes, Normal, 20, etc, find and recover the corresponding biomedical concept. You should select the standard name that is as similar to the marked entities as possible. For example, if the marked entity is a medication brand name, just keep the brand name.
+Recover standard names/synonyms for marked entities in this health record. For abbreviations, provide full forms. For values (numbers/units), infer the biomedical concept.
 
-If the marked entity is an abbreviation, recover its full form where applicable.
+Output a JSON list of dictionaries with:
+- TAG: the order number of the entity (from KEY tags)
+- CLEAN: standardized name/synonym for the entity
 
-If the marked entity is a number or unit, you should infer based on the context what is the biomedical concept it indicates. 
+Handling ambiguity:
+- Use context to disambiguate abbreviations
+- For unclear abbreviations, provide most common medical expansion
+- For values, infer relevant biomedical concepts
+- Standardize vague symptoms to specific medical terms
 
-Your final outputs should be in the JSON format which is a list and the element in it should be a dictionary containing the keys of 
-
-TAG: the order in which the entities appear. It is the same as the number of KEY value in the record;
-CLEAN: the standard names or synonyms of the entities. 
-
--------------------
 Example:
 Input:
+```
 The patient reported <1>HTN</1> history and underwent <2>BP Measurement</2>, which showed <3>150/90 mmHg</3>. Labs revealed <4>Elevated A1C</4> at <5>7.5%</5>. Follow-up tests ruled out <6>CAD</6>, but a <7>1.5 cm Mass</7> was detected.
+```
 
-Please respond with valid JSON only, no additional text. Output:
+Output:
 ```
 [
   {{"TAG": "1", "CLEAN": "Hypertension"}},
   {{"TAG": "2", "CLEAN": "Blood Pressure Measurement"}},
-  {{"TAG": "3", "CLEAN": "Hypertensive Blood Pressure (150/90 mmHg)"}},
+  {{"TAG": "3", "CLEAN": "Hypertensive Blood Pressure"}},
   {{"TAG": "4", "CLEAN": "Increased Hemoglobin A1C Level"}},
-  {{"TAG": "5", "CLEAN": "Glycated Hemoglobin Measurement (7.5%)"}},
+  {{"TAG": "5", "CLEAN": "Glycated Hemoglobin Measurement"}},
   {{"TAG": "6", "CLEAN": "Coronary Artery Disease"}},
-  {{"TAG": "7", "CLEAN": "Mass (1.5 cm)"}}
+  {{"TAG": "7", "CLEAN": "Mass"}}
 ]
 ```
--------------------
-Start!
 
 Input:
+```
 {note}
+```
 
 Please respond with valid JSON only, no additional text. Output:
 '''
@@ -85,58 +94,127 @@ Please respond with valid JSON only, no additional text. Output:
         elif self.prompt_name in ['findrelated']:
             # pass
             self.template = '''
-You will receive an electronic health record with named entities marked by <KEY> and </KEY>. Your task is to find the relatedness between entities based on the contexts. 
+Identify relationships between marked entities in this health record. Find which entities are clinically related to each other and determine their relationship type.
 
-Your final outputs should be in the JSON format which is a list and the element in it should be a dictionary containing the keys of 
+Output a JSON list of dictionaries with:
+- tag: entity order number (from KEY tags)
+- related: list of dictionaries showing related entities with:
+  * entity_tag: tag number of the related entity
+  * relation_type: type of relationship
 
-tag: the order in which the entities appear. It is the same as the number of KEY value in the record;
-related: the list of KEY values of entities related to this entity.
+Relationship types include:
+1. Treatment relationships:
+   - "treats": medication/procedure treats condition
+   - "manages": intervention manages but doesn't cure condition
+   - "alleviates": relieves symptoms without treating cause
 
-Example output:
+2. Causal relationships:
+   - "causes": directly causes another entity
+   - "exacerbates": worsens condition
+   - "indicates": suggests or points to
+   - "risk_factor": increases risk
+   - "complication_of": is a complication
+   
+3. Measurement relationships:
+   - "measures": test measures parameter
+   - "evaluates": assesses condition
+   - "diagnoses": used to diagnose
+   - "monitors": tracks over time
+   - "has_value": entity has numerical value
+   - "has_unit": measurement has unit
+   
+4. Anatomical relationships:
+   - "located_in": anatomical location
+   - "part_of": component of larger system
+   - "administered_at": administration site
+   
+5. Temporal relationships:
+   - "precedes": occurs before
+   - "follows": occurs after
+   - "concurrent_with": happens simultaneously
+   
+6. Clinical relationships:
+   - "symptom_of": symptom of condition
+   - "finding_of": clinical finding
+   - "manifestation_of": visible manifestation
+   - "has_dosage": medication and dose
+   - "has_frequency": med frequency
+   - "has_route": administration route
+   - "component_of": part of procedure/panel
+   
+7. Default relationship:
+   - "related_to": general association when specific type unclear
+
+Example:
+Input:
+```
+Patient with <1>hypertension</1> takes <2>lisinopril</2> 20mg daily. <3>Blood pressure</3> was <4>142/88</4> <5>mmHg</5>.
+```
+
+Output:
 ```
 [
-  {{"tag": "1", "related": ["2", "3"]}},
-  {{"tag": "2", "related": ["1"]}},
-  {{"tag": "3", "related": ["1"]}},
-  {{"tag": "4", "related": []}},
+  {{"tag": "1", "related": [
+    {{"entity_tag": "2", "relation_type": "treated_by"}}, 
+    {{"entity_tag": "3", "relation_type": "measured_by"}}
+  ]}},
+  {{"tag": "2", "related": [
+    {{"entity_tag": "1", "relation_type": "treats"}}
+  ]}},
+  {{"tag": "3", "related": [
+    {{"entity_tag": "1", "relation_type": "measures"}},
+    {{"entity_tag": "4", "relation_type": "has_value"}},
+    {{"entity_tag": "5", "relation_type": "has_unit"}}
+  ]}},
+  {{"tag": "4", "related": [
+    {{"entity_tag": "3", "relation_type": "value_of"}},
+    {{"entity_tag": "5", "relation_type": "measured_in"}}
+  ]}},
+  {{"tag": "5", "related": [
+    {{"entity_tag": "3", "relation_type": "unit_of"}},
+    {{"entity_tag": "4", "relation_type": "unit_for"}}
+  ]}}
 ]
 ```
 
-####################
-
-Here is the record:
-
+Input:
+```
 {note}
+```
 
-Please respond with valid JSON only, no additional text.
-Your JSON output:
+Please respond with valid JSON only, no additional text. Output:
 '''
-
-            # ORIGIN: the original name form of the entity in the record;
 
         elif self.prompt_name in ['findstatus']:
             self.template = '''
-You will receive an electronic health record with named entities marked by <KEY> and </KEY>. Your task is to find the information related to the entities extracted, such as modifiers, dosage, results, units, etc. 
+Determine the assertion status for each marked entity in this health record.
 
-The final answer should be provided in JSON format, a list of Python dictionaries. 
-For each entry dictionary, the keys and values will be as follows: 
- - tag: the order in which the entities appear. It is the same as the number of **KEY** values in the record.
- - assertion_status: this should be one of the following 6 categories: Present; Absent; Possible; Conditional; Hypothetical; Notassociated. 
-   The definitions of each category are: 
-   Present: problems associated with the patient can be present. Example: history of chest pain; the patient has had increasing weight gain.
-   Absent: the note asserts that the problem does not exist in the patient. Example: patient denies pain; elevated enzymes resolved.
-   Possible: the note asserts that the patient may have a problem, but there is uncertainty expressed in the note. Possible takes precedence over absent, so terms like “probably not” or “unlikely” categorize problems as being possible just as “probably” and “likely” do.  Example: We suspect this is pneumonia; pneumonia unlikely.
-   Conditional: the mention of the medical problem asserts that the patient experiences the problem only under certain conditions. Allergies can fall into this category. Example: Penicillin causes a rash; Ativan 0.5 mg IV q 4 to 6 hours prn anxiety.
-   Hypothetical: refers to problems that are mentioned only in a hypothetical or theoretical context, rather than as a definitive assertion about the patient’s current condition. These are often encountered in diagnostic reasoning or clinical decision-making scenarios. Example: If the patient were to experience chest pain, it could indicate a myocardial infarction。
-   Not associated: the mention of the medical problem is associated with someone who is not the patient. Example: Family history of prostate cancer.
+Output a JSON list of dictionaries with:
+- tag: entity order number (from KEY tags)
+- assertion_status: one of these categories:
+  * Present: problem currently exists. Example: "History of chest pain"; "The patient has had increasing weight gain."
+  * Absent: problem definitely does not exist. Example: "Patient denies pain"; "Elevated enzymes have resolved."
+  * Historical: problem existed in past but not currently. Example: "Patient was previously on medication X but has since discontinued it"; "Past history of asthma that is currently in remission."
+  * Possible: problem may exist (uncertain, suspected). Example: "We suspect this is pneumonia"; "Pneumonia unlikely."
+  * Conditional: problem occurs only under certain conditions. Example: "Penicillin causes a rash"; "Ativan 0.5 mg IV q4-6 hours as needed for anxiety."
+  * Hypothetical: problem mentioned theoretically. Example: "If the patient were to experience chest pain, it could indicate a myocardial infarction."
+  * Notassociated: problem relates to someone other than patient. Example: "Family history of prostate cancer."
+
+Ambiguity guidelines:
+- Prioritize most severe/current mention
+- For medications, consider Present unless explicitly discontinued
+- "Patient at risk for X" = Hypothetical
+- "No evidence of X" = Absent
+- "Cannot rule out X" = Possible
+- For family history, classify conditions as Notassociated
 
 Example:
-Here is the record:
-
+Input:
+```
 CT showed <1>lesions</1> most likely secondary to <2>metastatic disease</2>. <3>Ativan</3> 0.5 mg IV q 4 to 6 hours prn <4>anxiety</4>.
+```
 
-Please respond with valid JSON only, no additional text.
-Your JSON output:
+Output:
 ```
 [
   {{"tag": "1", "assertion_status": "Present"}},
@@ -146,48 +224,73 @@ Your JSON output:
 ]
 ```
 
-####################
-
-Here is the record:
-
+Input:
+```
 {note}
+```
 
-Please respond with valid JSON only, no additional text.
-Your JSON output:
+Please respond with valid JSON only, no additional text. Output:
 '''
 
         elif self.prompt_name in ['findinfo']:
             self.template = '''
-You will receive an electronic health record with named entities marked by <KEY> and </KEY>. Your task is to find the information related to the entities extracted, such as modifiers, dosage, results, units, etc. 
+Extract detailed information for each marked entity in this health record.
 
-The final answer should be provided in JSON format which is a list of python dictionary. For each entry dictionary, the value will be the related information which have to be a dictionary of keys: 
+The final answer should be provided in JSON format which is a list of python dictionary. For each entry dictionary, the value will be the related information which have to be a dictionary of keys:
  - tag: the order in which the entities appear. It is the same as the number of **KEY** value in the record.
  - body_location: this should be the body location related to the entity. This should be a short and clean phrase associated with a human body part, extracted from the origianl record. If this is not a suitable key for the entities, ignore this key in the dictionary.
- - value: this should be the value of the number corresponding to the marked entity, even though the marked entity is a number. This should also contain the possible text-based short phrase value such as negative x2, positive, or decreasing. If this is not a suitable key for the entities, ignore this key in the dictionary.
- - note: if there is a numerical value, you should put 'greater', 'lower', or 'equal' to this key. To indicate whether the actual value is greater, lower or equals to the recorded value.
- - unit: this should be the unit corresponding to the value. If there is a value but no unit, you can infer the unit for the value. If this is not a suitable key for the entities, ignore this key in the dictionary.
- - infer: this relates to the unit key. If the value under "unit" key is inferred, put True under this key, otherwise False. This key has to co-occur with the unit key.
+ - value: this should be the value or values associated with the entity in the text, even if they are not explicitly marked. For entities with multiple values, use an array. This should also contain the possible text-based short phrase value such as negative x2, positive, or decreasing. If this is not a suitable key for the entities, ignore this key in the dictionary.
+ - note: if there is a numerical value, you should put 'greater', 'lower', or 'equal' to this key. To indicate whether the actual value is greater, lower or equals to the recorded value. For multiple values, use an array that corresponds to each value.
+ - unit: this should be the unit corresponding to the value. If there is a value but no unit, you can infer the unit for the value. For multiple values, use an array that corresponds to each value. If this is not a suitable key for the entities, ignore this key in the dictionary.
+ - infer: this relates to the unit key. If the value under "unit" key is inferred, put true under this key, otherwise false. For multiple units, use an array of booleans that corresponds to each unit. This key has to co-occur with the unit key.
  - route: this key only presents when the entity is a medication, this should contain the information about how the medication should be taken, for example, p.o. or IV.
- - freq: this key only presents when the entity is a medication, this should contain the information about how frequent the medication should be taken, for example, p.i.d or prn or once every two days. 
- 
-Example output:
+ - freq: this key only presents when the entity is a medication, this should contain the information about how frequent the medication should be taken, for example, p.i.d or prn or once every two days.
+
+Special handling:
+- For panel tests, individual values are marked as separate entities
+- For entities with multiple values, use arrays for value/unit/note/infer
+- Infer units only when clear from context
+- For qualitative terms (e.g., "elevated"), use exact term as value
+
+Example 1:
+Input:
+```
+<1>Metoprolol</1> 50 mg PO BID for <2>hypertension</2>. <3>Chem-7</3>: <4>127</4>, <5>3.6</5>, <6>88</6>.
+```
+
+Output:
 ```
 [
-  {{"tag": "1", "value": "600", "unit": "mg", "note": "equal", 'infer': "False", 'route': "PO", 'freq': "p.i.d"}},
-  {{"tag": "2", "value": "5.7", "unit": null, "note": "greater", "body_location": "blood", 'infer': "False"}},
-  {{"tag": "3", "body_location": "heart"}},
-  {{"tag": "4", "value": "28", "unit": 'mmol/L', 'infer': "True"}},
+  {{"tag": "1", "value": "50", "unit": "mg", "route": "PO", "freq": "BID", "infer": false}},
+  {{"tag": "2", "body_location": null}},
+  {{"tag": "3", "value": null}},
+  {{"tag": "4", "value": "127", "unit": "mEq/L", "note": "equal", "infer": true}},
+  {{"tag": "5", "value": "3.6", "unit": "mEq/L", "note": "equal", "infer": true}},
+  {{"tag": "6", "value": "88", "unit": "mEq/L", "note": "equal", "infer": true}}
 ]
 ```
 
-####################
+Example 2:
+Input:
+```
+<1>Glucose</1> readings: 112 mg/dL (fasting), 145 mg/dL (after meal). <2>Pain</2> in <3>lower back</3> rated 8/10 in morning, 6/10 in evening.
+```
 
-Here is the record:
+Output:
+```
+[
+  {{"tag": "1", "value": ["112", "145"], "unit": ["mg/dL", "mg/dL"], "note": ["equal", "equal"], "infer": [false, false]}},
+  {{"tag": "2", "value": ["8/10", "6/10"], "body_location": "lower back", "infer": [false, false]}},
+  {{"tag": "3", "body_location": "lower back"}}
+]
+```
 
+Input:
+```
 {note}
+```
 
-Please respond with valid JSON only, no additional text.
-Your JSON output:
+Please respond with valid JSON only, no additional text. Output:
 '''
 
 #         elif self.prompt_name in ['findinfo_i2b2']:
@@ -204,10 +307,10 @@ Your JSON output:
 # Example:
 # ```
 # [
-#   {{"tag": "1", "value": "600", "unit": "mg", "note": "once every two days", 'infer': "False"}},
-#   {{"tag": "2", "value": "5.7", "unit": null, "body_location": "blood", 'infer': "False"}},
+#   {{"tag": "1", "value": "600", "unit": "mg", "note": "once every two days", 'infer': false}},
+#   {{"tag": "2", "value": "5.7", "unit": null, "body_location": "blood", 'infer': false}},
 #   {{"tag": "3", "body_location": "heart"}},
-#   {{"tag": "4", "value": "28", "unit": 'mmol/L', 'infer': "True"}},
+#   {{"tag": "4", "value": "28", "unit": 'mmol/L', 'infer': true}},
 #   {{"tag": "5", "note": "severe"}}
 # ]
 # ```
@@ -222,30 +325,42 @@ Your JSON output:
             # - entity: this is the corresponding extracted entity.
         elif self.prompt_name in ['finddate_single']:
             self.template = '''
-You will receive an electronic health record with named entities marked by <KEY> and </KEY>. Your task is to find the event date for each entity. 
+You will receive an electronic health record with named entities marked by <KEY> and </KEY>. Your task is to find the event date for each entity.
 
 The final answer should be provided in JSON format which is a list of python dictionary.
-Each entry dictionary should contain the keys of 
+Each entry dictionary should contain the keys of
  - tag: the order in which the entities appear. It is the same as the number of KEY value in the record.
  - date: the value will be a list containing two pieces of date information in the format of [YYYY-MM-DD, YYYY-MM-DD], in which the first one is the possible starting time and the second is the end time. If there is only one date information for the entity put the same date to both entries. If there is no corresponding time information, use null as the value (such as {{"tag": "1", "date": [null, null]}}).
 
-Example output:
+Guidelines for ambiguous dates:
+- Convert relative references (e.g., "yesterday", "last week", "before 10 years") to absolute dates when possible
+- Use first/last day of season for seasonal references (e.g., "last summer")
+- For vague time periods (e.g., "for several weeks"), estimate a reasonable date range
+- For chronic conditions without specific dates (e.g., "for many years"), use [null, null]
+- For acute events with specific date, use same date for start/end
+
+Example:
+Input:
+```
+Patient was admitted on <1>2023-05-15</1> with complaints of <2>chest pain</2> that started 3 days prior. <3>CBC</3> was done on admission. Patient has a history of <4>hypertension</4> for many years.
+```
+
+Output:
 ```
 [
-  {{"tag": "1", "date": ["2118-06-02", "2118-06-14"]}},
-  {{"tag": "2", "date": [null, null]}},
-  {{"tag": "3", "date": ["2011-11-06", "2011-11-06"]}}
+  {{"tag": "1", "date": ["2023-05-15", "2023-05-15"]}},
+  {{"tag": "2", "date": ["2023-05-12", "2023-05-15"]}},
+  {{"tag": "3", "date": ["2023-05-15", "2023-05-15"]}},
+  {{"tag": "4", "date": [null, null]}}
 ]
 ```
 
-####################
-
-Here is the record:
-
+Input:
+```
 {note}
+```
 
-Please respond with valid JSON only, no additional text.
-Your JSON output:
+Please respond with valid JSON only, no additional text. Output:
 '''
             # - entity: this is the corresponding extracted entity.
 
@@ -262,14 +377,31 @@ You will receive an electronic health record for a patient. Your task is to extr
  - zip_code
  
 Your output should be in JSON Dictionary format using the above as keys.
-For the dates, they should be in the format "YYYY-MM-DD". If the information is not mentioned in the note, use None as value. 
+For the dates, they should be in the format "YYYY-MM-DD". If the information is not mentioned in the note, use null as value. 
 
-Here is the record:
+---
 
+### Example:
+
+```
+{{
+  "admission_date": "2022-03-15",
+  "discharge_date": "2022-03-20",
+  "gender": "Male",
+  "death_date": null,
+  "birth_date": "1965-08-22",
+  "race": "Caucasian",
+  "ethnicity": "Non-Hispanic",
+  "zip_code": "02115"
+}}
+```
+
+---
+
+Input:
 {note}
 
-Please respond with valid JSON only, no additional text.
-Your JSON output:
+Please respond with valid JSON only, no additional text. Output:
 '''
 
         elif self.prompt_name in ['date_range']:
@@ -277,27 +409,38 @@ Your JSON output:
 You will receive an electronic health record for a patient. Your task is extract the admission date and the discharge date of the patient.
 Your output should be in JSON Array format: "[admission date, discharge date]". If this does not apply to the record provided, for example, use null to fill up the value (such as [null, null]).
 
-Here is the record:
+---
 
+### Example:
+
+```
+["2022-03-15", "2022-03-20"]
+```
+
+---
+
+Input:
 {note}
 
-Please respond with valid JSON only, no additional text.
-Your JSON output:
+Please respond with valid JSON only, no additional text. Output:
 '''
+
         elif self.prompt_name in ['norm_date']:
             self.template = '''
 Given an anchor time in the form of YYYY-MM-DD, what is the date range of "{date}" when the anchor time is {anchor}?
 Your answer should be given in the form of [YYYY-MM-DD, YYYY-MM-DD] representing the start and end time.
-Your final answer should be in JSON format.
-Example output:
+
+---
+
+### Example:
+
 ```
 ["2118-06-02", "2118-06-14"]
 ```
 
-####################
+---
 
-Please respond with valid JSON only, no additional text.
-Your JSON output:
+Please respond with valid JSON only, no additional text. Output:
 '''
 
         elif self.prompt_name in ['finddate_multi']:
@@ -309,37 +452,47 @@ Each entry dictionary should contain two keys:
  - tag: the order in which the entities appear. It is the same as the number of KEY value in the record.
  - date: the value will be a list containing two pieces of date information in the format of [YYYY-MM-DD, YYYY-MM-DD], in which the first one is the possible starting time and the second is the end time. If there is only one date information for the entity put the same date to both entries. If there is no corresponding time information, use [null, null] as the value (such as {{"tag": "1", "date": [null, null]}}).
 
-Example output:
+### Handling Ambiguous Cases:
+- For relative time references (e.g., "yesterday", "last week", "before 10 years"), convert to an absolute date when the note date is available
+- For seasonal references (e.g., "last summer"), use the first and last day of that season
+- For chronic conditions without specific dates, set both start and end dates to null
+- For acute events with a specific date, use the same date for both start and end
+- For ongoing conditions with a known start, use the start date and set the end date to the note date
+- For vague time periods (e.g., "for several weeks"), estimate a reasonable date range
+- For historical events without precise dates (e.g., "many years ago"), use null rather than making assumptions
+
+---
+
+### Example:
+
 ```
 [
   {{"tag": "1", "date": ["2118-06-02", "2118-06-14"]}},
   {{"tag": "2", "date": [null, null]}},
-  {{"tag": "3", "date": ["before 10 years", "before 10 years"]}}
+  {{"tag": "3", "date": ["2110-06-02", "2110-06-02"]}}
 ]
 ```
 
-####################
+---
 
-Here is the previous piece of the record for you to use as contexts.
-
+Previous piece of the record (context):
 {prev_note}
 
-Here are the admission date: {adm_date}, the discharge date: {dis_date}.
+Admission date: {adm_date}, Discharge date: {dis_date}
 
-piece of the record for you to extract:
-
+Input:
 {note}
 
-Please respond with valid JSON only, no additional text.
-Your JSON output:
+Please respond with valid JSON only, no additional text. Output:
 '''
+
         elif self.prompt_name in ['json_debug']:
             self.template = '''
 I have a JSON file with errors that cannot be parsed. When I tried to parse it using `demjson3.decode`, I received specific error messages. Please correct the JSON and respond with only the corrected JSON content—do not include any explanations, comments, or additional text.
 
-Here are some examples:
-
 ---
+
+### Examples:
 
 Error: Unexpected character at line 3, column 15  
 Input JSON:
@@ -386,15 +539,12 @@ Corrected JSON:
 
 ---
 
-Now, correct the following JSON based on the provided error message. Respond with only the corrected JSON:
-
 Error: {error_message}  
 Input JSON:
 {json_content}
-Corrected JSON:
-'''
 
-# - entity: this is the corresponding extracted entity.
+Please respond with only the corrected JSON. Output:
+'''
 
     def apply_template(self, inputs):
 
