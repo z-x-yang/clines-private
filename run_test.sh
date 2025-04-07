@@ -18,7 +18,7 @@ NOTES_DIR="/home/zoy043/Works/LLM_Info_Extract/language-into-clinical-data/data/
 LOG_FILE="./logs/${MARKER}_${TIMESTAMP}.log"
 RESULTS_FILE="./results/${MARKER}.json"
 ERROR_LOG_FILE="./logs/${MARKER}_errors_${TIMESTAMP}.log"
-OUTPUT_DIR="./outputs/gpt4o_output_0404"
+OUTPUT_DIR="./outputs/gpt4o_output_0405"
 START_IDX=0
 
 
@@ -34,4 +34,5 @@ CUDA_VISIBLE_DEVICES=0 OPENAIKEY=${OPENAIKEY} OPENAIENDPOINT=${OPENAIENDPOINT} p
     --debug true \
     --output_dir ${OUTPUT_DIR} \
     --chunk_size 1024 \
+    --use_faiss_gpu \
     2>&1 | tee ${LOG_FILE}

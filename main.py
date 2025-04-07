@@ -17,6 +17,8 @@ from dataclasses import dataclass
 from typing import List, Optional, Dict, Any
 from data_types import NERData, EntityData, InfoData, DateData
 import time
+import threading
+import concurrent.futures
 
 
 class PIPELINE:
@@ -240,35 +242,69 @@ class PIPELINE:
 
     def entity_linking(self, results, type='all'):
         """
-        Perform entity linking on the NER results.
+        Perform entity linking on the results.
 
         Args:
-            results (list): List of dictionaries containing NER results.
+            results (list): List of results to link.
+            type (str): Type of entity linking to perform. Options: 'all', 'bodyloc'.
 
         Returns:
-            list: NER results with added entity codes.
+            list: Linked results.
         """
+        if not results:
+            return results
 
+        clean_entities = []
+        term_indices = []
+
+        for i, item in enumerate(results):
+            if type == 'all':
+                clean_entities.append(item.get('CLEAN'))
+                term_indices.append(i)
+            elif type == 'bodyloc':
+                if 'body_location' in item and item['body_location'] is not None:
+                    clean_entities.append(item['body_location'])
+                    term_indices.append(i)
+
+        if not clean_entities:
+            # No entities to link, return original results
+            return results
+
+        # Perform linking
         if type == 'all':
-            term_for_test = []
-            for item in results:
-                term_for_test.append(item['CLEAN'])
             linking_result = self.retriever.embedding_retrieval_all(
-                term_for_test, 256)
-            for i in range(len(results)):
-                results[i]['CODE'] = linking_result[i]
+                clean_entities)
         elif type == 'bodyloc':
-            term_for_test = []
-            for item in results:
-                if 'body_location' in item:
-                    term_for_test.append(item['body_location'])
-                else:
-                    term_for_test.append(None)
             linking_result = self.retriever.embedding_retrieval_bodyloc(
-                term_for_test, 256)
-            for i in range(len(linking_result)):
-                if linking_result[i] is not None:
-                    results[i]['body_code'] = linking_result[i]
+                clean_entities)
+
+        # Safety check to ensure linking_result has the same length as clean_entities
+        if len(linking_result) != len(clean_entities):
+            print(
+                f"Warning: linking result length mismatch. Expected {len(clean_entities)}, got {len(linking_result)}")
+            # Pad or truncate linking_result to match clean_entities length
+            if len(linking_result) < len(clean_entities):
+                linking_result.extend(
+                    [None] * (len(clean_entities) - len(linking_result)))
+            else:
+                linking_result = linking_result[:len(clean_entities)]
+
+        # Map back to results
+        for idx, result_idx in enumerate(term_indices):
+            try:
+                if idx < len(linking_result) and linking_result[idx] is not None:
+                    if type == 'all':
+                        results[result_idx]['CODE'] = linking_result[idx]
+                    elif type == 'bodyloc':
+                        results[result_idx]['body_code'] = linking_result[idx]
+            except IndexError as e:
+                print(f"Error mapping linking result: {e}")
+                print(f"Index: {idx}, Result index: {result_idx}")
+                print(
+                    f"Clean entities length: {len(clean_entities)}, Linking result length: {len(linking_result)}")
+                print(f"Term indices: {term_indices}")
+                # Continue processing remaining items rather than crashing
+                continue
 
         return results
 
@@ -471,34 +507,19 @@ class PIPELINE:
             print("No entities found - skipping further processing")
             return
 
-        # 2. Entity Processing
-        print("\n2. Starting Entity Processing...")
-        entity_data = self._process_entities(
-            ner_data.ner_results,
-            ner_data.parsed_tags
+        # 2-4. Parallel Processing of Entity, Information, and Date extraction
+        print("\n2-4. Starting Parallel Processing...")
+        entity_data, info_data, date_data = self._process_parallel(
+            ehr, ner_data, prev_ehr
         )
+
         print(f"Processed {len(entity_data.clean_results)} cleaned entities")
         print(f"Found {len(entity_data.relate_results)} entity relationships")
-
-        # 3. Information Extraction
-        print("\n3. Starting Information Extraction...")
-        info_data = self._process_information(
-            ner_data.ner_results,
-            ner_data.parsed_tags
-        )
         print(f"Extracted status for {len(info_data.status_results)} entities")
         print(
             f"Extracted additional info for {len(info_data.info_results)} entities")
-
-        # 4. Date Processing
-        print("\n4. Starting Date Processing...")
-        date_data = self._process_dates(
-            ehr,
-            ner_data.ner_results,
-            prev_ehr,
-            ner_data.parsed_tags
-        )
         print(f"Processed {len(date_data.date_results)} date entries")
+
         if date_data.basic_results:
             print(
                 f"Admission date: {date_data.basic_results.get('admission_date')}")
@@ -515,6 +536,111 @@ class PIPELINE:
         )
         print("Results aggregation complete")
         print("\n=== Single EHR Processing Complete ===\n")
+
+    def _process_parallel(self, ehr: str, ner_data: NERData, prev_ehr: Optional[str] = None) -> tuple:
+        """
+        Process Entity, Information and Date extraction in parallel using threads.
+
+        Args:
+            ehr: The full EHR text to process
+            ner_data: The NER data from previous processing step
+            prev_ehr: Optional previous EHR context for date extraction
+
+        Returns:
+            Tuple of (EntityData, InfoData, DateData)
+        """
+        # Define result containers
+        entity_data = None
+        info_data = None
+        date_data = None
+
+        # Define thread-safe wrappers for the processing functions
+        def entity_thread():
+            nonlocal entity_data
+            entity_data = self._process_entities(
+                ner_data.ner_results,
+                ner_data.parsed_tags
+            )
+
+        def info_thread():
+            nonlocal info_data
+            info_data = self._process_information(
+                ner_data.ner_results,
+                ner_data.parsed_tags
+            )
+
+        def date_thread():
+            nonlocal date_data
+            date_data = self._process_dates(
+                ehr,
+                ner_data.ner_results,
+                prev_ehr,
+                ner_data.parsed_tags
+            )
+
+        # Create threads
+        threads = [
+            threading.Thread(target=entity_thread),
+            threading.Thread(target=info_thread),
+            threading.Thread(target=date_thread)
+        ]
+
+        # Start all threads
+        print("Starting parallel processing threads...")
+        for thread in threads:
+            thread.start()
+
+        # Wait for all threads to complete
+        for thread in threads:
+            thread.join()
+
+        print("Parallel processing complete")
+        return entity_data, info_data, date_data
+
+    # Alternative implementation using ThreadPoolExecutor
+    def _process_parallel_with_executor(self, ehr: str, ner_data: NERData, prev_ehr: Optional[str] = None) -> tuple:
+        """
+        Process Entity, Information and Date extraction in parallel using ThreadPoolExecutor.
+
+        Args:
+            ehr: The full EHR text to process
+            ner_data: The NER data from previous processing step
+            prev_ehr: Optional previous EHR context for date extraction
+
+        Returns:
+            Tuple of (EntityData, InfoData, DateData)
+        """
+        print("Starting parallel processing with ThreadPoolExecutor...")
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
+            # Submit tasks to the executor
+            entity_future = executor.submit(
+                self._process_entities,
+                ner_data.ner_results,
+                ner_data.parsed_tags
+            )
+
+            info_future = executor.submit(
+                self._process_information,
+                ner_data.ner_results,
+                ner_data.parsed_tags
+            )
+
+            date_future = executor.submit(
+                self._process_dates,
+                ehr,
+                ner_data.ner_results,
+                prev_ehr,
+                ner_data.parsed_tags
+            )
+
+            # Get results from futures
+            entity_data = entity_future.result()
+            info_data = info_future.result()
+            date_data = date_future.result()
+
+        print("Parallel processing complete")
+        return entity_data, info_data, date_data
 
     def _process_ner(self, ehr: str) -> NERData:
         """Process Named Entity Recognition step."""
@@ -693,8 +819,12 @@ class PIPELINE:
                 new_related = {}
                 for tag, rel_type in result['related'].items():
                     # Convert tag to int, add offset, then back to string
-                    new_tag = str(int(tag) + offset)
-                    new_related[new_tag] = rel_type
+                    try:
+                        new_tag = str(int(tag) + offset)
+                        new_related[new_tag] = rel_type
+                    except Exception as e:
+                        print("error:", e)
+                        continue
                 result['related'] = new_related
         self.pipeline_result['relate_results'] += relate_results
 
@@ -831,6 +961,8 @@ if __name__ == '__main__':
                         help='Output directory for schema outputs')
     parser.add_argument('--chunk_size', type=int, default=768,
                         help='Chunk size for the model')
+    parser.add_argument('--use_faiss_gpu', action='store_true',
+                        help='Use GPU for FAISS')
 
     args = parser.parse_args()
 
@@ -845,15 +977,11 @@ if __name__ == '__main__':
     model = LLM(args.model_name, chunk_size=args.chunk_size)
     print("Model initialized")
     print("Start initializing pipeline")
-    if args.model_name in ['llama-3-405b', 'deepseek']:
-        use_faiss_gpu = False
-    else:
-        use_faiss_gpu = None
 
     if not os.path.exists(args.output_dir):
         os.makedirs(args.output_dir)
     pipeline = PIPELINE(model, args.schema, args.output_type,
-                        args.marker, args.output_dir, use_faiss_gpu=use_faiss_gpu, output_dir=args.output_dir)
+                        args.marker, args.output_dir, use_faiss_gpu=args.use_faiss_gpu, output_dir=args.output_dir)
     print("Pipeline initialized")
 
     # Load existing results if start_index > 0

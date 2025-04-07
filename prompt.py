@@ -98,33 +98,45 @@ Identify relationships between marked entities in this health record. Find which
 
 Output a JSON list of dictionaries with:
 - tag: entity order number (from KEY tags)
-- related: a dictionary where the keys are the tags of related entities and the values are the relationship types
+- related: a dictionary where keys are tags of related entities and values are relationship types FROM the perspective of the entity with the "tag" key TO the entity in the "related" dictionary keys
+
+IMPORTANT RULES:
+1. Relationship Direction:
+   - The relationship is always FROM the entity with the "tag" field TO the entity in the "related" field keys
+   - For example: {{"tag": "1", "related": {{"2": "treated_by"}}}} means "Entity 1 is treated by Entity 2"
+   - Similarly: {{"tag": "2", "related": {{"1": "treats"}}}} means "Entity 2 treats Entity 1"
+
+2. Proximity:
+   - Only identify relationships between entities that are close to each other in the text
+   - Focus on entities within the same sentence or adjacent sentences
+   - Do not try to link entities that are far apart (e.g., different paragraphs)
+   - Prioritize obvious, direct relationships over tenuous connections
 
 Relationship types include:
 1. Treatment relationships:
-   - "treats": medication/procedure treats condition
-   - "manages": intervention manages but doesn't cure condition
-   - "alleviates": relieves symptoms without treating cause
+   - "treats"/"treated_by": medication treats condition / condition is treated by medication
+   - "manages"/"managed_by": intervention manages condition / condition is managed by intervention
+   - "alleviates"/"alleviated_by": relieves symptoms / symptom is alleviated by intervention
 
 2. Causal relationships:
-   - "causes": directly causes another entity
-   - "exacerbates": worsens condition
-   - "indicates": suggests or points to
-   - "risk_factor": increases risk
-   - "complication_of": is a complication
+   - "causes"/"caused_by": directly causes / is directly caused by
+   - "exacerbates"/"exacerbated_by": worsens condition / is worsened by
+   - "indicates"/"indicated_by": suggests or points to / is suggested by
+   - "risk_factor"/"at_risk_from": increases risk / has increased risk due to
+   - "complication_of"/"has_complication": is a complication / has as a complication
    
 3. Measurement relationships:
-   - "measures": test measures parameter
-   - "evaluates": assesses condition
-   - "diagnoses": used to diagnose
-   - "monitors": tracks over time
-   - "has_value": entity has numerical value
-   - "has_unit": measurement has unit
+   - "measures"/"measured_by": test measures parameter / parameter measured by test
+   - "evaluates"/"evaluated_by": assesses condition / condition assessed by
+   - "diagnoses"/"diagnosed_by": used to diagnose / is diagnosed using
+   - "monitors"/"monitored_by": tracks over time / is tracked using
+   - "has_value"/"value_of": entity has numerical value / is a value of entity
+   - "has_unit"/"unit_for": measurement has unit / is unit for measurement
    
 4. Anatomical relationships:
-   - "located_in": anatomical location
-   - "part_of": component of larger system
-   - "administered_at": administration site
+   - "located_in"/"location_of": anatomical location / is the location for
+   - "part_of"/"has_part": component of larger system / has as a component
+   - "administered_at"/"site_for": administration site / is site for administration
    
 5. Temporal relationships:
    - "precedes": occurs before
@@ -132,13 +144,13 @@ Relationship types include:
    - "concurrent_with": happens simultaneously
    
 6. Clinical relationships:
-   - "symptom_of": symptom of condition
-   - "finding_of": clinical finding
-   - "manifestation_of": visible manifestation
-   - "has_dosage": medication and dose
-   - "has_frequency": med frequency
-   - "has_route": administration route
-   - "component_of": part of procedure/panel
+   - "symptom_of"/"has_symptom": symptom of condition / condition has symptom
+   - "finding_of"/"has_finding": clinical finding / has clinical finding
+   - "manifestation_of"/"has_manifestation": visible manifestation / has visible manifestation
+   - "has_dosage"/"dosage_for": medication and dose / is dosage for medication
+   - "has_frequency"/"frequency_for": med frequency / is frequency for
+   - "has_route"/"route_for": administration route / is route for
+   - "component_of"/"has_component": part of procedure/panel / procedure/panel has component
    
 7. Default relationship:
    - "related_to": general association when specific type unclear
@@ -237,22 +249,24 @@ Extract detailed information for each marked entity in this health record.
 Output JSON as a list of dictionaries with these keys:
  - tag: entity's order number (matching the KEY number in the text)
  - body_location: anatomical location related to the entity (omit if not applicable)
- - value: value or values associated with the entity, even if they are not explicitly marked. This should also contain the possible text-based short phrase value such as negative x2, positive, or decreasing. (use array for multiple values, exclude time information, omit if not applicable)
- - note: for numerical values, indicate if value is "greater", "lower", or "equal" (use array for multiple values, omit if not applicable)
+ - value: numerical (e.g., 127, 3.6, 3 x 3) or text-based (e.g., negative, positive, elevated, decreasing, Stage I) value(s) of measurements and sizes associated with the entity (use array for multiple values, exclude time information, omit if not applicable)
  - unit: units of measurement (infer if missing, use array for multiple values, omit if not applicable)
  - infer: boolean indicating if unit was inferred (true) or explicit (false), as array if multiple units (omit if not applicable)
+ - note: if value is numerical, put 'greater', 'lower', or 'equal' to this key to indicate whether the actual value is greater, lower or equals to the recorded value (use array for multiple values, omit if not applicable)
  - route: administration route for medications (e.g., "PO", "IV") (omit if not applicable)
  - freq: medication frequency (e.g., "BID", "PRN", "daily") (omit if not applicable)
- - other: descriptive details not fitting other fields (omit if not applicable)
+ - other: adjectives and descriptive terms that modify or further describe the entity or its values (e.g., "irregular", "scalloped", "fasting", "intense", "confirmed 2020") (exclude information already captured in above fields or in entity name, omit if not applicable)
 
 Special handling:
 - For panel tests, individual values are marked as separate entities
 - For entities with multiple values, use arrays for value/unit/note/infer
 - Infer units only when clear from context
 - For qualitative terms (e.g., "elevated"), use exact term as value
-- All time-related information should be placed in the "other" field, not in "value"
+- All time-related information should not be placed in the "value" field, but in the "other" field
+- For measurements (e.g., "2 cm mass"), the numerical measurement (e.g., "2") goes in value, the unit (e.g., "cm") goes in unit
 
-Example 1:
+
+Examples:
 Input:
 ```
 <1>Metoprolol</1> 50 mg PO BID for <2>hypertension</2>. <3>Chem-7</3>: <4>127</4>, <5>3.6</5>, <6>88</6>.
@@ -261,27 +275,38 @@ Input:
 Output:
 ```
 [
-  {{"tag": "1", "value": "50", "unit": "mg", "route": "PO", "freq": "BID", "infer": false}},
-  {{"tag": "2", "body_location": null, "other": "being treated with Metoprolol"}},
+  {{"tag": "1", "value": "50", "unit": "mg", "infer": false, "note": "equal", "route": "PO", "freq": "BID", "other": "for hypertension"}},
+  {{"tag": "2", "value": null}},
   {{"tag": "3", "value": null}},
-  {{"tag": "4", "value": "127", "unit": "mEq/L", "note": "equal", "infer": true}},
-  {{"tag": "5", "value": "3.6", "unit": "mEq/L", "note": "equal", "infer": true}},
-  {{"tag": "6", "value": "88", "unit": "mEq/L", "note": "equal", "infer": true}}
+  {{"tag": "4", "value": "127", "unit": "mEq/L", "infer": true, "note": "equal"}},
+  {{"tag": "5", "value": "3.6", "unit": "mEq/L", "infer": true, "note": "equal"}},
+  {{"tag": "6", "value": "88", "unit": "mEq/L", "infer": true, "note": "equal"}}
 ]
 ```
 
-Example 2:
 Input:
 ```
-<1>Glucose</1> readings: 112 mg/dL (fasting), 145 mg/dL (after meal). <2>Pain</2> in <3>lower back</3> rated 8/10 in morning, 6/10 in evening.
+<1>Glucose</1> readings: 112 mg/dL (fasting), 145 mg/dL (after meal). <2>Pain</2> in lower back rated 8/10 in morning, 6/10 in evening.
 ```
 
 Output:
 ```
 [
-  {{"tag": "1", "value": ["112", "145"], "unit": ["mg/dL", "mg/dL"], "note": ["equal", "equal"], "infer": [false, false], "other": "first reading was fasting, second was after meal"}},
-  {{"tag": "2", "value": ["8/10", "6/10"], "body_location": "lower back", "infer": [false, false], "other": "worse in morning, improves in evening"}},
-  {{"tag": "3", "body_location": "lower back"}}
+  {{"tag": "1", "value": ["112", "145"], "unit": ["mg/dL", "mg/dL"], "infer": [false, false], "note": ["equal", "equal"], "other": "first reading was fasting, second was after meal"}},
+  {{"tag": "2", "value": ["8/10", "6/10"], "body_location": "lower back", "other": "8/10 in morning, 6/10 in evening"}}
+]
+```
+
+Input:
+```
+<1>Irregular somewhat scalloped appearing hypoechoic focus</1> (2 cm) in left axillary tail. <2>Mass</2> measuring 3.5 x 2.8 cm noted in right breast.
+```
+
+Output:
+```
+[
+  {{"tag": "1", "value": "2", "unit": "cm", "body_location": "left axillary tail", "other": "Irregular somewhat scalloped appearing", "infer": false}},
+  {{"tag": "2", "value": "3.5 x 2.8", "unit": "cm", "body_location": "right breast", "infer": false}}
 ]
 ```
 
@@ -398,7 +423,7 @@ Please respond with valid JSON only, no additional text. Output:
 
         elif self.prompt_name in ['basic_info']:
             self.template = '''
-You will receive an electronic health record for a patient. Your task is to extract the following basic information from the note:
+Extract the following basic patient information from this health record:
  - admission_date
  - discharge_date
  - gender
@@ -408,13 +433,34 @@ You will receive an electronic health record for a patient. Your task is to extr
  - ethnicity
  - zip_code
  
-Your output should be in JSON Dictionary format using the above as keys.
-For the dates, they should be in the format "YYYY-MM-DD". If the information is not mentioned in the note, use null as value. 
+Output as JSON Dictionary using the above as keys.
+For dates, use "YYYY-MM-DD" format. If information is not explicitly mentioned, use null.
 
----
+IMPORTANT DATE EXTRACTION RULES:
+- If explicit "Admission Date" or "Admitted on" is present, use that for admission_date
+- If explicit "Discharge Date" or "Discharged on" is present, use that for discharge_date
+- If admission/discharge dates aren't explicit but other date indicators exist:
+  * For Visit/Encounter/Appointment dates: use as both admission_date and discharge_date if same-day visit appears likely
+  * For "Date of Visit", "DOS", "Date of Service", "Visit Date", "Encounter Date": use as both admission_date and discharge_date
+  * For "Date:", "Date of Note", current date references: use as both admission_date and discharge_date
+  * For dates preceded by provider names or report titles: use as both admission_date and discharge_date
+- When only one date appears in the entire record: use as both admission_date and discharge_date
 
-### Example:
+Examples:
+Input:
+```
+PATIENT INFORMATION:
+Name: John Smith
+DOB: 1965-08-22
+Gender: Male
+Admission Date: 2022-03-15
+Discharge Date: 2022-03-20
+Race: Caucasian
+Ethnicity: Non-Hispanic
+Zip: 02115
+```
 
+Output:
 ```
 {{
   "admission_date": "2022-03-15",
@@ -428,10 +474,34 @@ For the dates, they should be in the format "YYYY-MM-DD". If the information is 
 }}
 ```
 
----
+Input:
+```
+OUTPATIENT VISIT NOTE
+Date of Visit: 2023-11-15
+Patient: Jane Doe, 42 y.o. female
+Ethnicity: Hispanic
+Race: White
+DOB: 1981-05-10
+```
+
+Output:
+```
+{{
+  "admission_date": "2023-11-15",
+  "discharge_date": "2023-11-15",
+  "gender": "female",
+  "death_date": null,
+  "birth_date": "1981-05-10",
+  "race": "White",
+  "ethnicity": "Hispanic",
+  "zip_code": null
+}}
+```
 
 Input:
+```
 {note}
+```
 
 Please respond with valid JSON only, no additional text. Output:
 '''
