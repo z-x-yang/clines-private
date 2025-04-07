@@ -14,11 +14,11 @@ OPENAIENDPOINT="https://azure-ai-dev.hms.edu"
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 # Marker settings
 MARKER="Test"
-NOTES_DIR="/home/zoy043/Works/LLM_Info_Extract/language-into-clinical-data/data/Synthetic_Notes"
+NOTES_DIR="./test_data"
 LOG_FILE="./logs/${MARKER}_${TIMESTAMP}.log"
 RESULTS_FILE="./results/${MARKER}.json"
 ERROR_LOG_FILE="./logs/${MARKER}_errors_${TIMESTAMP}.log"
-OUTPUT_DIR="./outputs/gpt4o_output_0405"
+OUTPUT_DIR="./outputs/gpt4o_output"
 START_IDX=0
 
 
