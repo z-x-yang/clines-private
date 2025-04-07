@@ -5,18 +5,20 @@ __pycache__/
 *.jsonl
 log/
 setting_env.sh
-*.txt
 *.out
 *.err
 *.zip
 data/
 *.log
+*log*
 *.pyc
 *.pt
 *cache*
 *.db
 *.html
 *.yml
+data/
+outputs/
 run_inference_gene_data.sh
 slurm_job.sh
 scripts/run_pipeline.sh
@@ -29,3 +31,5 @@ keep_run.sh
 make_umls_dictionary.ipynb
 process_coral_breastcancer.sh
 run_inference_deepseek.sh
+umls_body_loc_dictionary.txt
+umls_dictionary.txt
