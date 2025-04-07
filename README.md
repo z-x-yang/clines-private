@@ -49,6 +49,8 @@ Place the following files in the project root directory:
 
 ## Running the Pipeline
 
+### Option 1: Using the Python Script
+
 1. Prepare your input data:
    - Place your EHR text files in the `data/` directory
    - Each file should be a `.txt` file containing the EHR text
@@ -68,6 +70,24 @@ python main.py \
     --use_faiss_gpu \
     --debug true
 ```
+
+### Option 2: Using the Test Script
+
+You can also use the provided `run_test.sh` script to test the pipeline with sample data:
+
+```bash
+# Make the script executable
+chmod +x run_test.sh
+
+# Run the test script
+./run_test.sh
+```
+
+The test script will:
+1. Process multiple datasets (4CE, coral_annotated_breastca, coral_annotated_pdac)
+2. Generate output files in the specified output directory
+3. Create log files with timestamps
+4. Handle error logging automatically
 
 ### Command Line Arguments
 
