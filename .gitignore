@@ -31,5 +31,3 @@ keep_run.sh
 make_umls_dictionary.ipynb
 process_coral_breastcancer.sh
 run_inference_deepseek.sh
-umls_body_loc_dictionary.txt
-umls_dictionary.txt

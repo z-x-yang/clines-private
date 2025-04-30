@@ -1,0 +1,1 @@
+/home/zoy043/Works/language-into-clinical-data/umls_dictionary.txt
