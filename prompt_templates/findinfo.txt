@@ -1,0 +1,72 @@
+## Extract detailed information for each marked entity in this health record.
+
+## Output JSON as a list of dictionaries with these keys:
+ - tag: entity's order number (matching the KEY number in the text)
+ - body_location: anatomical location related to the entity (omit if not applicable)
+ - value: numerical (e.g., 127, 3.6, 3 x 3) or text-based (e.g., negative, positive, elevated, decreasing, Stage I) value(s) of measurements and sizes associated with the entity (use array for multiple values, exclude time information, omit if not applicable)
+ - unit: units of measurement (infer if missing, use array for multiple values, omit if not applicable)
+ - infer: boolean indicating if unit was inferred (true) or explicit (false), as array if multiple units (omit if not applicable)
+ - note: if value is numerical, put 'greater', 'lower', or 'equal' to this key to indicate whether the actual value is greater, lower or equals to the recorded value (use array for multiple values, omit if not applicable)
+ - route: administration route for medications (e.g., "PO", "IV") (omit if not applicable)
+ - freq: medication frequency (e.g., "BID", "PRN", "daily") (omit if not applicable)
+ - other: adjectives and descriptive terms that modify or further describe the entity or its values (e.g., "irregular", "scalloped", "fasting", "intense", "confirmed 2020") (exclude information already captured in above fields or in entity name, omit if not applicable)
+
+## Special handling:
+- For panel tests, individual values are marked as separate entities
+- For entities with multiple values, use arrays for value/unit/note/infer
+- Infer units only when clear from context
+- For qualitative terms (e.g., "elevated"), use exact term as value
+- All time-related information should not be placed in the "value" field, but in the "other" field
+- For measurements (e.g., "2 cm mass"), the numerical measurement (e.g., "2") goes in value, the unit (e.g., "cm") goes in unit
+
+
+## Examples:
+Input:
+```
+<1>Metoprolol</1> 50 mg PO BID for <2>hypertension</2>. <3>Chem-7</3>: <4>127</4>, <5>3.6</5>, <6>88</6>.
+```
+
+Output:
+```
+[
+  {{"tag": "1", "value": "50", "unit": "mg", "infer": false, "note": "equal", "route": "PO", "freq": "BID", "other": "for hypertension"}},
+  {{"tag": "2", "value": null}},
+  {{"tag": "3", "value": null}},
+  {{"tag": "4", "value": "127", "unit": "mEq/L", "infer": true, "note": "equal"}},
+  {{"tag": "5", "value": "3.6", "unit": "mEq/L", "infer": true, "note": "equal"}},
+  {{"tag": "6", "value": "88", "unit": "mEq/L", "infer": true, "note": "equal"}}
+]
+```
+
+Input:
+```
+<1>Glucose</1> readings: 112 mg/dL (fasting), 145 mg/dL (after meal). <2>Pain</2> in lower back rated 8/10 in morning, 6/10 in evening.
+```
+
+Output:
+```
+[
+  {{"tag": "1", "value": ["112", "145"], "unit": ["mg/dL", "mg/dL"], "infer": [false, false], "note": ["equal", "equal"], "other": "first reading was fasting, second was after meal"}},
+  {{"tag": "2", "value": ["8/10", "6/10"], "body_location": "lower back", "other": "8/10 in morning, 6/10 in evening"}}
+]
+```
+
+Input:
+```
+<1>Irregular somewhat scalloped appearing hypoechoic focus</1> (2 cm) in left axillary tail. <2>Mass</2> measuring 3.5 x 2.8 cm noted in right breast.
+```
+
+Output:
+```
+[
+  {{"tag": "1", "value": "2", "unit": "cm", "body_location": "left axillary tail", "other": "Irregular somewhat scalloped appearing", "infer": false}},
+  {{"tag": "2", "value": "3.5 x 2.8", "unit": "cm", "body_location": "right breast", "infer": false}}
+]
+```
+
+Input:
+```
+{note}
+```
+
+Please respond with valid JSON only, no additional text. Output: 

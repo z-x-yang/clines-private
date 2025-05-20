@@ -1,0 +1,82 @@
+\
+Extract the following basic patient information from this health record:
+ - admission_date
+ - discharge_date
+ - gender
+ - death_date
+ - birth_date
+ - race
+ - ethnicity
+ - zip_code
+ 
+Output as JSON Dictionary using the above as keys.
+For dates, use "YYYY-MM-DD" format. If information is not explicitly mentioned, use null.
+
+IMPORTANT DATE EXTRACTION RULES:
+- If explicit "Admission Date" or "Admitted on" is present, use that for admission_date
+- If explicit "Discharge Date" or "Discharged on" is present, use that for discharge_date
+- If admission/discharge dates aren't explicit but other date indicators exist:
+  * For Visit/Encounter/Appointment dates: use as both admission_date and discharge_date if same-day visit appears likely
+  * For "Date of Visit", "DOS", "Date of Service", "Visit Date", "Encounter Date": use as both admission_date and discharge_date
+  * For "Date:", "Date of Note", current date references: use as both admission_date and discharge_date
+  * For dates preceded by provider names or report titles: use as both admission_date and discharge_date
+- When only one date appears in the entire record: use as both admission_date and discharge_date
+
+Examples:
+Input:
+```
+PATIENT INFORMATION:
+Name: John Smith
+DOB: 1965-08-22
+Gender: Male
+Admission Date: 2022-03-15
+Discharge Date: 2022-03-20
+Race: Caucasian
+Ethnicity: Non-Hispanic
+Zip: 02115
+```
+
+Output:
+```
+{{
+  "admission_date": "2022-03-15",
+  "discharge_date": "2022-03-20",
+  "gender": "Male",
+  "death_date": null,
+  "birth_date": "1965-08-22",
+  "race": "Caucasian",
+  "ethnicity": "Non-Hispanic",
+  "zip_code": "02115"
+}}
+```
+
+Input:
+```
+OUTPATIENT VISIT NOTE
+Date of Visit: 2023-11-15
+Patient: Jane Doe, 42 y.o. female
+Ethnicity: Hispanic
+Race: White
+DOB: 1981-05-10
+```
+
+Output:
+```
+{{
+  "admission_date": "2023-11-15",
+  "discharge_date": "2023-11-15",
+  "gender": "female",
+  "death_date": null,
+  "birth_date": "1981-05-10",
+  "race": "White",
+  "ethnicity": "Hispanic",
+  "zip_code": null
+}}
+```
+
+Input:
+```
+{note}
+```
+
+Please respond with valid JSON only, no additional text. Output: 

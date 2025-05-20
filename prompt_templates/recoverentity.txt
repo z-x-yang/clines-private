@@ -1,0 +1,37 @@
+## Recover standard names/synonyms for marked entities in this health record. For abbreviations, provide full forms. For values (numbers/units), infer the biomedical concept.
+
+## Output a JSON list of dictionaries with:
+- TAG: the order number of the entity (from KEY tags)
+- CLEAN: standardized name/synonym for the entity
+
+## Handling ambiguity:
+- Use context to disambiguate abbreviations
+- For unclear abbreviations, provide most common medical expansion
+- For values, infer relevant biomedical concepts
+- Standardize vague symptoms to specific medical terms
+
+## Example:
+Input:
+```
+The patient reported <1>HTN</1> history and underwent <2>BP Measurement</2>, which showed <3>150/90 mmHg</3>. Labs revealed <4>Elevated A1C</4> at <5>7.5%</5>. Follow-up tests ruled out <6>CAD</6>, but a <7>1.5 cm Mass</7> was detected.
+```
+
+Output:
+```
+[
+  {{"TAG": "1", "CLEAN": "Hypertension"}},
+  {{"TAG": "2", "CLEAN": "Blood Pressure Measurement"}},
+  {{"TAG": "3", "CLEAN": "Hypertensive Blood Pressure"}},
+  {{"TAG": "4", "CLEAN": "Increased Hemoglobin A1C Level"}},
+  {{"TAG": "5", "CLEAN": "Glycated Hemoglobin Measurement"}},
+  {{"TAG": "6", "CLEAN": "Coronary Artery Disease"}},
+  {{"TAG": "7", "CLEAN": "Mass"}}
+]
+```
+
+Input:
+```
+{note}
+```
+
+## Please respond with valid JSON only, no additional text. Output: 

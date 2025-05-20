@@ -1,44 +1,251 @@
 import pandas as pd
 import json
-from model import LLM
+# from model import LLM # This import is no longer needed and model.py is deleted
 import sqlite3
+from enum import Enum  # Added Enum import
+import os
+import logging  # Added logging import
+
+# Define Enums for schema names and output types
 
 
-class Schema():
+class SchemaName(Enum):
+    I2B2 = "i2b2"
+    DEFAULT = "default"
 
-    def __init__(self, schema, type='csv', marker="", output_dir='outputs'):
 
-        self.schema = schema
-        self.format_type = type
+class OutputType(Enum):
+    CSV = "csv"
+    SQLITE = "sqlite"
+    JSON = "json"
+
+
+# --- Output Formatter Classes ---
+class BaseFormatter:
+    def __init__(self, output_dir='outputs'):
+        self.output_dir = output_dir
+        self.logger = logging.getLogger(
+            self.__class__.__name__)  # Added logger
+
+    def write(self, data, base_filename):
+        raise NotImplementedError("Subclasses must implement this method")
+
+
+class CsvFormatter(BaseFormatter):
+    def write(self, data, base_filename):
+        if not data:
+            self.logger.warning(
+                f"No data provided to CsvFormatter for {base_filename}")
+            return
+        df_data = pd.DataFrame(data)
+        df_data = df_data.replace('(?i)none', pd.NA, regex=True)
+        # Ensure base_filename does not already contain .csv
+        if base_filename.endswith('.csv'):
+            filename = os.path.join(self.output_dir, base_filename)
+        else:
+            filename = os.path.join(self.output_dir, f"{base_filename}.csv")
+        # Added index=False based on typical CSV output needs
+        df_data.to_csv(filename, index=False)
+        self.logger.info(f"Data written to {filename}")
+
+
+class SqliteFormatter(BaseFormatter):
+    def __init__(self, output_dir='outputs', db_name="sqlite_database.db"):
+        super().__init__(output_dir)
+        self.db_path = os.path.join(self.output_dir, db_name)
+        self.connection = None
+        self.cursor = None
+        self._connect()
+
+    def _connect(self):
+        try:
+            self.connection = sqlite3.connect(self.db_path)
+            self.cursor = self.connection.cursor()
+        except sqlite3.Error as e:
+            self.logger.error(
+                f"Error connecting to SQLite database {self.db_path}: {e}", exc_info=True)
+            raise  # Re-raise the exception if connection fails
+
+    def write(self, data, table_name):
+        if not self.connection:  # Check if connection was successful
+            self.logger.error(
+                f"Cannot write to SQLite: No database connection to {self.db_path}.")
+            return
+        if not data:
+            self.logger.warning(
+                f"No data provided to SqliteFormatter for table {table_name}")
+            return
+        if not isinstance(data, list) or not all(isinstance(item, dict) for item in data):
+            self.logger.error(
+                "Data for SQLite must be a list of dictionaries.")
+            return
+
+        try:
+            df = pd.DataFrame(data)
+            # Sanitize table_name if necessary, though it should be controlled by schema name
+            # table_name = "data" # Or derive from base_filename/schema if needed
+            df.to_sql(name=table_name, con=self.connection,
+                      if_exists='append', index=False)
+            self.connection.commit()
+            self.logger.info(
+                f"Data written to table {table_name} in {self.db_path}")
+        except sqlite3.Error as e:
+            self.logger.error(
+                f"Error writing to SQLite table {table_name} in {self.db_path}: {e}", exc_info=True)
+        except Exception as e:  # Catch other pandas or general errors
+            self.logger.error(
+                f"Unexpected error writing to SQLite table {table_name}: {e}", exc_info=True)
+
+    def __del__(self):
+        if self.connection:
+            try:
+                self.connection.close()
+            except sqlite3.Error as e:
+                self.logger.error(
+                    f"Error closing SQLite connection to {self.db_path}: {e}", exc_info=True)
+
+
+class JsonFormatter(BaseFormatter):
+    def write(self, data, base_filename):
+        if not data:
+            self.logger.warning(
+                f"No data provided to JsonFormatter for {base_filename}")
+            return
+        # Ensure base_filename does not already contain .json
+        if base_filename.endswith('.json'):
+            filename = os.path.join(self.output_dir, base_filename)
+        else:
+            filename = os.path.join(self.output_dir, f"{base_filename}.json")
+        try:
+            with open(filename, 'w') as f:
+                json.dump(data, f, indent=4)
+            self.logger.info(f"Data written to {filename}")
+        except IOError as e:
+            self.logger.error(
+                f"Error writing JSON to {filename}: {e}", exc_info=True)
+        except TypeError as e:
+            self.logger.error(
+                f"Error serializing data to JSON for {filename}: {e}", exc_info=True)
+
+
+# Schema class renamed to SchemaProcessor
+class SchemaProcessor():
+
+    def __init__(self, schema_name_str, output_type_str, marker="", output_dir='outputs'):
+        self.logger = logging.getLogger(
+            self.__class__.__name__)  # Added logger instance
+        try:
+            self.schema_name = SchemaName(schema_name_str.lower())  # Use Enum
+        except ValueError:
+            self.logger.error(
+                f"Unsupported schema name: {schema_name_str}", exc_info=True)
+            raise ValueError(f"Unsupported schema name: {schema_name_str}")
+
+        try:
+            self.output_type = OutputType(output_type_str.lower())  # Use Enum
+        except ValueError:
+            self.logger.error(
+                f"Unsupported output type: {output_type_str}", exc_info=True)
+            raise ValueError(f"Unsupported output type: {output_type_str}")
+
         self.marker = marker
         self.output_dir = output_dir
-        if self.format_type == 'sqlite':
-            self.connection = sqlite3.connect(
-                f"{self.output_dir}/sqlite_database.db")
-            self.cursor = self.connection.cursor()
+        # Ensure output directory exists
+        os.makedirs(self.output_dir, exist_ok=True)
 
-    def __call__(self, json_data):
-
-        if self.schema == 'i2b2':
-            return self.i2b2_schema(json_data)
-        if self.schema == 'default':
-            return self.default_schema(json_data)
-
+        # Instantiate the appropriate formatter
+        if self.output_type == OutputType.CSV:
+            self.formatter = CsvFormatter(output_dir=self.output_dir)
+        elif self.output_type == OutputType.SQLITE:
+            # Use schema_name for db_name for now, or a fixed name
+            self.formatter = SqliteFormatter(
+                output_dir=self.output_dir, db_name=f"{self.schema_name.value}_output.db")
+        elif self.output_type == OutputType.JSON:
+            self.formatter = JsonFormatter(output_dir=self.output_dir)
         else:
-            raise NotImplementedError()
+            # This case should ideally not be reached if Enum validation is correct
+            raise ValueError(f"Unsupported output type: {self.output_type}")
 
-    def default_schema(self, json_data):
+    def __call__(self, json_data, key_identifier):
+        """Processes and writes data based on schema and output type."""
+        transformed_data = None
+        if self.schema_name == SchemaName.I2B2:
+            transformed_data = self._i2b2_transform(json_data, key_identifier)
+        elif self.schema_name == SchemaName.DEFAULT:
+            transformed_data = self._default_transform(
+                json_data, key_identifier)
+        else:
+            # This case should ideally not be reached if Enum validation is correct
+            raise NotImplementedError(
+                f"Schema transform not implemented for {self.schema_name}")
 
-        self.output_format(json_data)
+        if transformed_data is not None:
+            # Determine base_filename or table_name for the formatter
+            # For SQLite, the table name might be the schema name or a derivative of key_identifier
+            # For file-based formatters, it's usually derived from key_identifier and schema name
+            output_name = f"{key_identifier}_{self.schema_name.value}"
+            if self.output_type == OutputType.SQLITE:
+                # For SQLite, use schema name as table name, or a generic one like "data"
+                # Using schema name for table name to distinguish if multiple schemas go to same DB
+                self.formatter.write(transformed_data, self.schema_name.value)
+            else:
+                self.formatter.write(transformed_data, output_name)
+        else:
+            self.logger.warning(
+                f"No data transformed for {key_identifier} with schema {self.schema_name.value}")
 
-    def i2b2_schema(self, json_data):
+    def _default_transform(self, json_data, key_identifier):
+        # For default schema, convert dictionary/list fields to JSON strings for CSV compatibility
+        processed_data = []
 
+        # Ensure json_data is a list for consistent processing, even if a single dict is passed
+        if not isinstance(json_data, list):
+            data_to_iterate = [json_data]
+        else:
+            data_to_iterate = json_data
+
+        for record in data_to_iterate:
+            if not isinstance(record, dict):
+                self.logger.warning(
+                    f"Skipping non-dictionary item in _default_transform for {key_identifier}: {record}")
+                continue
+
+            processed_record = {}
+            for field_key, field_value in record.items():
+                if isinstance(field_value, (dict, list)):
+                    try:
+                        processed_record[field_key] = json.dumps(field_value)
+                    except TypeError as e:
+                        self.logger.error(
+                            f"Error serializing field '{field_key}' to JSON in _default_transform for {key_identifier}: {e}. Value: {field_value}")
+                        # Fallback to string representation
+                        processed_record[field_key] = str(field_value)
+                else:
+                    processed_record[field_key] = field_value
+            processed_data.append(processed_record)
+
+        return processed_data
+
+    def _i2b2_transform(self, json_data, key_identifier):
+        """Transforms input json_data to the i2b2 schema format."""
         output_data = []
+        # Ensure json_data is a list for consistent processing
+        if not isinstance(json_data, list):
+            # This can happen if the upstream LLM call for some tasks returns a single dict
+            self.logger.debug(
+                f"i2b2_transform received non-list data for {key_identifier} (type: {type(json_data)}), wrapping in list.")
+            json_data = [json_data]
+
         for item in json_data:
-            tmp = []
+            if not isinstance(item, dict):
+                self.logger.warning(
+                    f"Skipping non-dictionary item in i2b2_transform for {key_identifier}: {item}")
+                continue
+
             value, route, freq = item.get('value', None), item.get(
                 'route', None), item.get('freq', None)
             template = {
+                # Placeholder, might need actual patient ID from context
                 'patient_num': item.get('patient_num', None),
                 'birth_date': item.get('birth_date', None),
                 'death_date': item.get('death_date', None),
@@ -46,121 +253,127 @@ class Schema():
                 'race_cd': item.get('race', None),
                 'ethnicity_cd': item.get('ethnicity', None),
                 'zip_cd': item.get('zip_code', None),
-                'encounter_num': item.get('key', None),
-                'start_date': item.get('begin_date', None),
-                'end_date': item.get('end_date', None),
-                'concept_cd': item.get('code', None),
-                'name_char': item.get('mention', None),
-                # Holds any raw or miscellaneous data that exists, often encrypted PHI or additional information in a parseable format like XML
+                'encounter_num': key_identifier,  # Use the passed key_identifier
+                # Try 'date' if 'begin_date' missing
+                'start_date': item.get('begin_date', item.get('date', [None, None])[0]),
+                # Try 'date' if 'end_date' missing
+                'end_date': item.get('end_date', item.get('date', [None, None])[1]),
+                # Use 'TAG' if 'code' is missing (e.g. from NER)
+                'concept_cd': item.get('code', item.get('TAG', None)),
+                # Use 'CLEAN' if 'mention' is missing
+                'name_char': item.get('mention', item.get('CLEAN', None)),
                 'observation_blob': item.get('context', None),
-
-                # Code for modifier of interest (i.e. "ROUTE", "DOSE"). Note that the value columns are often used to hold the amounts such as "100" (mg) for the modifier of DOSE or "PO" for the modifier of ROUTE.
-                'modifier_cd': item.get('patient_num', '@'),
-
-                # Encoded instance number that allows more than one modifier to be provided for each CONCEPT_CD. Each row will have a different MODIFIER_CD but a similar INSTANCE_NUM.
-                'instance_num': 1 + (value != None) + (route != None) + (freq != None),
-
-                # N = Numeric, T = Text (enums / short messages), B = Raw Text (notes / reports)
+                'modifier_cd': '@',  # Default modifier
+                'instance_num': 1,  # Base instance
                 'valtype_cd': None,
-                # Stores the text value of the value Used in conjunction with VALTYPE_CD = "T" or "N"
                 'tval_char': None,
-                # When the VALTYPE_CD = "T"
-                # Stores the text value
-
-                # When VALTYPE_CD = "N"
-                # E = Equals
-                # NE = Not equal
-                # L = Less than
-                # LE = Less than and Equal to
-                # G = Greater than
-                # GE = Greater than and Equal to
-                'nval_num': None,  # Used in conjunction with VALTYPE_CD = "N" to store a numerical value
-                'valueflag_cd': None,  # An optional flag for outlier or abnormal values
-                # Units of measurement for the value in the NVAL_NUM column. Optional. If unit conversions are turned on, this is used to scale results in the query tool.
+                'nval_num': None,
+                'valueflag_cd': None,
                 'units_cd': None,
-                'unitflag_cd': None,  # whether the unit is inferred or extracted
+                'unitflag_cd': None,  # Corresponds to 'infer' boolean
             }
 
-            tmp.append(dict(template))
+            # Base record for the entity itself
+            current_record = template.copy()
+            # If item itself has a value/unit (e.g. for lab results that are entities themselves)
+            if item.get('value') is not None and not (value is not None or route is not None or freq is not None):
+                try:
+                    current_record['nval_num'] = float(item.get('value'))
+                    current_record['valtype_cd'] = 'N'
+                    # For things like 'greater', 'lower'
+                    current_record['tval_char'] = item.get('note', None)
+                except (ValueError, TypeError):
+                    current_record['tval_char'] = str(item.get('value'))
+                    current_record['valtype_cd'] = 'T'
+                current_record['units_cd'] = item.get('unit', None)
+                # Convert boolean to string 'true'/'false'
+                current_record['unitflag_cd'] = str(
+                    item.get('infer', False)).lower()
+
+            output_data.append(current_record)
+
+            # Modifier records
+            # Start instance_num for modifiers from 1 (or 2 if base already had value)
+            instance_counter = 1
 
             if value is not None:
-                tmp.append(dict(template))
+                mod_record = template.copy()
+                mod_record['instance_num'] = instance_counter
+                instance_counter += 1
                 try:
-                    float(value)
-                    is_num = True
-                except:
-                    is_num = False
-
-                tmp[-1]['valtype_cd'] = 'N' if is_num else 'T'
-                if is_num:
-                    tmp[-1]['nval_num'] = float(value)
-                    tmp[-1]['tval_char'] = item.get('note', None)
-                else:
-                    tmp[-1]['tval_char'] = value
-                tmp[-1]['modifier_cd'] = 'DOSE'
-                tmp[-1]['units_cd'] = item.get('unit', None)
-                tmp[-1]['unitflag_cd'] = item.get('infer', None)
+                    mod_record['nval_num'] = float(value)
+                    mod_record['valtype_cd'] = 'N'
+                    # For things like 'greater', 'lower'
+                    mod_record['tval_char'] = item.get('note', None)
+                except (ValueError, TypeError):
+                    mod_record['tval_char'] = str(value)
+                    mod_record['valtype_cd'] = 'T'
+                # Or more generic 'VALUE' if not always dose
+                mod_record['modifier_cd'] = 'DOSE'
+                mod_record['units_cd'] = item.get('unit', None)
+                mod_record['unitflag_cd'] = str(
+                    item.get('infer', False)).lower()
+                output_data.append(mod_record)
 
             if route is not None:
-                tmp.append(dict(template))
-                tmp[-1]['modifier_cd'] = 'ROUTE'
-                tmp[-1]['tval_char'] = route
+                mod_record = template.copy()
+                mod_record['instance_num'] = instance_counter
+                instance_counter += 1
+                mod_record['modifier_cd'] = 'ROUTE'
+                mod_record['tval_char'] = route
+                mod_record['valtype_cd'] = 'T'
+                output_data.append(mod_record)
 
             if freq is not None:
-                tmp.append(dict(template))
-                tmp[-1]['modifier_cd'] = 'FREQ'
-                tmp[-1]['tval_char'] = freq
+                mod_record = template.copy()
+                mod_record['instance_num'] = instance_counter
+                instance_counter += 1
+                mod_record['modifier_cd'] = 'FREQ'
+                mod_record['tval_char'] = freq
+                mod_record['valtype_cd'] = 'T'
+                output_data.append(mod_record)
 
-            output_data += tmp
+        return output_data
 
-            self.output_format(output_data)
+    # Removed output_format method (handled by formatters)
+    # Removed i2b2_schema method (renamed to _i2b2_transform)
+    # Removed default_schema method (renamed to _default_transform)
+    # Removed write_sqlit method (handled by SqliteFormatter)
 
-    def output_format(self, json_data):
-        marker = self.marker
+# Example of how it might be called from main.py (conceptual)
+# if __name__ == '__main__':
+#     # Sample data similar to what PipelineCoordinator might produce
+#     sample_ner_output = [
+#         {"TAG": "1", "CLEAN": "Hypertension", "text_span": [20,31]},
+#         {"TAG": "2", "CLEAN": "Lisinopril", "text_span": [40,49]}
+#     ]
+#     sample_info_output = [
+#         {"tag": "2", "value": "20", "unit": "mg", "freq": "daily", "route": "PO"}
+#     ]
+#     # This data would typically be merged and processed before reaching SchemaProcessor
+#     # For simplicity, let's assume we have a pre-merged structure for i2b2
 
-        if self.format_type == 'csv':
+#     # Example for i2b2 schema and CSV output
+#     schema_proc_csv = SchemaProcessor(schema_name_str="i2b2", output_type_str="csv", output_dir="./test_outputs")
+#     # Simulate data that i2b2_transform expects (merged from NER, INFO, etc.)
+#     merged_data_i2b2 = [
+#         {
+#             "key": "note123", "TAG": "1", "CLEAN": "Hypertension", "code": "I10", "mention": "Hypertension",
+#             "begin_date": "2023-01-01", "end_date": "2023-01-01"
+#         },
+#         {
+#             "key": "note123", "TAG": "2", "CLEAN": "Lisinopril", "code": "C09AA03", "mention": "Lisinopril",
+#             "value": "20", "unit": "mg", "freq": "daily", "route": "PO", "infer": False, "note": "equal",
+#             "begin_date": "2023-01-01", "end_date": "2023-01-01"
+#         }
+#     ]
+#     schema_proc_csv(merged_data_i2b2, "note123_run1")
 
-            df_data = pd.DataFrame(json_data)
-            df_data = df_data.replace('(?i)none', pd.NA, regex=True)
-            if "encounter_num" in json_data[0]:
-                encounter_num = json_data[0]["encounter_num"]
-            elif "key" in json_data[0]:
-                encounter_num = json_data[0]["key"]
-            else:
-                NotImplementedError
-            df_data.to_csv(
-                f"{self.output_dir}/{encounter_num}_{self.schema}.csv")
+#     # Example for default schema and JSON output
+#     schema_proc_json = SchemaProcessor(schema_name_str="default", output_type_str="json", output_dir="./test_outputs")
+#     raw_pipeline_output = {"ner": sample_ner_output, "info": sample_info_output, "patient_id": "patientA"}
+#     schema_proc_json(raw_pipeline_output, "note123_run1") # Default transform might just pass it through
 
-        elif self.format_type == 'sqlite':
-
-            self.write_sqlit(json_data)
-
-        elif self.format_type == 'json':
-            encounter_num = json_data[0]["encounter_num"]
-            with open(f"{self.output_dir}/{encounter_num}.json", 'w') as f:
-                json.dump(json_data, f)
-
-    def write_sqlit(self, json_data):
-
-        # tables = {'"ehr_id"': "TEXT",
-        #           '"admission_date"': "TEXT",
-        #           '"discharge_date"': "TEXT"}
-        for key in json_data[0]:
-            tables[f'"{key}"'] = "TEXT"
-        create_table_query = [f'{k}'+' '+v for k, v in tables.items()]
-        create_table_query = f"CREATE TABLE IF NOT EXISTS data ({', '.join(create_table_query)});"
-        self.cursor.execute(create_table_query)
-        self.connection.commit()
-
-        insert_query = f"INSERT INTO data ({', '.join(tables)}) VALUES ({', '.join(['?' for _ in tables])})"
-        data_batch = []
-        for item in json_data:
-            row = []
-            for key in item:
-                row.append(item[key] if key !=
-                           'related' else json.dumps(item[key]))
-            data_batch.append(row)
-
-        self.cursor.executemany(insert_query, data_batch)
-        self.connection.commit()  # Commit in batches
-        data_batch.clear()
+#     # Example for i2b2 schema and SQLite output
+#     schema_proc_sqlite = SchemaProcessor(schema_name_str="i2b2", output_type_str="sqlite", output_dir="./test_outputs")
+#     schema_proc_sqlite(merged_data_i2b2, "note123_run1")

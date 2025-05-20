@@ -1,0 +1,17 @@
+## You will receive an electronic health record for a patient. Your task is extract the admission date and the discharge date of the patient.
+## Your output should be in JSON Array format: "[admission date, discharge date]". If this does not apply to the record provided, for example, use null to fill up the value (such as [null, null]).
+
+---
+
+### Example:
+
+```
+["2022-03-15", "2022-03-20"]
+```
+
+---
+
+Input:
+{note}
+
+Please respond with valid JSON only, no additional text. Output: 

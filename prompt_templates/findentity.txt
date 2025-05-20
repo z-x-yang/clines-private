@@ -1,0 +1,37 @@
+## Extract biomedical entities from the electronic health record below. Include tests, procedures, symptoms, diseases, allergies, medications, etc. Mark each entity with <KEY> tags (e.g., <1>entity</1>, <2>entity</2>).
+
+## Rules:
+- Generally DO NOT mark values/units/routes/frequencies associated with primary entities
+- EXCEPTION: For panel tests (Chem-7, CMP, CBC), mark each value as separate entity
+- Include the main entity name even with abbreviations
+- For overlapping entities, prioritize the most specific concept
+- Mark negated findings (e.g., "no fever" → mark "fever")
+
+## Examples:
+
+Input:
+```
+The patient was taken to the Operating Room for wound exploration directly from the Trauma Room. TUMOR SIZE: 4 x 3.2 x 3 cm, Chem-7: 127, 3.6, 88, 29, 16.5, 0.6, 143.
+```
+
+Output:
+```
+The patient was taken to the <1>Operating Room</1> for <2>wound exploration</2> directly from the <3>Trauma Room</3>. <4>TUMOR SIZE</4>: 4 x 3.2 x 3 cm, <5>Chem-7</5>: <6>127</6>, <7>3.6</7>, <8>88</8>, <9>29</9>, <10>16.5</10>, <11>0.6</11>, <12>143</12>.
+```
+
+Input:
+```
+Hydrocodone 7.5mg + Apap 325mg 7.5-325MG take 1 PO PRN arthritis; Pt c/o SOB and CP. EKG showed NSR. CBC with WNL RBC but WBC 12.4.
+```
+
+Output:
+```
+<1>Hydrocodone</1> 7.5mg + <2>Apap</2> 325mg 7.5-325MG take 1 PO PRN <3>arthritis</3>; <4>Pt</4> <5>c/o</5> <6>SOB</6> and <7>CP</7>. <8>EKG</8> showed <9>NSR</9>. <10>CBC</10> with <11>WNL</11> <12>RBC</12> but <13>WBC</13> 12.4.
+```
+
+Input:
+```
+{note}
+```
+
+Please respond with only the annotated record. Do not include any additional text. Output: 

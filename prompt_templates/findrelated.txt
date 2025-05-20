@@ -1,0 +1,84 @@
+## Identify relationships between marked entities in this health record. Find which entities are clinically related to each other and determine their relationship type.
+
+## Output a JSON list of dictionaries with:
+- tag: entity order number (from KEY tags)
+- related: a dictionary where keys are tags of related entities and values are relationship types FROM the perspective of the entity with the "tag" key TO the entity in the "related" dictionary keys
+
+## IMPORTANT RULES:
+1. Relationship Direction:
+   - The relationship is always FROM the entity with the "tag" field TO the entity in the "related" field keys
+   - For example: {{"tag": "1", "related": {{"2": "treated_by"}}}} means "Entity 1 is treated by Entity 2"
+   - Similarly: {{"tag": "2", "related": {{"1": "treats"}}}} means "Entity 2 treats Entity 1"
+
+2. Proximity:
+   - Only identify relationships between entities that are close to each other in the text
+   - Focus on entities within the same sentence or adjacent sentences
+   - Do not try to link entities that are far apart (e.g., different paragraphs)
+   - Prioritize obvious, direct relationships over tenuous connections
+
+## Relationship types include:
+1. Treatment relationships:
+   - "treats"/"treated_by": medication treats condition / condition is treated by medication
+   - "manages"/"managed_by": intervention manages condition / condition is managed by intervention
+   - "alleviates"/"alleviated_by": relieves symptoms / symptom is alleviated by intervention
+
+2. Causal relationships:
+   - "causes"/"caused_by": directly causes / is directly caused by
+   - "exacerbates"/"exacerbated_by": worsens condition / is worsened by
+   - "indicates"/"indicated_by": suggests or points to / is suggested by
+   - "risk_factor"/"at_risk_from": increases risk / has increased risk due to
+   - "complication_of"/"has_complication": is a complication / has as a complication
+   
+3. Measurement relationships:
+   - "measures"/"measured_by": test measures parameter / parameter measured by test
+   - "evaluates"/"evaluated_by": assesses condition / condition assessed by
+   - "diagnoses"/"diagnosed_by": used to diagnose / is diagnosed using
+   - "monitors"/"monitored_by": tracks over time / is tracked using
+   - "has_value"/"value_of": entity has numerical value / is a value of entity
+   - "has_unit"/"unit_for": measurement has unit / is unit for measurement
+   
+4. Anatomical relationships:
+   - "located_in"/"location_of": anatomical location / is the location for
+   - "part_of"/"has_part": component of larger system / has as a component
+   - "administered_at"/"site_for": administration site / is site for administration
+   
+5. Temporal relationships:
+   - "precedes": occurs before
+   - "follows": occurs after
+   - "concurrent_with": happens simultaneously
+   
+6. Clinical relationships:
+   - "symptom_of"/"has_symptom": symptom of condition / condition has symptom
+   - "finding_of"/"has_finding": clinical finding / has clinical finding
+   - "manifestation_of"/"has_manifestation": visible manifestation / has visible manifestation
+   - "has_dosage"/"dosage_for": medication and dose / is dosage for medication
+   - "has_frequency"/"frequency_for": med frequency / is frequency for
+   - "has_route"/"route_for": administration route / is route for
+   - "component_of"/"has_component": part of procedure/panel / procedure/panel has component
+   
+7. Default relationship:
+   - "related_to": general association when specific type unclear
+
+## Example:
+Input:
+```
+Patient with <1>hypertension</1> takes <2>lisinopril</2> 20mg daily. <3>Blood pressure</3> was <4>142/88</4> <5>mmHg</5>.
+```
+
+Output:
+```
+[
+  {{"tag": "1", "related": {{"2": "treated_by", "3": "measured_by"}}}},
+  {{"tag": "2", "related": {{"1": "treats"}}}},
+  {{"tag": "3", "related": {{"1": "measures", "4": "has_value", "5": "has_unit"}}}},
+  {{"tag": "4", "related": {{"3": "value_of", "5": "measured_in"}}}},
+  {{"tag": "5", "related": {{"3": "unit_of", "4": "unit_for"}}}}
+]
+```
+
+Input:
+```
+{note}
+```
+
+## Please respond with valid JSON only, no additional text. Output: 

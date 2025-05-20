@@ -18,7 +18,7 @@ NOTES_DIR="/home/zoy043/Works/LLM_Info_Extract/language-into-clinical-data/fake_
 LOG_FILE="./logs/${MARKER}_${TIMESTAMP}.log"
 RESULTS_FILE="./results/${MARKER}.json"
 ERROR_LOG_FILE="./logs/${MARKER}_errors_${TIMESTAMP}.log"
-OUTPUT_DIR="./outputs/gpt4o_output_0514_test"
+OUTPUT_DIR="./outputs/gpt4o_output_0520_test2"
 START_IDX=0
 
 
