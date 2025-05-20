@@ -31,3 +31,4 @@ keep_run.sh
 make_umls_dictionary.ipynb
 process_coral_breastcancer.sh
 run_inference_deepseek.sh
+fake_notes_from_william/*

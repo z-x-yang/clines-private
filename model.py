@@ -1,31 +1,4 @@
 import os
-
-# def openai_chat(inputs_message):
-#     import requests
-#     import base64
-
-#     # Configuration
-#     GPT4V_KEY = os.getenv("OPENAIKEY")
-#     GPT4V_ENDPOINT = os.getenv("OPENAIENDPOINT")
-#     print(GPT4V_KEY, GPT4V_ENDPOINT)
-#     headers = {
-#         "Content-Type": "application/json",
-#         "api-key": GPT4V_KEY,
-#     }
-#     payload = {
-#       "messages": inputs_message,
-#       "temperature": 0.,
-#       "top_p": 0.95
-#     }
-#     # Send request
-#     try:
-#         response = requests.post(GPT4V_ENDPOINT, headers=headers, json=payload)
-#         response.raise_for_status()  # Will raise an HTTPError if the HTTP request returned an unsuccessful status code
-#     except requests.RequestException as e:
-#         raise SystemExit(f"Failed to make the request. Error: {e}")
-#     # Handle the response as needed (e.g., print or process)
-#     return response.json()['choices'][0]['message']['content']
-
 import torch
 from tqdm import tqdm
 import semchunk
@@ -34,34 +7,86 @@ import faiss
 import numpy as np
 
 
-def openai_chat(inputs_message, retry=True):
-    from openai import AzureOpenAI
-    GPT4V_KEY = os.getenv("OPENAIKEY")
-    GPT4V_ENDPOINT = os.getenv("OPENAIENDPOINT")
-    client = AzureOpenAI(azure_endpoint=GPT4V_ENDPOINT,
-                         api_version="2024-02-01",
-                         api_key=GPT4V_KEY)
-    engine_name = "gpt-4o"
+def wrap_openai_chat(model_name):
+    n2n_dict = {
+        "gpt4o": "gpt-4o",
+        "gpt4omini": "gpt-4o-mini",
+        "o3mini": "o3-mini",
+    }
 
-    try:
-        response = client.chat.completions.create(model=engine_name,
-                                                  messages=inputs_message,
-                                                  max_tokens=4096,
-                                                  temperature=0.6)
+    if model_name not in n2n_dict:
+        raise ValueError(
+            f"Unsupported model name: {model_name}. Supported models are: {list(n2n_dict.keys())}")
 
-        if not response or not response.choices or not response.choices[0].message:
-            print(response)
-            raise ValueError("Invalid response format from API")
+    engine_name = n2n_dict[model_name]
+    api_version = "2024-05-01-preview" if model_name != "o3mini" else "2024-12-01-preview"
 
-        return response.choices[0].message.content.strip()
-    except Exception as e:
-        print(f"Error in openai_chat: {e}")
-        print(response)
-        if retry:
-            print("Retrying...")
-            return openai_chat(inputs_message, retry=False)
-        else:
-            raise Exception(f"Failed after retry: {e}")
+    def openai_chat(inputs_message, retry=True, max_retries=3, retry_delay=1):
+        from openai import AzureOpenAI
+        import time
+
+        # Check environment variables
+        GPT4V_KEY = os.getenv("OPENAIKEY")
+        GPT4V_ENDPOINT = os.getenv("OPENAIENDPOINT")
+
+        if not GPT4V_KEY or not GPT4V_ENDPOINT:
+            raise ValueError(
+                "Missing required environment variables: OPENAIKEY and/or OPENAIENDPOINT")
+
+        client = AzureOpenAI(azure_endpoint=GPT4V_ENDPOINT,
+                             api_version=api_version,
+                             api_key=GPT4V_KEY)
+
+        retries = 0
+        while True:
+            try:
+                if model_name == "o3mini":
+                    response = client.chat.completions.create(model=engine_name,
+                                                              messages=inputs_message,
+                                                              max_completion_tokens=8192,
+                                                              reasoning_effort="low")
+                else:
+                    response = client.chat.completions.create(model=engine_name,
+                                                              messages=inputs_message,
+                                                              max_tokens=4096,
+                                                              temperature=0.6)
+
+                if not response:
+                    raise ValueError("Empty response from API")
+
+                if not response.choices:
+                    raise ValueError("No choices in API response")
+
+                if not response.choices[0].message:
+                    raise ValueError("No message in API response")
+
+                content = response.choices[0].message.content
+                if not content:
+                    if model_name == "o3mini" and response.choices[0].finish_reason == "length":
+                        raise ValueError(
+                            "Response exceeded token limit. Please reduce input size or increase token limit.")
+                    raise ValueError("Empty content in API response")
+
+                # Return both content and token usage
+                return {
+                    'content': content.strip(),
+                    'token_usage': response.usage if hasattr(response, 'usage') else None
+                }
+
+            except Exception as e:
+                print(f"Error in openai_chat: {e}")
+                if response:
+                    print(f"Response: {response}")
+
+                if retry and retries < max_retries:
+                    retries += 1
+                    print(f"Retrying... (attempt {retries}/{max_retries})")
+                    time.sleep(retry_delay)
+                    continue
+                else:
+                    raise Exception(f"Failed after {retries} retries: {e}")
+
+    return openai_chat
 
 
 def llama_chat(inputs_message):
@@ -132,12 +157,18 @@ def claude_chat(input_message):
 class LLM():
 
     def __init__(self, model_name, chunk_size=512):
-
         self.model_name = model_name
-        if self.model_name in ['gpt3.5', 'gpt4', 'gpt4o', 'gpt4omini']:
+        # Add token counting attributes
+        self.total_prompt_tokens = 0
+        self.total_completion_tokens = 0
+        self.chunk_token_stats = []  # List to store token stats per chunk
+        self.note_token_stats = []   # List to store token stats per note
+        self.current_chunk_stats = []  # Temporary storage for current chunk stats
+
+        if self.model_name in ['gpt4o', 'gpt4omini', 'o3mini']:
 
             import tiktoken
-            self.chat_func = openai_chat
+            self.chat_func = wrap_openai_chat(self.model_name)
             self.tokenizer = tiktoken.encoding_for_model('gpt-4')
             self.chunker = semchunk.chunkerify(self.tokenizer, chunk_size)
 
@@ -172,9 +203,9 @@ class LLM():
         add system prompt for different model, use default prompt,
         start new chat
         '''
-
+        # Don't reset chunk token stats here anymore
         self.message_buffer = []
-        if self.model_name in ['gpt3.5', 'gpt4', 'gpt4o', 'gpt4omini']:
+        if self.model_name in ['gpt4o', 'gpt4omini', 'o3mini']:
 
             self.message_buffer.append({
                 "role": "system",
@@ -204,12 +235,59 @@ class LLM():
             pass
 
     def __call__(self, query):
-
         self.message_buffer.append({'role': 'user', 'content': query})
         response = self.chat_func(self.message_buffer)
-        self.message_buffer.append({'role': 'assistant', 'content': response})
 
-        return response
+        # Handle token usage if available
+        if isinstance(response, dict) and response.get('token_usage'):
+            token_usage = response['token_usage']
+            # Update token counts
+            self.total_prompt_tokens += token_usage.prompt_tokens
+            self.total_completion_tokens += token_usage.completion_tokens
+
+            # Store chunk stats in temporary storage
+            chunk_stats = {
+                'prompt_tokens': token_usage.prompt_tokens,
+                'completion_tokens': token_usage.completion_tokens,
+                'total_tokens': token_usage.total_tokens
+            }
+            self.current_chunk_stats.append(chunk_stats)
+
+            content = response['content']
+        else:
+            content = response if isinstance(
+                response, str) else response['content']
+
+        self.message_buffer.append({'role': 'assistant', 'content': content})
+
+        return content
+
+    def finish_chunk(self):
+        """
+        Called when a chunk is finished processing to finalize its token statistics
+        """
+        if self.current_chunk_stats:
+            # Calculate chunk-level statistics
+            chunk_total = {
+                'prompt_tokens': sum(stats['prompt_tokens'] for stats in self.current_chunk_stats),
+                'completion_tokens': sum(stats['completion_tokens'] for stats in self.current_chunk_stats),
+                'total_tokens': sum(stats['total_tokens'] for stats in self.current_chunk_stats),
+                'num_calls': len(self.current_chunk_stats)
+            }
+            self.chunk_token_stats.append(chunk_total)
+
+            # Calculate and store note-level token stats
+            note_stats = {
+                'total_prompt_tokens': sum(chunk['prompt_tokens'] for chunk in self.chunk_token_stats),
+                'total_completion_tokens': sum(chunk['completion_tokens'] for chunk in self.chunk_token_stats),
+                'total_tokens': sum(chunk['total_tokens'] for chunk in self.chunk_token_stats),
+                'num_chunks': len(self.chunk_token_stats),
+                'avg_tokens_per_chunk': sum(chunk['total_tokens'] for chunk in self.chunk_token_stats) / len(self.chunk_token_stats)
+            }
+            self.note_token_stats.append(note_stats)
+
+            # Reset current chunk stats
+            self.current_chunk_stats = []
 
 
 class Retriever():

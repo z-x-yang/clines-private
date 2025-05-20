@@ -4,7 +4,7 @@ SCHEMA="default"
 # Model settings
 # MODEL_NAME="llama-3-405b"
 # MODEL_NAME="deepseek"
-MODEL_NAME="gpt4o"
+MODEL_NAME="o3mini"
 MAX_RETRIES=1
 
 OPENAIKEY="***REVOKED_OLD_AZURE_KEY***"
@@ -18,7 +18,7 @@ NOTES_DIR="/home/zoy043/Works/language-into-clinical-data/data/4CE"
 LOG_FILE="./logs/${MARKER}_${TIMESTAMP}.log"
 RESULTS_FILE="./results/${MARKER}.json"
 ERROR_LOG_FILE="./logs/${MARKER}_errors_${TIMESTAMP}.log"
-OUTPUT_DIR="./outputs/gpt4o_output_0405_4"
+OUTPUT_DIR="./outputs/o3mini_output_0520"
 START_IDX=0
 
 

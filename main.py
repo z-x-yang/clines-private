@@ -894,6 +894,7 @@ class PIPELINE:
         if len(chunked_ehr) == 1:
             print("\nProcessing single chunk...")
             self.call_single(ehr)
+            self.model.finish_chunk()  # Finalize chunk statistics
         else:
             print("\nProcessing multiple chunks sequentially...")
             for i in range(len(chunked_ehr)):
@@ -904,6 +905,7 @@ class PIPELINE:
                 else:
                     print(f"Processing with previous chunk as context")
                     self.call_single(chunked_ehr[i], chunked_ehr[i-1])
+                self.model.finish_chunk()  # Finalize chunk statistics after each chunk
         print("\n====== Chunk processing complete. ======")
         print("\n====== Starting result aggregation... ======")
         self.result_aggregation(key)
@@ -1073,6 +1075,34 @@ if __name__ == '__main__':
         total_processing_time += elapsed_time
         processed_notes_count += 1
         avg_time = total_processing_time / processed_notes_count
+
+        # Display token usage statistics
+        if model.note_token_stats:
+            latest_note_stats = model.note_token_stats[-1]
+            print("\nToken Usage Statistics:")
+            print(
+                f"Total prompt tokens: {latest_note_stats['total_prompt_tokens']}")
+            print(
+                f"Total completion tokens: {latest_note_stats['total_completion_tokens']}")
+            print(f"Total tokens: {latest_note_stats['total_tokens']}")
+            print(f"Number of chunks: {latest_note_stats['num_chunks']}")
+            print(
+                f"Average tokens per chunk: {latest_note_stats['avg_tokens_per_chunk']:.2f}")
+
+            # Calculate and display overall averages
+            total_notes = len(model.note_token_stats)
+            avg_prompt_tokens = sum(note['total_prompt_tokens']
+                                    for note in model.note_token_stats) / total_notes
+            avg_completion_tokens = sum(
+                note['total_completion_tokens'] for note in model.note_token_stats) / total_notes
+            avg_total_tokens = sum(note['total_tokens']
+                                   for note in model.note_token_stats) / total_notes
+
+            print("\nOverall Token Usage Averages:")
+            print(f"Average prompt tokens per note: {avg_prompt_tokens:.2f}")
+            print(
+                f"Average completion tokens per note: {avg_completion_tokens:.2f}")
+            print(f"Average total tokens per note: {avg_total_tokens:.2f}")
 
         print(
             f"Time taken: {elapsed_time:.2f} seconds ({elapsed_time/60:.2f} minutes)")
