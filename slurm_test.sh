@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=CLINES_gene_data            # 可选：作业名称
-#SBATCH --time=1:00:00               # 运行时间上限（48小时）
+#SBATCH --time=5:00:00               # 运行时间上限（48小时）
 #SBATCH --mem=128G                    # 内存要求
 #SBATCH -c 4                          # CPU 核数
 #SBATCH --gres=gpu:1                  # GPU 数量

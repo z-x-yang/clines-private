@@ -3,22 +3,21 @@
 ## Output JSON as a list of dictionaries with these keys:
  - tag: entity's order number (matching the KEY number in the text)
  - body_location: anatomical location related to the entity (omit if not applicable)
- - value: numerical (e.g., 127, 3.6, 3 x 3) or text-based (e.g., negative, positive, elevated, decreasing, Stage I) value(s) of measurements and sizes associated with the entity (use array for multiple values, exclude time information, omit if not applicable)
+ - value: numerical (e.g., 127, 3.6, 3 x 3) or text-based (e.g., negative, positive, elevated, decreasing, Stage I) **value(s)** of measurements/medications and sizes associated with the entity (use array for multiple values, exclude time information, omit if not applicable)
  - unit: units of measurement (infer if missing, use array for multiple values, omit if not applicable)
  - infer: boolean indicating if unit was inferred (true) or explicit (false), as array if multiple units (omit if not applicable)
  - note: if value is numerical, put 'greater', 'lower', or 'equal' to this key to indicate whether the actual value is greater, lower or equals to the recorded value (use array for multiple values, omit if not applicable)
  - route: administration route for medications (e.g., "PO", "IV") (omit if not applicable)
  - freq: medication frequency (e.g., "BID", "PRN", "daily") (omit if not applicable)
- - other: adjectives and descriptive terms that modify or further describe the entity or its values (e.g., "irregular", "scalloped", "fasting", "intense", "confirmed 2020") (exclude information already captured in above fields or in entity name, omit if not applicable)
+ - other: adjectives and descriptive terms that modify or further describe the entity (e.g., "irregular", "scalloped", "fasting", "intense", "confirmed 2020") (exclude information already captured in above fields or in entity name, omit if not applicable)
 
 ## Special handling:
 - For panel tests, individual values are marked as separate entities
-- For entities with multiple values, use arrays for value/unit/note/infer
+- For entities with multiple values, use **arrays** for value/unit/note/infer
 - Infer units only when clear from context
 - For qualitative terms (e.g., "elevated"), use exact term as value
 - All time-related information should not be placed in the "value" field, but in the "other" field
 - For measurements (e.g., "2 cm mass"), the numerical measurement (e.g., "2") goes in value, the unit (e.g., "cm") goes in unit
-
 
 ## Examples:
 Input:

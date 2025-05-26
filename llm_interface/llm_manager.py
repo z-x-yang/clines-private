@@ -28,6 +28,10 @@ class LLMManager():
         self.note_token_stats = []   # List to store token stats per note
         self.current_chunk_stats = []  # Temporary storage for current chunk stats
 
+        # New attributes for enhanced chunk statistics
+        self.current_chunk_original_tokens = 0  # Track original chunk token count
+        self.chunk_original_token_stats = []  # Store original token counts per chunk
+
         if self.model_name in ['gpt4o', 'gpt4omini', 'o3mini']:
             self.chat_func = wrap_openai_chat(self.model_name)
             self.tokenizer = tiktoken.encoding_for_model('gpt-4')
@@ -96,6 +100,23 @@ class LLMManager():
         elif self.model_name in ['deepseek']:
             pass  # deepseek might not require a system prompt or has a default
 
+    def set_chunk_original_tokens(self, chunk_text):
+        """
+        Set the original token count for the current chunk being processed.
+        This should be called at the beginning of processing each chunk.
+
+        Args:
+            chunk_text (str): The original chunk text
+        """
+        if hasattr(self, 'tokenizer') and self.tokenizer:
+            self.current_chunk_original_tokens = len(
+                self.tokenizer.encode(chunk_text))
+        else:
+            # Fallback estimation if tokenizer is not available
+            self.current_chunk_original_tokens = len(chunk_text.split())
+        self.logger.debug(
+            f"Original chunk tokens: {self.current_chunk_original_tokens}")
+
     def __call__(self, query):
         self.message_buffer.append({'role': 'user', 'content': query})
         response = self.chat_func(self.message_buffer)
@@ -143,20 +164,32 @@ class LLMManager():
                 'prompt_tokens': sum(stats['prompt_tokens'] for stats in self.current_chunk_stats),
                 'completion_tokens': sum(stats['completion_tokens'] for stats in self.current_chunk_stats),
                 'total_tokens': sum(stats['total_tokens'] for stats in self.current_chunk_stats),
-                'num_calls': len(self.current_chunk_stats)
+                'num_calls': len(self.current_chunk_stats),
+                # Add new statistics
+                'original_chunk_tokens': self.current_chunk_original_tokens,
+                'avg_prompt_tokens_per_call': sum(stats['prompt_tokens'] for stats in self.current_chunk_stats) / len(self.current_chunk_stats) if self.current_chunk_stats else 0,
+                'avg_completion_tokens_per_call': sum(stats['completion_tokens'] for stats in self.current_chunk_stats) / len(self.current_chunk_stats) if self.current_chunk_stats else 0,
+                'avg_total_tokens_per_call': sum(stats['total_tokens'] for stats in self.current_chunk_stats) / len(self.current_chunk_stats) if self.current_chunk_stats else 0
             }
             self.chunk_token_stats.append(chunk_total)
 
-            # Calculate and store note-level token stats
-            # This part seems to append a new entry to note_token_stats for every chunk.
-            # It should likely be called once per note, not per chunk.
-            # For now, I will keep the logic as is, but this is a point for review.
+            # Store original chunk token count separately for easier access
+            self.chunk_original_token_stats.append(
+                self.current_chunk_original_tokens)
+
+            # Calculate and store note-level token stats with enhanced metrics
             note_stats = {
                 'total_prompt_tokens': sum(chunk['prompt_tokens'] for chunk in self.chunk_token_stats),
                 'total_completion_tokens': sum(chunk['completion_tokens'] for chunk in self.chunk_token_stats),
                 'total_tokens': sum(chunk['total_tokens'] for chunk in self.chunk_token_stats),
                 'num_chunks': len(self.chunk_token_stats),
-                'avg_tokens_per_chunk': sum(chunk['total_tokens'] for chunk in self.chunk_token_stats) / len(self.chunk_token_stats) if self.chunk_token_stats else 0
+                'avg_tokens_per_chunk': sum(chunk['total_tokens'] for chunk in self.chunk_token_stats) / len(self.chunk_token_stats) if self.chunk_token_stats else 0,
+                # New enhanced statistics
+                'total_original_chunk_tokens': sum(self.chunk_original_token_stats),
+                'avg_original_chunk_tokens': sum(self.chunk_original_token_stats) / len(self.chunk_original_token_stats) if self.chunk_original_token_stats else 0,
+                'avg_prompt_tokens_per_chunk': sum(chunk['prompt_tokens'] for chunk in self.chunk_token_stats) / len(self.chunk_token_stats) if self.chunk_token_stats else 0,
+                'avg_completion_tokens_per_chunk': sum(chunk['completion_tokens'] for chunk in self.chunk_token_stats) / len(self.chunk_token_stats) if self.chunk_token_stats else 0,
+                'avg_calls_per_chunk': sum(chunk['num_calls'] for chunk in self.chunk_token_stats) / len(self.chunk_token_stats) if self.chunk_token_stats else 0
             }
             # Append new or update last
             if not self.note_token_stats or self.note_token_stats[-1]['num_chunks'] < note_stats['num_chunks']:
@@ -164,5 +197,6 @@ class LLMManager():
             else:
                 self.note_token_stats[-1] = note_stats
 
-            # Reset current chunk stats
+            # Reset current chunk stats and original token count
             self.current_chunk_stats = []
+            self.current_chunk_original_tokens = 0

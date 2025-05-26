@@ -11,14 +11,83 @@ OPENAIKEY="***REVOKED_OLD_AZURE_KEY***"
 OPENAIENDPOINT="https://azure-ai-dev.hms.edu"
 
 # Add timestamp variable at the beginning
-TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+TIMESTAMP=$(date +"%Y%m%d_%H%M")
 # Marker settings
 MARKER="Test"
-NOTES_DIR="/home/zoy043/Works/LLM_Info_Extract/language-into-clinical-data/fake_notes_from_william/test2"
+NOTES_DIR="/home/zoy043/Works/LLM_Info_Extract/language-into-clinical-data/data/fake_notes_from_william/test2"
 LOG_FILE="./logs/${MARKER}_${TIMESTAMP}.log"
 RESULTS_FILE="./results/${MARKER}.json"
 ERROR_LOG_FILE="./logs/${MARKER}_errors_${TIMESTAMP}.log"
-OUTPUT_DIR="./outputs/gpt4o_output_0520_test2"
+OUTPUT_DIR="./outputs/gpt4o_output_0526_test2"
+START_IDX=0
+
+
+CUDA_VISIBLE_DEVICES=0 OPENAIKEY=${OPENAIKEY} OPENAIENDPOINT=${OPENAIENDPOINT} python main.py \
+    --results_file ${RESULTS_FILE} \
+    --notes_dir ${NOTES_DIR} \
+    --error_log_file ${ERROR_LOG_FILE} \
+    --start_index ${START_IDX} \
+    --model_name ${MODEL_NAME} \
+    --max_retries ${MAX_RETRIES} \
+    --schema ${SCHEMA} \
+    --marker ${MARKER} \
+    --debug true \
+    --output_dir ${OUTPUT_DIR} \
+    --chunk_size 768 \
+    --use_faiss_gpu \
+    2>&1 | tee ${LOG_FILE}
+
+
+# Model settings
+MODEL_NAME="gpt4omini"
+MAX_RETRIES=1
+
+OPENAIKEY="***REVOKED_OLD_AZURE_KEY***"
+OPENAIENDPOINT="https://azure-ai-dev.hms.edu"
+
+# Add timestamp variable at the beginning
+TIMESTAMP=$(date +"%Y%m%d_%H%M")
+# Marker settings
+MARKER="Test"
+NOTES_DIR="/home/zoy043/Works/LLM_Info_Extract/language-into-clinical-data/data/fake_notes_from_william/test2"
+LOG_FILE="./logs/${MARKER}_${TIMESTAMP}.log"
+RESULTS_FILE="./results/${MARKER}.json"
+ERROR_LOG_FILE="./logs/${MARKER}_errors_${TIMESTAMP}.log"
+OUTPUT_DIR="./outputs/gpt4omini_output_0526_test2"
+START_IDX=0
+
+
+CUDA_VISIBLE_DEVICES=0 OPENAIKEY=${OPENAIKEY} OPENAIENDPOINT=${OPENAIENDPOINT} python main.py \
+    --results_file ${RESULTS_FILE} \
+    --notes_dir ${NOTES_DIR} \
+    --error_log_file ${ERROR_LOG_FILE} \
+    --start_index ${START_IDX} \
+    --model_name ${MODEL_NAME} \
+    --max_retries ${MAX_RETRIES} \
+    --schema ${SCHEMA} \
+    --marker ${MARKER} \
+    --debug true \
+    --output_dir ${OUTPUT_DIR} \
+    --chunk_size 1024 \
+    --use_faiss_gpu \
+    2>&1 | tee ${LOG_FILE}
+
+# Model settings
+MODEL_NAME="o3mini"
+MAX_RETRIES=1
+
+OPENAIKEY="***REVOKED_OLD_AZURE_KEY***"
+OPENAIENDPOINT="https://azure-ai-dev.hms.edu"
+
+# Add timestamp variable at the beginning
+TIMESTAMP=$(date +"%Y%m%d_%H%M")
+# Marker settings
+MARKER="Test"
+NOTES_DIR="/home/zoy043/Works/LLM_Info_Extract/language-into-clinical-data/data/fake_notes_from_william/test2"
+LOG_FILE="./logs/${MARKER}_${TIMESTAMP}.log"
+RESULTS_FILE="./results/${MARKER}.json"
+ERROR_LOG_FILE="./logs/${MARKER}_errors_${TIMESTAMP}.log"
+OUTPUT_DIR="./outputs/o3mini_output_0526_test2"
 START_IDX=0
 
 

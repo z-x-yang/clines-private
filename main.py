@@ -242,6 +242,18 @@ if __name__ == '__main__':
             logger.info(
                 f"  Average tokens per chunk: {latest_note_stats['avg_tokens_per_chunk']:.2f}")
 
+            # New enhanced statistics
+            logger.info(
+                f"  Total original chunk tokens: {latest_note_stats['total_original_chunk_tokens']}")
+            logger.info(
+                f"  Average original chunk tokens: {latest_note_stats['avg_original_chunk_tokens']:.2f}")
+            logger.info(
+                f"  Average prompt tokens per chunk: {latest_note_stats['avg_prompt_tokens_per_chunk']:.2f}")
+            logger.info(
+                f"  Average completion tokens per chunk: {latest_note_stats['avg_completion_tokens_per_chunk']:.2f}")
+            logger.info(
+                f"  Average LLM calls per chunk: {latest_note_stats['avg_calls_per_chunk']:.2f}")
+
             # Overall averages might be better calculated across all notes processed in this run
             # This requires accumulating totals outside the loop or adjusting LLMManager
             # For now, displaying based on current llm_model.note_token_stats accumulation
@@ -253,6 +265,12 @@ if __name__ == '__main__':
                     note['total_completion_tokens'] for note in llm_model.note_token_stats) / total_notes_processed_in_run
                 avg_total_tokens_overall = sum(
                     note['total_tokens'] for note in llm_model.note_token_stats) / total_notes_processed_in_run
+                avg_original_chunk_tokens_overall = sum(
+                    note['avg_original_chunk_tokens'] for note in llm_model.note_token_stats) / total_notes_processed_in_run
+                avg_prompt_tokens_per_chunk_overall = sum(
+                    note['avg_prompt_tokens_per_chunk'] for note in llm_model.note_token_stats) / total_notes_processed_in_run
+                avg_completion_tokens_per_chunk_overall = sum(
+                    note['avg_completion_tokens_per_chunk'] for note in llm_model.note_token_stats) / total_notes_processed_in_run
 
                 logger.info("\nOverall Token Usage Averages (this run):")
                 logger.info(
@@ -261,6 +279,12 @@ if __name__ == '__main__':
                     f"  Average completion tokens per note: {avg_completion_tokens_overall:.2f}")
                 logger.info(
                     f"  Average total tokens per note: {avg_total_tokens_overall:.2f}")
+                logger.info(
+                    f"  Average original chunk tokens per note: {avg_original_chunk_tokens_overall:.2f}")
+                logger.info(
+                    f"  Average prompt tokens per chunk (overall): {avg_prompt_tokens_per_chunk_overall:.2f}")
+                logger.info(
+                    f"  Average completion tokens per chunk (overall): {avg_completion_tokens_per_chunk_overall:.2f}")
 
         logger.info(
             f"Time taken for {key}: {elapsed_time:.2f} seconds ({elapsed_time/60:.2f} minutes)")

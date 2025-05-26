@@ -468,6 +468,8 @@ class PipelineCoordinator:
 
         if len(chunked_ehr) == 1:
             self.logger.info("Processing single chunk...")
+            # Set original chunk token count before processing
+            self.model.set_chunk_original_tokens(ehr)
             self.call_single(ehr, prev_ehr=None)
             self.model.finish_chunk()
         else:
@@ -477,6 +479,8 @@ class PipelineCoordinator:
                 current_chunk_ehr = chunked_ehr[i]
                 prev_chunk_ehr = chunked_ehr[i-1] if i > 0 else None
 
+                # Set original chunk token count before processing
+                self.model.set_chunk_original_tokens(current_chunk_ehr)
                 self.call_single(current_chunk_ehr, prev_ehr=prev_chunk_ehr)
                 self.model.finish_chunk()
 
