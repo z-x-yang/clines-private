@@ -81,7 +81,7 @@ class PipelineCoordinator:
         self.pipeline_result = {
             'ner_result': [], 'clean_results': [], 'info_results': [],
             'status_results': [], 'date_results': [], 'parsed_ner_result': [],
-            'parsed_ner_context': [], 'relate_results': []
+            'parsed_ner_context': [], 'relate_results': [], 'parsed_ner_positions': []
         }
         self.admission_date = None
         self.discharge_date = None
@@ -114,108 +114,6 @@ class PipelineCoordinator:
                         flags=re.MULTILINE | re.DOTALL)
         return result
 
-    def parse_ner_result(self, string):
-        """
-        Extract named entities and their tags from the NER result string.
-        Converts tags to sequential numbers and updates the original string.
-        Handles repeated tags by assigning new sequential numbers to each instance.
-
-        Args:
-            string (str): The NER result string.
-
-        Returns:
-            tuple: (entities_list, tags_list, updated_string) containing:
-                - entities_list: List of extracted named entities
-                - tags_list: List of corresponding sequential tags
-                - updated_string: NER string with updated sequential tags
-        """
-        matches = list(re.finditer(r'<([^<>]+)>(.*?)</\1>', string, re.DOTALL))
-        valid_matches = []
-        updated_string = string
-
-        for match in matches[::-1]:
-            if match.group(2).lower() not in ['none', 'null', '']:
-                valid_matches.insert(0, match)
-            else:
-                start, end = match.span()
-                content = match.group(2)
-                updated_string = updated_string[:start] + \
-                    content + updated_string[end:]
-
-        if not valid_matches:
-            return [], [], updated_string
-
-        entities = [match.group(2) for match in valid_matches]
-        old_tags = [match.group(1) for match in valid_matches]
-        new_tags = [str(i+1) for i in range(len(valid_matches))]
-
-        replacements = []
-        for i, match in enumerate(valid_matches):
-            start = match.start()
-            replacements.append((start, old_tags[i], new_tags[i]))
-
-        replacements.sort(reverse=True)
-
-        for _, old_tag, new_tag in replacements:
-            updated_string = re.sub(
-                f'</({old_tag})>',
-                f'</{new_tag}>',
-                updated_string,
-                count=1
-            )
-            updated_string = re.sub(
-                f'<({old_tag})>',
-                f'<{new_tag}>',
-                updated_string,
-                count=1
-            )
-
-        changes_made = any(old != new for old, new in zip(old_tags, new_tags))
-        if changes_made:
-            self.logger.info("Tag corrections made:")
-            for old, new in zip(old_tags, new_tags):
-                if old != new:
-                    self.logger.info(f"  Tag {old} -> {new}")
-
-        return entities, new_tags, updated_string
-
-    def parse_ner_context(self, string, tag_list):
-        """
-        Extract context around named entities from the NER result string for specific tags.
-
-        Args:
-            string (str): The NER result string.
-            tag_list (list): List of tags to extract context for.
-
-        Returns:
-            list: List of context strings for each tag in tag_list. If a tag is not found,
-                 its corresponding context will be an empty string. If multiple matches are found
-                 for a tag, only the first match's context is returned to maintain alignment with tag_list.
-        """
-        result = []
-        all_matches = {}
-
-        for match in re.finditer(r'<([^<>]+)>(.*?)</\1>', string, re.DOTALL):
-            tag = match.group(1)
-            if tag not in all_matches:
-                all_matches[tag] = []
-            all_matches[tag].append(match)
-
-        for tag in tag_list:
-            if tag in all_matches and all_matches[tag]:
-                match = all_matches[tag][0]
-                start, end = match.span()
-                before_start = max(0, start - 200)
-                after_end = min(len(string), end + 200)
-                context = string[before_start:after_end]
-                context = re.sub(r'<[^>]+>', '', context).replace('\n', ' ')
-                context = re.sub(r'[^\s]*>', '', context, 1)
-                context = re.sub(r'<[^\s]*', '', context, 1)
-                result.append(context)
-            else:
-                result.append("")
-        return result
-
     def result_aggregation(self, key):
         aggregated_result = []
         num_items = len(self.pipeline_result.get('clean_results', []))
@@ -228,6 +126,8 @@ class PipelineCoordinator:
             'parsed_ner_result', [])
         parsed_ner_context_list = self.pipeline_result.get(
             'parsed_ner_context', [])
+        parsed_ner_positions_list = self.pipeline_result.get(
+            'parsed_ner_positions', [])
 
         for i in range(num_items):
             tmp = {}
@@ -245,6 +145,8 @@ class PipelineCoordinator:
                     'zip_code': self.pipeline_result.get('zip_code', None),
                     'mention': parsed_ner_result_list[i] if i < len(parsed_ner_result_list) else None,
                     'context': parsed_ner_context_list[i] if i < len(parsed_ner_context_list) else None,
+                    'mention_start_pos': parsed_ner_positions_list[i][0] if i < len(parsed_ner_positions_list) and parsed_ner_positions_list[i] != (-1, -1) else None,
+                    'mention_end_pos': parsed_ner_positions_list[i][1] if i < len(parsed_ner_positions_list) and parsed_ner_positions_list[i] != (-1, -1) else None,
                 }
 
                 clean_item = clean_results_list[i]
@@ -334,7 +236,7 @@ class PipelineCoordinator:
                 seen.add(key_value)
         return unique_list[::-1]
 
-    def filter_parsed_results(self, parsed_ner_results, parsed_ner_context, parsed_ner_tags, clean_results):
+    def filter_parsed_results(self, parsed_ner_results, parsed_ner_context, parsed_ner_tags, clean_results, parsed_ner_positions=None):
         clean_result_tags = [item['TAG'] for item in clean_results]
         filtered_indices = [i for i, tag in enumerate(
             parsed_ner_tags) if tag in clean_result_tags]
@@ -342,7 +244,9 @@ class PipelineCoordinator:
                                 for i in filtered_indices]
         filtered_ner_context = [parsed_ner_context[i]
                                 for i in filtered_indices]
-        return filtered_ner_results, filtered_ner_context
+        filtered_ner_positions = [parsed_ner_positions[i]
+                                  for i in filtered_indices] if parsed_ner_positions else []
+        return filtered_ner_results, filtered_ner_context, filtered_ner_positions
 
     def _aggregate_results(self, ner_data: NERData, entity_data: EntityData,
                            info_data: InfoData, date_data: DateData) -> None:
@@ -372,19 +276,23 @@ class PipelineCoordinator:
             self.pipeline_result['relate_results'] = []
         self.pipeline_result['relate_results'] += relate_results
 
-        filtered_ner_results, filtered_ner_context = self.filter_parsed_results(
+        filtered_ner_results, filtered_ner_context, filtered_ner_positions = self.filter_parsed_results(
             ner_data.parsed_results, ner_data.parsed_context,
-            ner_data.parsed_tags, entity_data.clean_results
+            ner_data.parsed_tags, entity_data.clean_results, ner_data.parsed_positions
         )
         self.pipeline_result['parsed_ner_result'] += filtered_ner_results
         self.pipeline_result['parsed_ner_context'] += filtered_ner_context
+        self.pipeline_result['parsed_ner_positions'] += filtered_ner_positions
 
-    def call_single(self, ehr: str, prev_ehr: str | None = None) -> None:
+    def call_single(self, ehr: str, prev_ehr: str | None = None, chunk_offset: int = 0, original_ehr: str = None) -> None:
         self.logger.info("=== Starting Single EHR Processing ===")
         self.logger.info(f"Input EHR length: {len(ehr)} characters")
         self.logger.info(f"Previous EHR provided: {prev_ehr is not None}")
+        self.logger.info(f"Chunk offset in original document: {chunk_offset}")
 
-        ner_data = self.ner_processor.process_ner(ehr)
+        # Pass the original EHR text and chunk offset to NER processor
+        ner_data = self.ner_processor.process_ner(
+            ehr, original_ehr or ehr, chunk_offset)
         self.logger.info(f"Found {len(ner_data.parsed_tags)} entities")
         if len(ner_data.parsed_tags) == 0:
             self.logger.info("No entities found - skipping further processing")
@@ -470,19 +378,41 @@ class PipelineCoordinator:
             self.logger.info("Processing single chunk...")
             # Set original chunk token count before processing
             self.model.set_chunk_original_tokens(ehr)
-            self.call_single(ehr, prev_ehr=None)
+            self.call_single(ehr, prev_ehr=None,
+                             chunk_offset=0, original_ehr=ehr)
             self.model.finish_chunk()
         else:
             self.logger.info("Processing multiple chunks sequentially...")
+            current_offset = 0
             for i in range(len(chunked_ehr)):
                 self.logger.info(f"Processing chunk {i+1}/{len(chunked_ehr)}")
                 current_chunk_ehr = chunked_ehr[i]
                 prev_chunk_ehr = chunked_ehr[i-1] if i > 0 else None
 
+                # Calculate the offset of this chunk in the original document
+                if i > 0:
+                    # Find the position of this chunk in the original text
+                    chunk_start_in_original = ehr.find(
+                        current_chunk_ehr, current_offset)
+                    if chunk_start_in_original != -1:
+                        current_offset = chunk_start_in_original
+                    else:
+                        # Fallback: estimate offset based on previous chunks
+                        current_offset += len(chunked_ehr[i-1])
+                        self.logger.warning(
+                            f"Could not find exact position for chunk {i+1}, using estimated offset {current_offset}")
+
+                self.logger.info(
+                    f"Chunk {i+1} offset in original document: {current_offset}")
+
                 # Set original chunk token count before processing
                 self.model.set_chunk_original_tokens(current_chunk_ehr)
-                self.call_single(current_chunk_ehr, prev_ehr=prev_chunk_ehr)
+                self.call_single(current_chunk_ehr, prev_ehr=prev_chunk_ehr,
+                                 chunk_offset=current_offset, original_ehr=ehr)
                 self.model.finish_chunk()
+
+                # Update offset for next iteration
+                current_offset += len(current_chunk_ehr)
 
         self.logger.info("====== Chunk processing complete. ======")
         self.logger.info("====== Starting result aggregation... ======")

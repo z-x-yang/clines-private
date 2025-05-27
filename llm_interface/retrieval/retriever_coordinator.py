@@ -11,7 +11,7 @@ import traceback
 
 class RetrieverCoordinator():
 
-    def __init__(self, path, use_gpu=True, use_faiss_gpu=None, fp16=False, use_ivf=True, ivf_threshold=50000):
+    def __init__(self, path, use_gpu=True, use_faiss_gpu=None, fp16=False, use_ivf=False, ivf_threshold=50000):
         self.logger = logging.getLogger(self.__class__.__name__)
         self.tokenizer = transformers.AutoTokenizer.from_pretrained(
             path, use_fast=True, do_lower_case=True)

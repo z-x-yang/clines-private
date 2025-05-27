@@ -39,8 +39,8 @@ def wrap_openai_chat(model_name):
                 if model_name == "o3mini":
                     response = client.chat.completions.create(model=engine_name,
                                                               messages=inputs_message,
-                                                              max_completion_tokens=8192,
-                                                              reasoning_effort="low")
+                                                              max_completion_tokens=16384,
+                                                              reasoning_effort="medium")
                 else:
                     response = client.chat.completions.create(model=engine_name,
                                                               messages=inputs_message,

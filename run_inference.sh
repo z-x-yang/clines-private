@@ -18,7 +18,7 @@ NOTES_DIR="/home/zoy043/Works/language-into-clinical-data/data/4CE"
 LOG_FILE="./logs/${MARKER}_${TIMESTAMP}.log"
 RESULTS_FILE="./results/${MARKER}.json"
 ERROR_LOG_FILE="./logs/${MARKER}_errors_${TIMESTAMP}.log"
-OUTPUT_DIR="./outputs/o3mini_output_0520"
+OUTPUT_DIR="./outputs/o3mini_medium_output_0526"
 START_IDX=0
 
 

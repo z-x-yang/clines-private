@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Tuple
 
 
 @dataclass
@@ -9,6 +9,8 @@ class NERData:
     parsed_results: List[str]
     parsed_tags: List[str]
     parsed_context: List[str]
+    # List of (start_pos, end_pos) tuples
+    parsed_positions: List[Tuple[int, int]]
 
 
 @dataclass
