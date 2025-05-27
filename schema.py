@@ -226,6 +226,15 @@ class SchemaProcessor():
 
         return processed_data
 
+    def _safe_infer_to_string(self, infer_val):
+        """Safely convert infer value to string, handling NaN values."""
+        if infer_val is None or pd.isna(infer_val):
+            return 'false'
+        elif isinstance(infer_val, str):
+            return infer_val.lower() if infer_val.lower() in ['true', 'false'] else 'false'
+        else:
+            return str(bool(infer_val)).lower()
+
     def _i2b2_transform(self, json_data, key_identifier):
         """Transforms input json_data to the i2b2 schema format."""
         output_data = []
@@ -270,7 +279,7 @@ class SchemaProcessor():
                 'nval_num': None,
                 'valueflag_cd': None,
                 'units_cd': None,
-                'unitflag_cd': None,  # Corresponds to 'infer' boolean
+                'unitflag_cd': 'false',  # Default to 'false', will be updated if needed
             }
 
             # Base record for the entity itself
@@ -286,10 +295,13 @@ class SchemaProcessor():
                     current_record['tval_char'] = str(item.get('value'))
                     current_record['valtype_cd'] = 'T'
                 current_record['units_cd'] = item.get('unit', None)
-                # Convert boolean to string 'true'/'false'
-                current_record['unitflag_cd'] = str(
-                    item.get('infer', False)).lower()
-
+                # Convert boolean to string 'true'/'false' using safe method
+                current_record['unitflag_cd'] = self._safe_infer_to_string(
+                    item.get('infer', False))
+            else:
+                # Ensure unitflag_cd is always set for base records
+                current_record['unitflag_cd'] = self._safe_infer_to_string(
+                    item.get('infer', False))
             output_data.append(current_record)
 
             # Modifier records
@@ -311,8 +323,8 @@ class SchemaProcessor():
                 # Or more generic 'VALUE' if not always dose
                 mod_record['modifier_cd'] = 'DOSE'
                 mod_record['units_cd'] = item.get('unit', None)
-                mod_record['unitflag_cd'] = str(
-                    item.get('infer', False)).lower()
+                mod_record['unitflag_cd'] = self._safe_infer_to_string(
+                    item.get('infer', False))
                 output_data.append(mod_record)
 
             if route is not None:
@@ -322,6 +334,8 @@ class SchemaProcessor():
                 mod_record['modifier_cd'] = 'ROUTE'
                 mod_record['tval_char'] = route
                 mod_record['valtype_cd'] = 'T'
+                # Ensure unitflag_cd is set
+                mod_record['unitflag_cd'] = 'false'
                 output_data.append(mod_record)
 
             if freq is not None:
@@ -331,49 +345,8 @@ class SchemaProcessor():
                 mod_record['modifier_cd'] = 'FREQ'
                 mod_record['tval_char'] = freq
                 mod_record['valtype_cd'] = 'T'
+                # Ensure unitflag_cd is set
+                mod_record['unitflag_cd'] = 'false'
                 output_data.append(mod_record)
 
         return output_data
-
-    # Removed output_format method (handled by formatters)
-    # Removed i2b2_schema method (renamed to _i2b2_transform)
-    # Removed default_schema method (renamed to _default_transform)
-    # Removed write_sqlit method (handled by SqliteFormatter)
-
-# Example of how it might be called from main.py (conceptual)
-# if __name__ == '__main__':
-#     # Sample data similar to what PipelineCoordinator might produce
-#     sample_ner_output = [
-#         {"TAG": "1", "CLEAN": "Hypertension", "text_span": [20,31]},
-#         {"TAG": "2", "CLEAN": "Lisinopril", "text_span": [40,49]}
-#     ]
-#     sample_info_output = [
-#         {"tag": "2", "value": "20", "unit": "mg", "freq": "daily", "route": "PO"}
-#     ]
-#     # This data would typically be merged and processed before reaching SchemaProcessor
-#     # For simplicity, let's assume we have a pre-merged structure for i2b2
-
-#     # Example for i2b2 schema and CSV output
-#     schema_proc_csv = SchemaProcessor(schema_name_str="i2b2", output_type_str="csv", output_dir="./test_outputs")
-#     # Simulate data that i2b2_transform expects (merged from NER, INFO, etc.)
-#     merged_data_i2b2 = [
-#         {
-#             "key": "note123", "TAG": "1", "CLEAN": "Hypertension", "code": "I10", "mention": "Hypertension",
-#             "begin_date": "2023-01-01", "end_date": "2023-01-01"
-#         },
-#         {
-#             "key": "note123", "TAG": "2", "CLEAN": "Lisinopril", "code": "C09AA03", "mention": "Lisinopril",
-#             "value": "20", "unit": "mg", "freq": "daily", "route": "PO", "infer": False, "note": "equal",
-#             "begin_date": "2023-01-01", "end_date": "2023-01-01"
-#         }
-#     ]
-#     schema_proc_csv(merged_data_i2b2, "note123_run1")
-
-#     # Example for default schema and JSON output
-#     schema_proc_json = SchemaProcessor(schema_name_str="default", output_type_str="json", output_dir="./test_outputs")
-#     raw_pipeline_output = {"ner": sample_ner_output, "info": sample_info_output, "patient_id": "patientA"}
-#     schema_proc_json(raw_pipeline_output, "note123_run1") # Default transform might just pass it through
-
-#     # Example for i2b2 schema and SQLite output
-#     schema_proc_sqlite = SchemaProcessor(schema_name_str="i2b2", output_type_str="sqlite", output_dir="./test_outputs")
-#     schema_proc_sqlite(merged_data_i2b2, "note123_run1")

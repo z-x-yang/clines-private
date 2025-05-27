@@ -17,7 +17,7 @@ import json
 import logging
 from pathlib import Path
 
-# 导入现有的SchemaProcessor
+# 导入最终修复版本的SchemaProcessor
 from schema import SchemaProcessor, SchemaName, OutputType
 
 
@@ -88,7 +88,19 @@ def read_default_csv(csv_file_path):
             record['freq'] = row.get('freq', None)
             record['route'] = row.get('route', None)
             record['note'] = row.get('note', None)
-            record['infer'] = row.get('infer', False)
+            # 处理infer字段的NaN值，确保是布尔值
+            infer_value = row.get('infer')
+            if infer_value is None or pd.isna(infer_value):
+                record['infer'] = False
+            elif isinstance(infer_value, str):
+                record['infer'] = infer_value.lower(
+                ) in ['true', '1', 'yes', 't', 'y']
+            else:
+                record['infer'] = bool(infer_value)
+
+            for key, value in record.items():
+                if pd.isna(value):
+                    record[key] = None
 
             converted_data.append(record)
 
