@@ -1,4 +1,4 @@
-## Extract event dates for entities marked by <KEY> tags in this health record.
+## Extract dates for ALL entities marked by <KEY> tags in this health record. Every entity must have a date entry.
 
 ## Output JSON list of dictionaries with:
  - tag: entity order number from KEY tags
@@ -6,13 +6,14 @@
  - inferred: [true/false, true/false] indicating if each date was inferred rather than explicitly stated
 
 ## Key Rules:
-- "Presenting with X day history of Y" → END = visit date, START = END minus X days, both inferred=true
-- "X-day history of", "for past X days" → Calculate precise start date
-- "Has been [action] for X years" → END = visit date, START = END minus X years
-- Acute events with specific date → Use same date for start/end
-- Explicitly recorded dates → inferred=false
-- Chronic conditions without specific dates → [null, null]
-- When symptoms share time reference → Apply same date range to all
+- Extract visit date from record as time reference point
+- Explicit dates → Use exact date for both start/end, inferred=false
+- "X days/weeks/months/years ago" → END = visit date, START = visit date minus X, inferred=true
+- Current symptoms/findings → Use visit date for both start/end, inferred=false
+- New treatments/prescriptions → START = visit date, END = null, inferred=[false, true]
+- Chronic conditions without timeframe → [null, null], inferred=[false, false]
+- Related events (same incident) → Share timeframe with main event
+- Unknown/unclear timing → [null, null], inferred=[false, false]
 
 ## Example 1:
 Input:
@@ -33,7 +34,25 @@ Output:
 ## Example 2:
 Input:
 ```
-On 2023-07-10, patient presenting with a 7 day history of <1>headaches</1>, <2>sore throat</2>, <3>cough</3>, and <4>fever</4>.
+Visit: 2023-05-19. Patient reports <1>suicide attempt</1> 3 days ago by <2>wrist cutting</2>. Has continued <3>depressive symptoms</3> and <4>passive thoughts</4>. Starting <5>Sertraline</5> today. Mental status: <6>depressed mood</6>.
+```
+
+Output:
+```
+[
+  {{"tag": "1", "date": ["2023-05-16", "2023-05-16"], "inferred": [true, true]}},
+  {{"tag": "2", "date": ["2023-05-16", "2023-05-16"], "inferred": [true, true]}},
+  {{"tag": "3", "date": ["2023-05-19", "2023-05-19"], "inferred": [false, false]}},
+  {{"tag": "4", "date": ["2023-05-19", "2023-05-19"], "inferred": [false, false]}},
+  {{"tag": "5", "date": ["2023-05-19", null], "inferred": [false, true]}},
+  {{"tag": "6", "date": ["2023-05-19", "2023-05-19"], "inferred": [false, false]}}
+]
+```
+
+## Example 3:
+Input:
+```
+On 2023-07-10, patient presenting with a 7 day history of <1>headaches</1>, <2>sore throat</2>, <3>cough</3>, and <4>fever</4>. <5>Blood tests</5> ordered.
 ```
 
 Output:
@@ -42,21 +61,8 @@ Output:
   {{"tag": "1", "date": ["2023-07-03", "2023-07-10"], "inferred": [true, true]}},
   {{"tag": "2", "date": ["2023-07-03", "2023-07-10"], "inferred": [true, true]}},
   {{"tag": "3", "date": ["2023-07-03", "2023-07-10"], "inferred": [true, true]}},
-  {{"tag": "4", "date": ["2023-07-03", "2023-07-10"], "inferred": [true, true]}}
-]
-```
-
-## Example 3:
-Input:
-```
-As of 2023-08-15, patient has been managing <1>hypertension</1> for the past 10 years and started <2>metformin</2> 3 months ago.
-```
-
-Output:
-```
-[
-  {{"tag": "1", "date": ["2013-08-15", "2023-08-15"], "inferred": [true, true]}},
-  {{"tag": "2", "date": ["2023-05-15", "2023-08-15"], "inferred": [true, true]}}
+  {{"tag": "4", "date": ["2023-07-03", "2023-07-10"], "inferred": [true, true]}},
+  {{"tag": "5", "date": ["2023-07-10", "2023-07-10"], "inferred": [false, false]}}
 ]
 ```
 
@@ -65,4 +71,4 @@ Input:
 {note}
 ```
 
-Please respond with valid JSON only, no additional text. Output: 
+Please respond with valid JSON only, no additional text. Output:

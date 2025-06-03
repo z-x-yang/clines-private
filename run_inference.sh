@@ -15,6 +15,9 @@ TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 # Marker settings
 MARKER="4CE"
 NOTES_DIR="/home/zoy043/Works/language-into-clinical-data/data/4CE"
+mkdir -p ./logs
+mkdir -p ./results
+mkdir -p ./outputs
 LOG_FILE="./logs/${MARKER}_${TIMESTAMP}.log"
 RESULTS_FILE="./results/${MARKER}.json"
 ERROR_LOG_FILE="./logs/${MARKER}_errors_${TIMESTAMP}.log"

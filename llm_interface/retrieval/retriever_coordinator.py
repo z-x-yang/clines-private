@@ -119,8 +119,48 @@ class RetrieverCoordinator():
                 "Dense embeddings not loaded or generated. Call embed_dictionary first.")
 
         # FAISS expects numpy arrays on CPU for initial setup before potential GPU transfer by IndexService
-        dense_embeds_all_np = self.dense_embeds_all.cpu().float().numpy()
-        dense_embeds_bodyloc_np = self.dense_embeds_bodyloc.cpu().float().numpy()
+        # Use a safer conversion method to avoid PyTorch-NumPy compatibility issues
+        def safe_tensor_to_numpy(tensor, name="tensor"):
+            """Safely convert PyTorch tensor to numpy array with fallback methods"""
+            try:
+                # Method 1: Use ascontiguousarray to ensure proper numpy array
+                temp = tensor.cpu().detach().numpy()
+                result = np.ascontiguousarray(temp, dtype=np.float32)
+                self.logger.debug(f"Method 1 (ascontiguousarray) succeeded for {name}")
+                return result
+            except Exception as e1:
+                self.logger.warning(f"Method 1 failed for {name}: {e1}, trying fallback...")
+                try:
+                    # Method 2: Convert to list then numpy (most reliable for small tensors)
+                    if tensor.numel() > 1000000:  # If tensor has more than 1M elements
+                        raise ValueError("Tensor too large for list conversion")
+                    tensor_list = tensor.cpu().detach().tolist()
+                    result = np.array(tensor_list, dtype=np.float32)
+                    self.logger.debug(f"Method 2 (tolist) succeeded for {name}")
+                    return result
+                except Exception as e2:
+                    self.logger.warning(f"Method 2 failed for {name}: {e2}, trying manual copy...")
+                    try:
+                        # Method 3: Manual copy with explicit dtype
+                        temp = tensor.cpu().detach().numpy()
+                        result = np.empty(temp.shape, dtype=np.float32)
+                        result[:] = temp
+                        self.logger.debug(f"Method 3 (manual copy) succeeded for {name}")
+                        return result
+                    except Exception as e3:
+                        self.logger.error(f"All conversion methods failed for {name}: {e1}, {e2}, {e3}")
+                        raise e3
+
+        try:
+            dense_embeds_all_np = safe_tensor_to_numpy(self.dense_embeds_all, "dense_embeds_all")
+            dense_embeds_bodyloc_np = safe_tensor_to_numpy(self.dense_embeds_bodyloc, "dense_embeds_bodyloc")
+            
+            self.logger.info(f"Successfully converted embeddings to numpy arrays: "
+                           f"all_terms shape {dense_embeds_all_np.shape}, "
+                           f"bodyloc_terms shape {dense_embeds_bodyloc_np.shape}")
+        except Exception as e:
+            self.logger.error(f"Failed to convert tensors to numpy arrays: {e}")
+            raise e
 
         self.index_service.setup_all_terms_index(
             dense_embeds_all_np, len(self.term_list_all), gpu_id)
@@ -147,7 +187,29 @@ class RetrieverCoordinator():
                 filtered_term, batch_size)
 
             # IndexService search methods expect numpy float32 arrays
-            query_embeddings_np = embed_for_test.cpu().float().numpy()
+            def safe_tensor_to_numpy_small(tensor):
+                """Safely convert small PyTorch tensor to numpy array"""
+                try:
+                    # Use ascontiguousarray to ensure proper numpy array
+                    temp = tensor.cpu().detach().numpy()
+                    return np.ascontiguousarray(temp, dtype=np.float32)
+                except Exception as e1:
+                    try:
+                        # Fallback: convert to list then numpy (for small tensors)
+                        tensor_list = tensor.cpu().detach().tolist()
+                        return np.array(tensor_list, dtype=np.float32)
+                    except Exception as e2:
+                        # Last resort: manual copy
+                        temp = tensor.cpu().detach().numpy()
+                        result = np.empty(temp.shape, dtype=np.float32)
+                        result[:] = temp
+                        return result
+            
+            try:
+                query_embeddings_np = safe_tensor_to_numpy_small(embed_for_test)
+            except Exception as e:
+                self.logger.error(f"Failed to convert query embeddings to numpy: {e}")
+                raise e
 
             D, I = index_search_method(query_embeddings_np, top_k)
 

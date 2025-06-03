@@ -1,1 +1,1 @@
-/home/zoy043/Works/language-into-clinical-data/umls_dictionary.txt
+../language-into-clinical-data-hongyi/umls_dictionary.txt

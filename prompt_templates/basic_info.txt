@@ -1,5 +1,4 @@
-\
-Extract the following basic patient information from this health record:
+## Extract the following basic patient information from this health record:
  - admission_date
  - discharge_date
  - gender
@@ -12,7 +11,7 @@ Extract the following basic patient information from this health record:
 Output as JSON Dictionary using the above as keys.
 For dates, use "YYYY-MM-DD" format. If information is not explicitly mentioned, use null.
 
-IMPORTANT DATE EXTRACTION RULES:
+##IMPORTANT DATE EXTRACTION RULES:
 - If explicit "Admission Date" or "Admitted on" is present, use that for admission_date
 - If explicit "Discharge Date" or "Discharged on" is present, use that for discharge_date
 - If admission/discharge dates aren't explicit but other date indicators exist:
@@ -22,7 +21,7 @@ IMPORTANT DATE EXTRACTION RULES:
   * For dates preceded by provider names or report titles: use as both admission_date and discharge_date
 - When only one date appears in the entire record: use as both admission_date and discharge_date
 
-Examples:
+##Examples:
 Input:
 ```
 PATIENT INFORMATION:
@@ -73,6 +72,7 @@ Output:
   "zip_code": null
 }}
 ```
+---
 
 Input:
 ```

@@ -53,8 +53,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Process some EHR notes.')
     parser.add_argument('--model_name', type=str,
                         default='llama-3-405b', help='Name of the model to use')
-    parser.add_argument('--results_file', type=str,
-                        default='./results_0927_3.json', help='File to save the results')
     parser.add_argument('--max_retries', type=int, default=1,
                         help='Maximum number of retries for processing each note')
     parser.add_argument('--debug', type=bool, default=False,
@@ -62,7 +60,7 @@ if __name__ == '__main__':
     parser.add_argument('--notes_dir', type=str,
                         default='./mimic-data-processing/cleaned_mimiciii_notes.csv', help='CSV file or directory containing the notes')
     parser.add_argument('--error_log_file', type=str,
-                        help='File to save the error logs')
+                        default='error_log.log', help='File to save the error logs')
     parser.add_argument('--start_index', type=int, default=0,
                         help='Index to start processing from')
     parser.add_argument('--schema', type=str, default="default", help='schema')
@@ -85,12 +83,6 @@ if __name__ == '__main__':
                         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                         handlers=[logging.StreamHandler()])
 
-    base_results_file = args.results_file.rsplit('.', 1)[0]
-    args.results_file = f"{base_results_file}.json"
-
-    if not args.error_log_file:
-        args.error_log_file = f"{base_results_file}_errors.log"
-
     logger.info("Start initializing model")
     # model instance name matches the one used in PipelineCoordinator
     llm_model = LLMManager(args.model_name, chunk_size=args.chunk_size)
@@ -106,16 +98,7 @@ if __name__ == '__main__':
                                             use_faiss_gpu=args.use_faiss_gpu, output_dir=args.output_dir)
     logger.info("PipelineCoordinator initialized")
 
-    if args.start_index > 0 and os.path.exists(args.results_file):
-        try:
-            with open(args.results_file, 'r') as f:
-                all_results = json.load(f)
-            all_results = [result for result in all_results if int(
-                result.get('result_index', float('inf'))) < args.start_index]
-        except Exception as e:
-            logger.error(
-                f"Error loading existing results file ({args.results_file}): {e}", exc_info=True)
-            all_results = []
+    if args.start_index > 0 and os.path.exists(args.error_log_file):
         try:
             with open(args.error_log_file, 'r') as f:
                 error_log = json.load(f)
@@ -126,11 +109,7 @@ if __name__ == '__main__':
                 f"Error loading existing error log file ({args.error_log_file}): {e}", exc_info=True)
             error_log = []
     else:
-        all_results = []
         error_log = []
-
-    with open(args.results_file, 'w') as f:
-        json.dump(all_results, f, indent=4)
 
     with open(args.error_log_file, 'w') as f:
         json.dump(error_log, f, indent=4)
