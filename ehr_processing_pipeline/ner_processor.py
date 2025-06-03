@@ -1,11 +1,12 @@
-import logging
+import json
 import re
+import logging
 import demjson3
 import pprint
-
-from data_types import NERData
+from core.data_types import NERData
 # Import utility functions
 from .processing_utils import parse_result, safe_json_decode, process_llm_query
+from typing import List, Tuple
 
 # LLMManager, PROMPT will be passed during __init__
 

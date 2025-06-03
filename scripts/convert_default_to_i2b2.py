@@ -16,9 +16,11 @@ import pandas as pd
 import json
 import logging
 from pathlib import Path
+from typing import Dict, List, Any
+import traceback
 
-# 导入最终修复版本的SchemaProcessor
-from schema import SchemaProcessor, SchemaName, OutputType
+# Import schema processor from core module
+from core.schema import SchemaProcessor, SchemaName, OutputType
 
 
 def setup_logging():

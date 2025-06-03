@@ -9,14 +9,14 @@ from llm_interface.retrieval.retriever_coordinator import RetrieverCoordinator
 # from prompt import PROMPT # Unused import
 import re
 import demjson3
-from check import process_lists_based_on_list1
+from core.utils import process_lists_based_on_list1
 import traceback
 import sqlite3
 # from schema import Schema # Unused import
 from datetime import datetime
 from dataclasses import dataclass
 from typing import List, Optional, Dict, Any
-from data_types import NERData, EntityData, InfoData, DateData
+from core.data_types import NERData, EntityData, InfoData, DateData
 import time
 import logging
 import pprint

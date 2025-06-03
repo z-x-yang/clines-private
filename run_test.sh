@@ -15,7 +15,7 @@ MARKER="Test"
 NOTES_DIR="data/test2/"
 LOG_FILE="./logs/${MARKER}_${TIMESTAMP}.log"
 ERROR_LOG_FILE="./logs/${MARKER}_errors_${TIMESTAMP}.log"
-OUTPUT_DIR="./test_outputs/${MODEL_NAME}_${TIMESTAMP}_${MARKER}"
+OUTPUT_DIR="./outputs/${MODEL_NAME}_${TIMESTAMP}_${MARKER}"
 START_IDX=0
 
 

@@ -3,8 +3,7 @@ import re
 import demjson3
 import pprint
 import json
-
-from data_types import InfoData
+from core.data_types import InfoData
 # Import utility functions
 from .processing_utils import parse_result, safe_json_decode, process_llm_query
 
