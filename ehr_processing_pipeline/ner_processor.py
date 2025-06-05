@@ -381,9 +381,13 @@ class NERProcessor:
         # Extract clean chunk text for context-based matching
         chunk_string = re.sub(r'<[^>]+>', '', string)
         
+        # Sequential tracking to avoid duplicate matches
+        current_search_position = 0
+        used_positions = set()  # Track already used position ranges
+        
         for i, match in enumerate(valid_matches):
             entity_text = match.group(2).strip()
-            self.logger.debug(f"Processing entity '{entity_text}' using robust matching")
+            self.logger.debug(f"Processing entity '{entity_text}' using robust matching with sequential tracking")
             
             # Improved context extraction around the entity from the chunk
             # Calculate exact position of entity text within the cleaned chunk
@@ -408,50 +412,69 @@ class NERProcessor:
             start_pos = -1
             end_pos = -1
             
-            # Strategy 1: Context-based exact matching with improved context
+            # Strategy 1: Context-based exact matching with improved context and sequential tracking
             if context and len(context.strip()) > 0:
                 self.strategy_stats['context_exact']['attempts'] += 1
                 normalized_context = ''.join(char for char in context if not char.isspace())
-                context_pos = normalized_note.find(normalized_context)
+                
+                # Try to find context starting from current search position
+                context_pos = self._sequential_find_context(normalized_note, normalized_context, current_search_position)
                 
                 if context_pos != -1:
-                    self.logger.debug(f"Found context using exact matching")
+                    self.logger.debug(f"Found context using exact matching with sequential tracking")
                     start_pos, end_pos = self._find_entity_in_context(entity_text, context, context_pos, pos_mapping)
                     
-                    # Verify position using improved verification
+                    # Check for position conflicts and verify position
                     if start_pos != -1 and end_pos != -1:
-                        if self._improved_position_verification(entity_text, original_ehr_text, start_pos, end_pos):
-                            self.strategy_stats['context_exact']['successes'] += 1
+                        if not self._position_conflicts_with_used(start_pos, end_pos, used_positions):
+                            if self._improved_position_verification(entity_text, original_ehr_text, start_pos, end_pos):
+                                self.strategy_stats['context_exact']['successes'] += 1
+                                # Update search position and track used position
+                                current_search_position = self._update_search_position(normalized_note, start_pos, end_pos, pos_mapping)
+                                used_positions.add((start_pos, end_pos))
+                            else:
+                                self.logger.debug(f"Position verification failed, trying next strategy")
+                                start_pos, end_pos = -1, -1
                         else:
-                            self.logger.debug(f"Position verification failed, trying next strategy")
+                            self.logger.debug(f"Position conflicts with previously used position, trying next strategy")
                             start_pos, end_pos = -1, -1
                     
-                # Strategy 2: Context-based fuzzy matching with improved parameters
+                # Strategy 2: Context-based fuzzy matching with sequential tracking
                 if start_pos == -1:
                     self.strategy_stats['context_fuzzy']['attempts'] += 1
-                    self.logger.debug(f"Trying fuzzy context matching")
-                    fuzzy_pos, fuzzy_context = self._fuzzy_match_context(context, normalized_note)
+                    self.logger.debug(f"Trying fuzzy context matching with sequential tracking")
+                    fuzzy_pos, fuzzy_context = self._sequential_fuzzy_match_context(context, normalized_note, current_search_position)
                     if fuzzy_pos != -1:
                         start_pos, end_pos = self._find_entity_in_context(entity_text, fuzzy_context, fuzzy_pos, pos_mapping)
                         
-                        # Verify fuzzy match result
+                        # Check for position conflicts and verify fuzzy match result
                         if start_pos != -1 and end_pos != -1:
-                            if self._improved_position_verification(entity_text, original_ehr_text, start_pos, end_pos):
-                                self.strategy_stats['context_fuzzy']['successes'] += 1
+                            if not self._position_conflicts_with_used(start_pos, end_pos, used_positions):
+                                if self._improved_position_verification(entity_text, original_ehr_text, start_pos, end_pos):
+                                    self.strategy_stats['context_fuzzy']['successes'] += 1
+                                    # Update search position and track used position
+                                    current_search_position = self._update_search_position(normalized_note, start_pos, end_pos, pos_mapping)
+                                    used_positions.add((start_pos, end_pos))
+                                else:
+                                    self.logger.debug(f"Fuzzy match verification failed, trying next strategy")
+                                    start_pos, end_pos = -1, -1
                             else:
-                                self.logger.debug(f"Fuzzy match verification failed, trying next strategy")
+                                self.logger.debug(f"Fuzzy match position conflicts, trying next strategy")
                                 start_pos, end_pos = -1, -1
             
-            # Strategy 3: Direct entity search in normalized text
+            # Strategy 3: Direct entity search in normalized text with sequential tracking
             if start_pos == -1:
                 self.strategy_stats['direct_search']['attempts'] += 1
-                self.logger.debug(f"Trying direct entity search")
-                start_pos, end_pos = self._calculate_entity_position(entity_text, normalized_note, pos_mapping, original_ehr_text)
+                self.logger.debug(f"Trying direct entity search with sequential tracking")
+                start_pos, end_pos = self._sequential_calculate_entity_position(entity_text, normalized_note, pos_mapping, original_ehr_text, current_search_position, used_positions)
                 
-                # Verify direct search result
+                # Verify direct search result and update tracking
                 if start_pos != -1 and end_pos != -1:
                     if self._improved_position_verification(entity_text, original_ehr_text, start_pos, end_pos):
                         self.strategy_stats['direct_search']['successes'] += 1
+                        # Update search position and track used position
+                        current_search_position = self._update_search_position(normalized_note, start_pos, end_pos, pos_mapping)
+                        used_positions.add((start_pos, end_pos))
                     else:
                         self.logger.debug(f"Direct search verification failed, trying next strategy")
                         start_pos, end_pos = -1, -1
@@ -465,17 +488,21 @@ class NERProcessor:
                     absolute_start_pos = chunk_offset + chunk_pos
                     absolute_end_pos = absolute_start_pos + len(entity_text)
                     
-                    # Verify chunk-based position
-                    if (absolute_start_pos >= 0 and absolute_end_pos <= len(original_ehr_text)):
-                        if self._improved_position_verification(entity_text, original_ehr_text, absolute_start_pos, absolute_end_pos):
-                            start_pos, end_pos = absolute_start_pos, absolute_end_pos
-                            self.strategy_stats['chunk_fallback']['successes'] += 1
+                    # Check for position conflicts and verify chunk-based position
+                    if not self._position_conflicts_with_used(absolute_start_pos, absolute_end_pos, used_positions):
+                        if (absolute_start_pos >= 0 and absolute_end_pos <= len(original_ehr_text)):
+                            if self._improved_position_verification(entity_text, original_ehr_text, absolute_start_pos, absolute_end_pos):
+                                start_pos, end_pos = absolute_start_pos, absolute_end_pos
+                                self.strategy_stats['chunk_fallback']['successes'] += 1
+                                # Update tracking
+                                current_search_position = self._update_search_position(normalized_note, start_pos, end_pos, pos_mapping)
+                                used_positions.add((start_pos, end_pos))
                          
-            # Strategy 5: Simple fallback search with improved verification
+            # Strategy 5: Simple fallback search with improved verification and sequential tracking
             if start_pos == -1:
                 self.strategy_stats['simple_fallback']['attempts'] += 1
-                self.logger.debug(f"Trying simple fallback search")
-                fallback_pos = original_ehr_text.lower().find(entity_text.lower())  # Case-insensitive
+                self.logger.debug(f"Trying simple fallback search with sequential tracking")
+                fallback_pos = self._sequential_simple_find(original_ehr_text, entity_text, current_search_position, used_positions)
                 if fallback_pos != -1:
                     potential_start = fallback_pos
                     potential_end = fallback_pos + len(entity_text)
@@ -485,6 +512,9 @@ class NERProcessor:
                         start_pos = potential_start
                         end_pos = potential_end
                         self.strategy_stats['simple_fallback']['successes'] += 1
+                        # Update tracking
+                        current_search_position = self._update_search_position_simple(original_ehr_text, start_pos, end_pos)
+                        used_positions.add((start_pos, end_pos))
             
             # Log results and update statistics
             self.strategy_stats['total_entities'] += 1
@@ -769,6 +799,290 @@ class NERProcessor:
                         char_count += 1
                         
         return -1
+
+    def _sequential_find_context(self, normalized_note, normalized_context, current_search_position):
+        """
+        Find context in normalized note starting from current search position to avoid duplicates.
+        """
+        if current_search_position >= len(normalized_note):
+            return -1
+            
+        # First try searching from current position
+        context_pos = normalized_note[current_search_position:].find(normalized_context)
+        
+        if context_pos != -1:
+            # Adjust position relative to the full text
+            return current_search_position + context_pos
+        else:
+            # If not found from current position, try from beginning (fallback)
+            context_pos = normalized_note.find(normalized_context)
+            if context_pos != -1 and context_pos >= current_search_position:
+                return context_pos
+            
+        return -1
+
+    def _sequential_fuzzy_match_context(self, context, normalized_note, current_search_position, threshold=0.3):
+        """
+        Use fuzzy matching to find context starting from current search position.
+        """
+        normalized_context = ''.join(char for char in context if not char.isspace())
+        window_size = len(normalized_context)
+        
+        if window_size == 0 or current_search_position >= len(normalized_note):
+            return -1, normalized_context
+            
+        best_ratio = 0
+        best_pos = -1
+        best_window = ''
+        
+        # Pre-process for case-insensitive comparison
+        normalized_context_lower = normalized_context.lower()
+        normalized_note_lower = normalized_note.lower()
+        
+        # Search for best matching window starting from current position
+        start_pos = current_search_position
+        end_pos = len(normalized_note)
+        
+        for i in range(start_pos, end_pos - window_size + 1):
+            window = normalized_note[i:i + window_size]
+            window_lower = normalized_note_lower[i:i + window_size]
+            
+            # Try both case-sensitive and case-insensitive matching
+            ratio_case_sensitive = SequenceMatcher(None, window, normalized_context).ratio()
+            ratio_case_insensitive = SequenceMatcher(None, window_lower, normalized_context_lower).ratio()
+            
+            # Use the better ratio
+            ratio = max(ratio_case_sensitive, ratio_case_insensitive)
+            
+            if ratio > best_ratio:
+                best_ratio = ratio
+                best_pos = i
+                best_window = window
+        
+        # Return results if above threshold
+        if best_ratio >= threshold:
+            self.logger.debug(f"Sequential fuzzy match found with ratio {best_ratio:.3f} at position {best_pos}")
+            return best_pos, best_window
+        else:
+            self.logger.debug(f"Sequential fuzzy match ratio {best_ratio:.3f} below threshold {threshold}")
+            return -1, normalized_context
+
+    def _sequential_calculate_entity_position(self, entity, normalized_note, pos_mapping, original_text, current_search_position, used_positions):
+        """
+        Calculate entity position using sequential search to avoid duplicates.
+        """
+        # First try the multi-level search with sequential constraint
+        start_pos, end_pos, level_used = self._sequential_multi_level_entity_search(
+            entity, normalized_note, pos_mapping, original_text, current_search_position, used_positions
+        )
+        
+        if start_pos != -1 and end_pos != -1:
+            self.logger.debug(f"Sequential multi-level search successful using level {level_used}")
+            return start_pos, end_pos
+            
+        # Fallback to sequential version of original implementation
+        self.logger.debug(f"Sequential multi-level search failed, trying original method with sequential constraint")
+        normalized_entity = ''.join(char for char in entity if not char.isspace())
+        
+        # Sequential case-insensitive search in normalized note
+        if current_search_position >= len(normalized_note):
+            return -1, -1
+            
+        search_text = normalized_note[current_search_position:]
+        entity_pos = search_text.lower().find(normalized_entity.lower())
+        
+        if entity_pos == -1:
+            self.logger.debug(f"Entity '{entity}' not found in remaining normalized text (sequential)")
+            return -1, -1
+            
+        # Adjust position relative to full text
+        entity_pos += current_search_position
+            
+        try:
+            start_pos = pos_mapping[entity_pos]
+            
+            # Calculate end position by counting non-space characters
+            entity_chars = 0
+            end_pos = start_pos
+            
+            while entity_chars < len(normalized_entity) and end_pos < len(original_text):
+                if not original_text[end_pos].isspace():
+                    entity_chars += 1
+                end_pos += 1
+                
+            # Check for position conflicts
+            if self._position_conflicts_with_used(start_pos, end_pos, used_positions):
+                self.logger.debug(f"Sequential search found conflicting position, skipping")
+                return -1, -1
+                
+            # Enhanced verification with case-insensitive comparison
+            found_text = original_text[start_pos:end_pos]
+            normalized_found = ''.join(char for char in found_text if not char.isspace())
+            
+            if normalized_found.lower() == normalized_entity.lower():
+                self.logger.debug(f"Sequential case-insensitive match verified for '{entity}'")
+                return start_pos, end_pos
+            else:
+                self.logger.debug(f"Sequential verification failed: found '{normalized_found}' instead of '{normalized_entity}'")
+                return -1, -1
+                
+        except (KeyError, IndexError) as e:
+            self.logger.debug(f"Error in sequential position calculation: {e}")
+            return -1, -1
+
+    def _sequential_simple_find(self, original_text, entity_text, current_search_position, used_positions):
+        """
+        Simple sequential find in original text to avoid duplicates.
+        """
+        # Convert normalized position to original text position estimate
+        original_search_position = min(current_search_position, len(original_text))
+        
+        # Search from current position
+        search_text = original_text[original_search_position:]
+        entity_pos = search_text.lower().find(entity_text.lower())
+        
+        if entity_pos != -1:
+            # Adjust position relative to full text
+            absolute_pos = original_search_position + entity_pos
+            end_pos = absolute_pos + len(entity_text)
+            
+            # Check for position conflicts
+            if not self._position_conflicts_with_used(absolute_pos, end_pos, used_positions):
+                return absolute_pos
+                
+        return -1
+
+    def _position_conflicts_with_used(self, start_pos, end_pos, used_positions):
+        """
+        Check if the given position range conflicts with any already used positions.
+        """
+        for used_start, used_end in used_positions:
+            # Check for overlap: positions overlap if start < other_end and other_start < end
+            if start_pos < used_end and used_start < end_pos:
+                return True
+        return False
+
+    def _update_search_position(self, normalized_note, start_pos, end_pos, pos_mapping):
+        """
+        Update current search position based on found entity to continue sequential search.
+        """
+        # Find the normalized position corresponding to the end position
+        for norm_pos, orig_pos in pos_mapping.items():
+            if orig_pos >= end_pos:
+                return min(norm_pos, len(normalized_note))
+        
+        # Fallback: use end of text
+        return len(normalized_note)
+
+    def _update_search_position_simple(self, original_text, start_pos, end_pos):
+        """
+        Simple update for search position in original text.
+        """
+        return min(end_pos, len(original_text))
+
+    def _sequential_multi_level_entity_search(self, entity, normalized_note, pos_mapping, original_text, current_search_position, used_positions):
+        """
+        Multi-level entity search with sequential constraint.
+        """
+        # Get punctuation variants of the entity
+        entity_variants = self._smart_punctuation_handler(entity)
+        
+        # Try different normalization levels
+        for level in range(1, 5):
+            self.logger.debug(f"Trying sequential normalization level {level}")
+            
+            # For level 1, use existing normalized note and mapping with sequential constraint
+            if level == 1:
+                note_normalized = normalized_note
+                level_pos_mapping = pos_mapping
+                
+                for variant in entity_variants:
+                    variant_normalized = self._normalize_text_for_matching(variant, level)
+                    if not variant_normalized:
+                        continue
+                        
+                    # Sequential search in normalized text
+                    if current_search_position >= len(note_normalized):
+                        continue
+                        
+                    search_text = note_normalized[current_search_position:]
+                    entity_pos = search_text.find(variant_normalized)
+                    
+                    if entity_pos != -1:
+                        # Adjust position relative to full text
+                        absolute_norm_pos = current_search_position + entity_pos
+                        
+                        try:
+                            start_pos = level_pos_mapping[absolute_norm_pos]
+                            end_pos = start_pos + len(variant)
+                            
+                            # Check position conflicts
+                            if not self._position_conflicts_with_used(start_pos, end_pos, used_positions):
+                                if self._improved_position_verification(entity, original_text, start_pos, end_pos):
+                                    self.logger.debug(f"Sequential found '{variant}' using level {level} normalization")
+                                    return start_pos, end_pos, level
+                        except (KeyError, IndexError):
+                            continue
+            else:
+                # For higher levels, search in original text with smart matching
+                for variant in entity_variants:
+                    start_pos = self._sequential_find_original_position(original_text, variant, level, current_search_position, used_positions)
+                    
+                    if start_pos != -1:
+                        end_pos = start_pos + len(variant)
+                        
+                        # Verify the match
+                        if self._improved_position_verification(entity, original_text, start_pos, end_pos):
+                            self.logger.debug(f"Sequential found '{variant}' using level {level} normalization")
+                            return start_pos, end_pos, level
+        
+        return -1, -1, 0
+
+    def _sequential_find_original_position(self, original_text, entity_variant, level, current_search_position, used_positions):
+        """
+        Sequential version of _find_original_position with conflict checking.
+        """
+        # Convert current search position (which is in normalized coordinates) to original text estimate
+        # This is an approximation - in practice we'd need a more sophisticated mapping
+        estimated_orig_pos = min(current_search_position, len(original_text))
+        
+        # Search from estimated position
+        search_text = original_text[estimated_orig_pos:]
+        
+        # Apply normalization and search
+        normalized_search = self._normalize_text_for_matching(search_text, level)
+        normalized_entity = self._normalize_text_for_matching(entity_variant, level)
+        
+        if not normalized_entity:
+            return -1
+            
+        norm_pos = normalized_search.find(normalized_entity)
+        if norm_pos == -1:
+            return -1
+            
+        # Map back to original position (simplified approach)
+        # This is a rough approximation - exact mapping would require more complex logic
+        estimated_start = estimated_orig_pos + int(norm_pos * len(search_text) / max(len(normalized_search), 1))
+        
+        # Verify and adjust position
+        for start_candidate in range(max(0, estimated_start - 10), min(len(original_text), estimated_start + 10)):
+            end_candidate = start_candidate + len(entity_variant)
+            if end_candidate <= len(original_text):
+                if not self._position_conflicts_with_used(start_candidate, end_candidate, used_positions):
+                    # Quick verification
+                    candidate_text = original_text[start_candidate:end_candidate]
+                    if self._approximate_match(candidate_text, entity_variant, level):
+                        return start_candidate
+                        
+        return -1
+
+    def _approximate_match(self, text1, text2, level):
+        """
+        Check if two texts approximately match at given normalization level.
+        """
+        norm1 = self._normalize_text_for_matching(text1, level)
+        norm2 = self._normalize_text_for_matching(text2, level)
+        return norm1.lower() == norm2.lower()
 
     def _create_enhanced_normalized_mapping(self, text, level=1):
         """
