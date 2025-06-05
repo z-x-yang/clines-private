@@ -188,6 +188,15 @@ class LLMManager():
             self.chunk_original_token_stats.append(
                 self.current_chunk_original_tokens)
 
+            # Reset current chunk stats and original token count
+            self.current_chunk_stats = []
+            self.current_chunk_original_tokens = 0
+
+    def finish_note(self):
+        """
+        Called when a note is completely processed to finalize its token statistics
+        """
+        if self.chunk_token_stats:
             # Calculate and store note-level token stats with enhanced metrics (based on current note's chunks only)
             note_stats = {
                 'total_prompt_tokens': sum(chunk['prompt_tokens'] for chunk in self.chunk_token_stats),
@@ -202,14 +211,6 @@ class LLMManager():
                 'avg_completion_tokens_per_chunk': sum(chunk['completion_tokens'] for chunk in self.chunk_token_stats) / len(self.chunk_token_stats) if self.chunk_token_stats else 0,
                 'avg_calls_per_chunk': sum(chunk['num_calls'] for chunk in self.chunk_token_stats) / len(self.chunk_token_stats) if self.chunk_token_stats else 0
             }
-            # Update or append the current note's statistics
-            if not self.note_token_stats or len(self.note_token_stats) == 0:
-                # First note or empty list
-                self.note_token_stats.append(note_stats)
-            else:
-                # Update the last note's statistics as we add more chunks
-                self.note_token_stats[-1] = note_stats
-
-            # Reset current chunk stats and original token count
-            self.current_chunk_stats = []
-            self.current_chunk_original_tokens = 0
+            # Add the current note's statistics to the list
+            self.note_token_stats.append(note_stats)
+            self.logger.debug(f"Added note statistics: {len(self.note_token_stats)} total notes processed")

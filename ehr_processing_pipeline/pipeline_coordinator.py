@@ -428,3 +428,7 @@ class PipelineCoordinator:
         self.logger.info("====== Starting result aggregation... ======")
         self.result_aggregation(key)
         self.logger.info("====== Aggregation processing complete. ======")
+        
+        # Finalize note-level token statistics
+        self.model.finish_note()
+        self.logger.info("====== Note statistics finalized. ======")
