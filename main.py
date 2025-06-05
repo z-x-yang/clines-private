@@ -238,12 +238,30 @@ if __name__ == '__main__':
             # For now, displaying based on current llm_model.note_token_stats accumulation
             total_notes_processed_in_run = len(llm_model.note_token_stats)
             if total_notes_processed_in_run > 0:
-                avg_prompt_tokens_overall = sum(
-                    note['total_prompt_tokens'] for note in llm_model.note_token_stats) / total_notes_processed_in_run
-                avg_completion_tokens_overall = sum(
-                    note['total_completion_tokens'] for note in llm_model.note_token_stats) / total_notes_processed_in_run
-                avg_total_tokens_overall = sum(
-                    note['total_tokens'] for note in llm_model.note_token_stats) / total_notes_processed_in_run
+                # Calculate total statistics for this run
+                total_prompt_tokens_run = sum(
+                    note['total_prompt_tokens'] for note in llm_model.note_token_stats)
+                total_completion_tokens_run = sum(
+                    note['total_completion_tokens'] for note in llm_model.note_token_stats)
+                total_tokens_run = sum(
+                    note['total_tokens'] for note in llm_model.note_token_stats)
+                total_chunks_run = sum(
+                    note['num_chunks'] for note in llm_model.note_token_stats)
+                total_original_chunk_tokens_run = sum(
+                    note['total_original_chunk_tokens'] for note in llm_model.note_token_stats)
+
+                logger.info("\nOverall Token Usage Summary (this run):")
+                logger.info(f"  Total notes processed: {total_notes_processed_in_run}")
+                logger.info(f"  Total chunks processed: {total_chunks_run}")
+                logger.info(f"  Total prompt tokens: {total_prompt_tokens_run}")
+                logger.info(f"  Total completion tokens: {total_completion_tokens_run}")
+                logger.info(f"  Total tokens: {total_tokens_run}")
+                logger.info(f"  Total original chunk tokens: {total_original_chunk_tokens_run}")
+
+                # Calculate average statistics for this run
+                avg_prompt_tokens_overall = total_prompt_tokens_run / total_notes_processed_in_run
+                avg_completion_tokens_overall = total_completion_tokens_run / total_notes_processed_in_run
+                avg_total_tokens_overall = total_tokens_run / total_notes_processed_in_run
                 avg_original_chunk_tokens_overall = sum(
                     note['avg_original_chunk_tokens'] for note in llm_model.note_token_stats) / total_notes_processed_in_run
                 avg_prompt_tokens_per_chunk_overall = sum(
