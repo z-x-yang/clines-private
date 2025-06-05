@@ -369,6 +369,8 @@ class PipelineCoordinator:
 
     def __call__(self, ehr, key):
         self.reinitialize()
+        # Reset token statistics for new note processing
+        self.model.start_new_note()
         self.logger.info("====== Starting EHR chunking process... ======")
         chunked_ehr = [""]
         for item in self.model.chunker(ehr):

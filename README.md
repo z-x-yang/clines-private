@@ -324,22 +324,6 @@ ls -la logs/
 python main.py --notes_dir data/ 2>&1 | grep -i error
 ```
 
-## Performance Benchmarks
-
-| Model | Processing Speed | Memory Usage | GPU Required |
-|-------|-----------------|--------------|--------------|
-| GPT-4o | ~30 notes/hour | 8GB RAM | No |
-| Llama-3-405b | ~15 notes/hour | 32GB RAM | Yes |
-| Clinical-BERT | ~100 notes/hour | 4GB RAM | Optional |
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
@@ -356,13 +340,6 @@ If you use CLINES in your research, please cite:
   url={https://github.com/your-repo/clines}
 }
 ```
-
-## Support
-
-For questions and support:
-- Open an issue on GitHub
-- Check the troubleshooting section
-- Review the command line arguments documentation
 
 ---
 

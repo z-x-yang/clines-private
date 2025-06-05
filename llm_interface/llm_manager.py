@@ -117,6 +117,17 @@ class LLMManager():
         self.logger.debug(
             f"Original chunk tokens: {self.current_chunk_original_tokens}")
 
+    def start_new_note(self):
+        """
+        Reset chunk-level statistics for processing a new note.
+        Called at the beginning of each new note processing.
+        """
+        self.chunk_token_stats = []
+        self.chunk_original_token_stats = []
+        self.current_chunk_stats = []
+        self.current_chunk_original_tokens = 0
+        self.logger.debug("Reset chunk-level statistics for new note")
+
     def __call__(self, query):
         self.message_buffer.append({'role': 'user', 'content': query})
         response = self.chat_func(self.message_buffer)
@@ -177,7 +188,7 @@ class LLMManager():
             self.chunk_original_token_stats.append(
                 self.current_chunk_original_tokens)
 
-            # Calculate and store note-level token stats with enhanced metrics
+            # Calculate and store note-level token stats with enhanced metrics (based on current note's chunks only)
             note_stats = {
                 'total_prompt_tokens': sum(chunk['prompt_tokens'] for chunk in self.chunk_token_stats),
                 'total_completion_tokens': sum(chunk['completion_tokens'] for chunk in self.chunk_token_stats),
@@ -191,10 +202,12 @@ class LLMManager():
                 'avg_completion_tokens_per_chunk': sum(chunk['completion_tokens'] for chunk in self.chunk_token_stats) / len(self.chunk_token_stats) if self.chunk_token_stats else 0,
                 'avg_calls_per_chunk': sum(chunk['num_calls'] for chunk in self.chunk_token_stats) / len(self.chunk_token_stats) if self.chunk_token_stats else 0
             }
-            # Append new or update last
-            if not self.note_token_stats or self.note_token_stats[-1]['num_chunks'] < note_stats['num_chunks']:
+            # Update or append the current note's statistics
+            if not self.note_token_stats or len(self.note_token_stats) == 0:
+                # First note or empty list
                 self.note_token_stats.append(note_stats)
             else:
+                # Update the last note's statistics as we add more chunks
                 self.note_token_stats[-1] = note_stats
 
             # Reset current chunk stats and original token count
