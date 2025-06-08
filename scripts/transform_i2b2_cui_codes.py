@@ -491,13 +491,13 @@ def parse_arguments():
 
     parser.add_argument(
         '--input-dir', '-i',
-        default="new_outputs/gpt4o_output_i2b2",
+        default="../new_outputs/gpt4o_output_i2b2",
         help="Input directory containing i2b2 CSV files (default: new_outputs/gpt4o_output_i2b2)"
     )
 
     parser.add_argument(
         '--output-dir', '-o',
-        default="new_outputs/gpt4o_output_i2b2_after_transform",
+        default="../new_outputs/gpt4o_output_i2b2_after_transform",
         help="Output directory for transformed files (default: new_outputs/gpt4o_output_i2b2_after_transform)"
     )
 
