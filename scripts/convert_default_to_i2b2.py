@@ -1,29 +1,18 @@
 #!/usr/bin/env python3
-"""
-脚本：将文件夹下的default格式的csv结果转换成i2b2格式
-
-用法：
-python convert_default_to_i2b2.py --input_dir <输入文件夹路径> --output_dir <输出文件夹路径>
-
-示例：
-python convert_default_to_i2b2.py --input_dir outputs/gpt4o_output_0526_test2 --output_dir outputs/gpt4o_output_0526_test2_i2b2
-"""
-
-import os
-import sys
-import argparse
-import pandas as pd
-import json
-import logging
-from pathlib import Path
-from typing import Dict, List, Any
 import traceback
+from typing import Dict, List, Any
+from pathlib import Path
+import logging
+import json
+import pandas as pd
+import argparse
+import os
 
+import sys
 # Add the parent directory to sys.path to import core module
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import schema processor from core module
-from core.schema import SchemaProcessor, SchemaName, OutputType
 
 
 def setup_logging():
@@ -93,7 +82,7 @@ def read_default_csv(csv_file_path):
             record['freq'] = row.get('freq', None)
             record['route'] = row.get('route', None)
             record['note'] = row.get('note', None)
-            
+
             # 处理infer字段的NaN值，确保是布尔值
             infer_value = row.get('infer')
             if infer_value is None or pd.isna(infer_value):
@@ -109,7 +98,7 @@ def read_default_csv(csv_file_path):
             record['assertion_status'] = row.get('assertion_status', None)
             record['body_location'] = row.get('body_location', None)
             record['other'] = row.get('other', None)
-            
+
             # 处理related字段，如果是字符串尝试解析为JSON
             related_value = row.get('related', None)
             if related_value is not None and not pd.isna(related_value):
@@ -127,8 +116,23 @@ def read_default_csv(csv_file_path):
 
             # 清理NaN值
             for key, value in record.items():
-                if pd.isna(value):
-                    record[key] = None
+                try:
+                    # 检查是否为数组类型
+                    if hasattr(value, '__len__') and not isinstance(value, str):
+                        # 如果是数组类型，检查是否为空或全为NaN
+                        if len(value) == 0 or (hasattr(value, 'isna') and value.isna().all()):
+                            record[key] = None
+                        # 如果是数组但不全为NaN，保持原值
+                    else:
+                        # 对于标量值，正常检查NaN
+                        if value is None or (pd.notna(value) == False):
+                            record[key] = None
+                except (TypeError, ValueError, AttributeError):
+                    # 如果检查过程中出错，尝试简单的None检查
+                    if value is None:
+                        record[key] = None
+                    elif isinstance(value, str) and value.lower() in ['nan', 'none', '']:
+                        record[key] = None
 
             converted_data.append(record)
 
@@ -159,6 +163,7 @@ def convert_file(input_file_path, output_dir, logger):
             return
 
         # 创建i2b2 SchemaProcessor
+        from core.schema import SchemaProcessor, SchemaName, OutputType
         schema_processor = SchemaProcessor(
             schema_name_str="i2b2",
             output_type_str="csv",
