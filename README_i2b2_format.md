@@ -2,17 +2,19 @@
 
 ## Overview
 
-This document provides a comprehensive guide to the i2b2 (Informatics for Integrating Biology and the Bedside) format implementation used in this language-into-clinical-data project. The implementation extends the standard i2b2 OBSERVATION_FACT table structure with additional modifiers and fields specifically designed for clinical natural language processing (NLP) tasks.
+This document provides a comprehensive guide to the i2b2 (Informatics for Integrating Biology and the Bedside) format implementation used in this the CLINES (Clinical LLM‐based Information Extraction and Structuring Agent) project. The implementation extends the standard i2b2 OBSERVATION_FACT table structure with additional modifiers and fields specifically designed for clinical natural language processing (NLP) tasks.
 
 ## Table of Contents
 
 1. [Standard i2b2 Fields](#standard-i2b2-fields)
 2. [Project-Specific Extensions](#project-specific-extensions)
-3. [Modifier Types](#modifier-types)
-4. [ASSERTION_STATUS Modifier](#assertion_status-modifier)
-5. [RELATED Modifier](#related-modifier)
-6. [Data Structure Examples](#data-structure-examples)
-7. [Usage Guidelines](#usage-guidelines)
+3. [Code System Conversion](#code-system-conversion)
+4. [Modifier Types](#modifier-types)
+5. [ASSERTION_STATUS Modifier](#assertion_status-modifier)
+6. [RELATED Modifier](#related-modifier)
+7. [Data Structure Examples](#data-structure-examples)
+8. [Dataset Information](#dataset-information)
+9. [Usage Guidelines](#usage-guidelines)
 
 ## Standard i2b2 Fields
 
@@ -28,7 +30,7 @@ Based on the official i2b2 OBSERVATION_FACT table structure, the following field
 | **ethnicity_cd** | Ethnicity code | YES | Demographics |
 | **zip_cd** | ZIP code | YES | Demographics |
 | **encounter_num** | Encoded i2b2 patient visit number | NO | Visit identifier |
-| **start_date** | Starting date-time of the observation (mm/dd/yyyy) | NO | Temporal information |
+| **start_date** | Starting date-time of the observation (mm/dd/yyyy) | YES | Temporal information |
 | **end_date** | The end date-time for the observation | YES | Temporal information |
 | **concept_cd** | Code for the observation of interest (diagnoses, procedures, medications, lab tests) | NO | Primary concept identifier |
 | **name_char** | Human-readable name/mention of the concept | YES | Concept text representation |
@@ -50,6 +52,39 @@ This implementation includes additional fields beyond the standard i2b2 schema:
 |-------------|------------|---------|
 | **entity_index** | Index position of the entity in the source text | Entity tracking and reference |
 | **code_type** | Type of coding system used (ICD10CM, LNC, CUI, RXNORM, etc.) | Code system identification |
+
+## Code System Conversion
+
+### UMLS CUI Code Processing
+
+The original CLINES system extracts entity codes using UMLS CUI (Concept Unique Identifier) codes. To enhance interoperability and clinical utility, this implementation includes a post-processing step that converts CUI codes to standard medical coding systems.
+
+### Conversion Process
+
+The conversion process utilizes the official UMLS concept mapping files as documented in the [UMLS Reference Manual](https://www.ncbi.nlm.nih.gov/books/NBK9685/table/ch03.T.concept_names_and_sources_file_mr/). The conversion follows a priority-based approach:
+
+**Priority Order:**
+1. **ICD10CM** - International Classification of Diseases, 10th Revision, Clinical Modification
+2. **LNC (LOINC)** - Logical Observation Identifiers Names and Codes
+3. **RXNORM** - Normalized naming system for clinical drugs
+4. **ICD10PCS** - International Classification of Diseases, 10th Revision, Procedure Coding System
+5. **ICD9CM** - International Classification of Diseases, 9th Revision, Clinical Modification
+6. **CUI** - Original UMLS CUI code (fallback)
+
+### Conversion Performance
+
+- **Overall Conversion Rate:** 42% of CUI codes were successfully converted to standard coding systems
+- **Detailed Statistics:** Complete conversion statistics and analysis are available in `transformation_report.txt`
+- **Fallback Handling:** CUI codes that cannot be mapped to any standard system remain as CUI codes in the `code_type` field
+
+### Technical Implementation
+
+The conversion process:
+1. Extracts CUI codes from the original entity annotations
+2. Queries the UMLS mapping tables for each priority coding system
+3. Selects the first successful mapping based on priority order
+4. Updates both the `concept_cd` and `code_type` fields accordingly
+5. Maintains traceability through detailed logging and reporting
 
 ## Modifier Types
 
@@ -190,44 +225,17 @@ patient_num,encounter_num,start_date,concept_cd,name_char,observation_blob,modif
 653625,6201560,,LP36596-2,oxyCODONE-acetaminophen,"Patient prescribed Percocet...",ASSERTION_STATUS,4,T,Present,,,,False,46,LNC
 ```
 
-## Usage Guidelines
+## Dataset Information
 
-### Data Format Requirements
+### CORAL Dataset Source
 
-1. **CSV Format**: All data must be in CSV format with proper escaping
-2. **UTF-8 Encoding**: Use UTF-8 encoding for all text fields
-3. **Date Format**: Use YYYY-MM-DD format for dates
-4. **Boolean Values**: Use "true"/"false" strings for boolean fields
+The i2b2 format examples and results in this project are derived from the **CORAL (expert-Curated medical Oncology Reports to Advance Language model inference)** dataset, available at [PhysioNet](https://physionet.org/content/curated-oncology-reports/1.0/).
 
-### Field Value Constraints
+### Dataset Composition
 
-1. **modifier_cd**: Must be one of the defined modifier types
-2. **valtype_cd**: Must be 'N' (numeric), 'T' (text), or 'B' (blob)
-3. **assertion_status**: Must be one of the seven defined categories
-4. **code_type**: Should indicate the coding system (ICD10CM, LNC, CUI, etc.)
-
-### Multi-Row Structure
-
-- Each clinical entity generates multiple rows in the i2b2 format
-- Base entity uses modifier_cd = '@' with instance_num = 1
-- Additional modifiers use sequential instance_num values
-- All rows for the same entity share the same entity_index
-
-### JSON Data in RELATED Field
-
-- Relationship data is stored as JSON strings
-- Keys must be entity tags as strings
-- Values must be valid relationship types from the defined categories
-- Proper JSON escaping is required when storing in CSV
-
-### Code System Priority
-
-When multiple coding systems are available, the following priority order is used:
-1. ICD10CM
-2. LNC (LOINC)
-3. RXNORM
-4. ICD10PCS
-5. ICD9CM
-6. CUI (as fallback)
-
-This documentation serves as a complete reference for understanding and working with the i2b2 format implementation in this clinical NLP project. 
+- **Total Notes Processed:** 40 clinical notes from the CORAL dataset
+- **File Structure:** Each CSV file corresponds to one clinical note
+- **Patient Distribution:** Each note represents a different patient
+- **Cancer Type Distribution:**
+  - **20 Breast Cancer notes** - Files prefixed with `coral_annotated_breastca_`
+  - **20 PDAC (Pancreatic Ductal Adenocarcinoma) notes** - Files prefixed with `coral_annotated_pdac_`
