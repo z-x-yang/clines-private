@@ -77,7 +77,7 @@ Output:
 
 Input:
 ```
-{{note}}
+{note}
 ```
 
 ## Please respond with valid JSON only, no additional text. Output: 

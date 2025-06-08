@@ -18,7 +18,7 @@ def wrap_openai_chat(model_name):
             f"Unsupported model name: {model_name}. Supported models are: {list(n2n_dict.keys())}")
 
     engine_name = n2n_dict[model_name]
-    api_version = "2024-05-01-preview" if model_name != "o3mini" else "2024-12-01-preview"
+    api_version = "2025-04-01-preview" if model_name != "o3mini" else "2024-12-01-preview"
 
     def openai_chat(inputs_message, retry=True, max_retries=3, retry_delay=1):
         # Check environment variables

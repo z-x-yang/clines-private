@@ -19,6 +19,9 @@ from pathlib import Path
 from typing import Dict, List, Any
 import traceback
 
+# Add the parent directory to sys.path to import core module
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 # Import schema processor from core module
 from core.schema import SchemaProcessor, SchemaName, OutputType
 
@@ -90,6 +93,7 @@ def read_default_csv(csv_file_path):
             record['freq'] = row.get('freq', None)
             record['route'] = row.get('route', None)
             record['note'] = row.get('note', None)
+            
             # 处理infer字段的NaN值，确保是布尔值
             infer_value = row.get('infer')
             if infer_value is None or pd.isna(infer_value):
@@ -100,6 +104,28 @@ def read_default_csv(csv_file_path):
             else:
                 record['infer'] = bool(infer_value)
 
+            # 添加新字段支持
+            record['term_index'] = row.get('term_index', None)
+            record['assertion_status'] = row.get('assertion_status', None)
+            record['body_location'] = row.get('body_location', None)
+            record['other'] = row.get('other', None)
+            
+            # 处理related字段，如果是字符串尝试解析为JSON
+            related_value = row.get('related', None)
+            if related_value is not None and not pd.isna(related_value):
+                if isinstance(related_value, str):
+                    try:
+                        # 尝试解析JSON字符串
+                        record['related'] = json.loads(related_value)
+                    except json.JSONDecodeError:
+                        # 如果解析失败，保持原字符串
+                        record['related'] = related_value
+                else:
+                    record['related'] = related_value
+            else:
+                record['related'] = None
+
+            # 清理NaN值
             for key, value in record.items():
                 if pd.isna(value):
                     record[key] = None
@@ -111,6 +137,7 @@ def read_default_csv(csv_file_path):
 
     except Exception as e:
         logger.error(f"读取CSV文件失败：{csv_file_path}，错误：{e}")
+        logger.error(f"错误详情：{traceback.format_exc()}")
         return []
 
 

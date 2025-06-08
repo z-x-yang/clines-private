@@ -1,5 +1,6 @@
 # Other settings
 SCHEMA="default"
+# SCHEMA="i2b2"
 
 # Model settings
 MODEL_NAME="gpt4o"
@@ -12,7 +13,8 @@ OPENAIENDPOINT="https://azure-ai-dev.hms.edu"
 TIMESTAMP=$(date +"%Y%m%d_%H%M")
 # Marker settings
 MARKER="gene"
-# NOTES_DIR="data/test3/"
+# MARKER="test2"
+# NOTES_DIR="data/test2/"
 NOTES_DIR="/n/data1/hsph/biostat/celehs/lab/huaiyuan/language-into-clinical-data-i2b2/gene_pages"
 LOG_FILE="./logs/${MARKER}_${TIMESTAMP}.log"
 ERROR_LOG_FILE="./logs/${MARKER}_errors_${TIMESTAMP}.log"

@@ -7,7 +7,7 @@ import threading
 import concurrent.futures
 import os
 import time
-from typing import List, Optional, Tuple, Dict, Any
+from typing import List, Optional, Tuple, Dict, Any, Union
 import torch
 import sqlite3
 import numpy as np
@@ -20,6 +20,7 @@ from prompt import PromptManager
 from core.schema import SchemaProcessor, SchemaName, OutputType
 from core.data_types import NERData, EntityData, InfoData, DateData
 from core.utils import process_lists_based_on_list1
+from .processing_utils import safe_deduplication_input
 
 from .ner_processor import NERProcessor
 # Import the new EntityProcessor
@@ -230,19 +231,50 @@ class PipelineCoordinator:
 
         self.output_schema(aggregated_result, key)
 
-    def deduplication(self, list_of_dict, key, parsed_ner_tags=None):
-        # This method is kept here as it's used by other _process methods for now
-        # and also passed to EntityProcessor.
+    def deduplication(self, list_of_dict: Union[List[Dict], Dict, Any], key: str, parsed_ner_tags: Optional[List[str]] = None) -> List[Dict]:
+        """
+        Deduplication method with type-safe checks and defensive programming
+        
+        Args:
+            list_of_dict: Input data (expected to be list of dicts, but will auto-handle other types)
+            key: Key name for deduplication
+            parsed_ner_tags: Optional NER tags list for filtering
+            
+        Returns:
+            Deduplicated list of dictionaries
+        """
+        # Use safe input validation and conversion
+        safe_input = safe_deduplication_input(list_of_dict, self.logger)
+        
+        if not safe_input:
+            self.logger.warning("Empty or invalid input for deduplication, returning empty list")
+            return []
+        
+        # Execute deduplication logic
         unique_list = []
         seen = set()
-        for d in list_of_dict[::-1]:
-            key_value = str(d.get(key))
-            if parsed_ner_tags is not None and key_value not in map(str, parsed_ner_tags):
-                continue
-            if key_value not in seen:
-                unique_list.append(d)
-                seen.add(key_value)
-        return unique_list[::-1]
+        
+        try:
+            for d in safe_input[::-1]:
+                if not isinstance(d, dict):
+                    self.logger.warning(f"Skipping non-dict item in deduplication: {type(d)}")
+                    continue
+                    
+                key_value = str(d.get(key, ''))
+                if parsed_ner_tags is not None and key_value not in map(str, parsed_ner_tags):
+                    continue
+                if key_value not in seen:
+                    unique_list.append(d)
+                    seen.add(key_value)
+            
+            result = unique_list[::-1]
+            self.logger.debug(f"Deduplication completed: {len(safe_input)} -> {len(result)} items")
+            return result
+            
+        except Exception as e:
+            self.logger.error(f"Error in deduplication process: {e}", exc_info=True)
+            # Return safe result even if error occurs
+            return safe_input if isinstance(safe_input, list) else []
 
     def filter_parsed_results(self, parsed_ner_results, parsed_ner_context, parsed_ner_tags, clean_results, parsed_ner_positions=None):
         clean_result_tags = [item['TAG'] for item in clean_results]

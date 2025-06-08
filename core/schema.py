@@ -253,6 +253,12 @@ class SchemaProcessor():
 
             value, route, freq = item.get('value', None), item.get(
                 'route', None), item.get('freq', None)
+            # Extract additional fields for new modifiers
+            assertion_status = item.get('assertion_status', None)
+            body_location = item.get('body_location', None)
+            other = item.get('other', None)
+            related = item.get('related', None)
+            
             template = {
                 # Placeholder, might need actual patient ID from context
                 'patient_num': item.get('patient_num', None),
@@ -280,6 +286,7 @@ class SchemaProcessor():
                 'valueflag_cd': None,
                 'units_cd': None,
                 'unitflag_cd': 'false',  # Default to 'false', will be updated if needed
+                'entity_index': item.get('term_index', None),  # Add term_index field
             }
 
             # Base record for the entity itself
@@ -346,6 +353,56 @@ class SchemaProcessor():
                 mod_record['tval_char'] = freq
                 mod_record['valtype_cd'] = 'T'
                 # Ensure unitflag_cd is set
+                mod_record['unitflag_cd'] = 'false'
+                output_data.append(mod_record)
+
+            # Add new modifier types
+            if assertion_status is not None:
+                mod_record = template.copy()
+                mod_record['instance_num'] = instance_counter
+                instance_counter += 1
+                mod_record['modifier_cd'] = 'ASSERTION_STATUS'
+                mod_record['tval_char'] = str(assertion_status)
+                mod_record['valtype_cd'] = 'T'
+                mod_record['unitflag_cd'] = 'false'
+                output_data.append(mod_record)
+
+            if body_location is not None:
+                mod_record = template.copy()
+                mod_record['instance_num'] = instance_counter
+                instance_counter += 1
+                mod_record['modifier_cd'] = 'BODY_LOCATION'
+                mod_record['tval_char'] = str(body_location)
+                mod_record['valtype_cd'] = 'T'
+                mod_record['unitflag_cd'] = 'false'
+                output_data.append(mod_record)
+
+            if other is not None:
+                mod_record = template.copy()
+                mod_record['instance_num'] = instance_counter
+                instance_counter += 1
+                mod_record['modifier_cd'] = 'OTHER_INFO'
+                mod_record['tval_char'] = str(other)
+                mod_record['valtype_cd'] = 'T'
+                mod_record['unitflag_cd'] = 'false'
+                output_data.append(mod_record)
+
+            if related is not None:
+                mod_record = template.copy()
+                mod_record['instance_num'] = instance_counter
+                instance_counter += 1
+                mod_record['modifier_cd'] = 'RELATED'
+                # Handle related field which may be dict/list or already string
+                if isinstance(related, (dict, list)):
+                    try:
+                        mod_record['tval_char'] = json.dumps(related)
+                    except TypeError as e:
+                        self.logger.error(
+                            f"Error serializing related field to JSON for {key_identifier}: {e}. Value: {related}")
+                        mod_record['tval_char'] = str(related)
+                else:
+                    mod_record['tval_char'] = str(related)
+                mod_record['valtype_cd'] = 'T'
                 mod_record['unitflag_cd'] = 'false'
                 output_data.append(mod_record)
 
