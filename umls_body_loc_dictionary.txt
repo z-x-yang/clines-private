@@ -1,1 +1,0 @@
-../language-into-clinical-data-hongyi/umls_body_loc_dictionary.txt
