@@ -45,7 +45,11 @@ def setup_logging(log_level: str = 'INFO', log_file: str = 'cui_transformation.l
 
 
 # Priority order for code systems (as specified in requirements)
-PRIORITY_SYSTEMS = ['ICD10CM', 'LNC', 'RXNORM', 'ICD10PCS', 'ICD9CM']
+# Diagnoses: ICD10CM, ICD9CM
+# Procedures: CPT4, HCPCS, ICD10PCS, ICD9PROC
+# Medications: RxNorm, NDC
+# Laboratory Tests and Vital Signs: LOINC
+PRIORITY_SYSTEMS = ['ICD10CM', 'LNC', 'RXNORM', 'ICD10PCS', 'ICD9CM', 'HCPCS', 'CPT', 'SNOMEDCT_US']
 
 
 def extract_cui_from_concept_cd(concept_cd: str) -> Optional[str]:

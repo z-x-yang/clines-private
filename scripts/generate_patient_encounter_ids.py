@@ -149,7 +149,7 @@ def main(target_directory: str) -> None:
 
 if __name__ == "__main__":
     # Default target directory
-    target_dir = "new_outputs/gpt4o_output_i2b2_after_transform"
+    target_dir = "../new_outputs/gpt4o_output_i2b2_after_transform"
     
     # Allow command line override
     if len(sys.argv) > 1:

@@ -8,13 +8,14 @@ This document provides a comprehensive guide to the i2b2 (Informatics for Integr
 
 1. [Standard i2b2 Fields](#standard-i2b2-fields)
 2. [Project-Specific Extensions](#project-specific-extensions)
-3. [Code System Conversion](#code-system-conversion)
-4. [Modifier Types](#modifier-types)
-5. [ASSERTION_STATUS Modifier](#assertion_status-modifier)
-6. [RELATED Modifier](#related-modifier)
-7. [Data Structure Examples](#data-structure-examples)
-8. [Dataset Information](#dataset-information)
-9. [Usage Guidelines](#usage-guidelines)
+3. [Temporal Date Extraction](#temporal-date-extraction)
+4. [Code System Conversion](#code-system-conversion)
+5. [Modifier Types](#modifier-types)
+6. [ASSERTION_STATUS Modifier](#assertion_status-modifier)
+7. [RELATED Modifier](#related-modifier)
+8. [Data Structure Examples](#data-structure-examples)
+9. [Dataset Information](#dataset-information)
+10. [Usage Guidelines](#usage-guidelines)
 
 ## Standard i2b2 Fields
 
@@ -30,7 +31,7 @@ Based on the official i2b2 OBSERVATION_FACT table structure, the following field
 | **ethnicity_cd** | Ethnicity code | YES | Demographics |
 | **zip_cd** | ZIP code | YES | Demographics |
 | **encounter_num** | Encoded i2b2 patient visit number | NO | Visit identifier |
-| **start_date** | Starting date-time of the observation (mm/dd/yyyy) | YES | Temporal information |
+| **start_date** | Starting date-time of the observation (yyyy-mm-dd) | YES | Temporal information |
 | **end_date** | The end date-time for the observation | YES | Temporal information |
 | **concept_cd** | Code for the observation of interest (diagnoses, procedures, medications, lab tests) | NO | Primary concept identifier |
 | **name_char** | Human-readable name/mention of the concept | YES | Concept text representation |
@@ -53,6 +54,48 @@ This implementation includes additional fields beyond the standard i2b2 schema:
 | **entity_index** | Index position of the entity in the source text | Entity tracking and reference |
 | **code_type** | Type of coding system used (ICD10CM, LNC, CUI, RXNORM, etc.) | Code system identification |
 
+## Temporal Date Extraction
+
+The system automatically extracts start and end dates for all clinical entities using an LLM-based temporal reasoning approach. The `start_date` and `end_date` fields in the i2b2 format are populated based on contextual analysis of clinical text.
+
+### Date Extraction Rules
+
+The temporal extraction follows a comprehensive LLM-based approach following the below strategy:
+
+| Temporal Expression | Start Date | End Date | Inferred Status |
+|---------------------|------------|----------|-----------------|
+| **Explicit dates** | Exact date | Same exact date | [false, false] |
+| **"X days/weeks/months/years ago"** | Reference date - X | Reference date | [true, true] |
+| **Current symptoms/findings** | Reference date | Reference date | [false, false] |
+| **New treatments/prescriptions** | Reference date | null | [false, true] |
+| **Chronic conditions (no timeframe)** | null | null | [false, false] |
+| **Unknown/unclear timing** | null | null | [false, false] |
+
+### Reference Date Priority
+
+1. **Multi-note records**: Admission date serves as the primary temporal reference
+2. **Single records**: Visit date extracted from the clinical note
+3. **Related events**: Share timeframes with main associated events
+
+### Examples
+
+**Scenario 1 - Historical symptoms:**
+- Text: "Patient presenting with a 7-day history of headaches"
+- Admission: 2023-07-05
+- Result: start_date="2023-06-28", end_date="2023-07-05", inferred=[true, true]
+
+**Scenario 2 - Current findings:**
+- Text: "Blood tests were done today"
+- Visit: 2023-07-05
+- Result: start_date="2023-07-05", end_date="2023-07-05", inferred=[false, false]
+
+**Scenario 3 - New prescriptions:**
+- Text: "Starting sertraline"
+- Visit: 2023-07-05
+- Result: start_date="2023-07-05", end_date=null, inferred=[false, true]
+
+The system maintains high accuracy by considering contextual cues, temporal modifiers, and clinical workflow patterns to ensure meaningful temporal annotations for downstream analysis.
+
 ## Code System Conversion
 
 ### UMLS CUI Code Processing
@@ -69,6 +112,9 @@ The conversion process utilizes the official UMLS concept mapping files as docum
 3. **RXNORM** - Normalized naming system for clinical drugs
 4. **ICD10PCS** - International Classification of Diseases, 10th Revision, Procedure Coding System
 5. **ICD9CM** - International Classification of Diseases, 9th Revision, Clinical Modification
+6. **HCPCS**
+7. **CPT**
+8. **SNOMEDCT_US**
 6. **CUI** - Original UMLS CUI code (fallback)
 
 ### Conversion Performance

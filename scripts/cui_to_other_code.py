@@ -8,70 +8,70 @@ class UMLSClient:
 
     def __init__(self, api_key):
         self.api_key = api_key
-        print(f"=== 初始化UMLS客户端 ===")
+        print(f"=== Initializing UMLS Client ===")
         print(f"API Key: {api_key[:20]}...")
         self.tgt = self.get_tgt()
 
     def get_tgt(self):
-        print(f"=== 获取TGT (Ticket Granting Ticket) ===")
+        print(f"=== Getting TGT (Ticket Granting Ticket) ===")
         params = {'apikey': self.api_key}
         headers = {'Content-Type': 'application/x-www-form-urlencoded'}
-        print(f"请求URL: {self.AUTH_ENDPOINT}/cas/v1/api-key")
+        print(f"Request URL: {self.AUTH_ENDPOINT}/cas/v1/api-key")
         r = requests.post(f"{self.AUTH_ENDPOINT}/cas/v1/api-key", data=params, headers=headers)
-        print(f"TGT请求状态码: {r.status_code}")
-        print(f"TGT响应头: {dict(r.headers)}")
+        print(f"TGT request status code: {r.status_code}")
+        print(f"TGT response headers: {dict(r.headers)}")
         if r.status_code != 201:
-            print(f"TGT请求失败，响应内容: {r.text}")
+            print(f"TGT request failed, response content: {r.text}")
             raise Exception("Failed to obtain TGT")
         tgt = r.headers['location']
-        print(f"成功获取TGT: {tgt}")
+        print(f"Successfully obtained TGT: {tgt}")
         return tgt
 
     def get_service_ticket(self):
-        print(f"=== 获取服务票据 ===")
+        print(f"=== Getting Service Ticket ===")
         params = {'service': 'http://umlsks.nlm.nih.gov'}
-        print(f"请求URL: {self.tgt}")
+        print(f"Request URL: {self.tgt}")
         r = requests.post(self.tgt, data=params)
-        print(f"服务票据请求状态码: {r.status_code}")
+        print(f"Service ticket request status code: {r.status_code}")
         if r.status_code != 200:
-            print(f"服务票据请求失败，响应内容: {r.text}")
+            print(f"Service ticket request failed, response content: {r.text}")
             raise Exception("Failed to obtain service ticket")
         ticket = r.text
-        print(f"成功获取服务票据: {ticket}")
+        print(f"Successfully obtained service ticket: {ticket}")
         return ticket
 
     def get_codes_for_cui(self, cui, vocabularies):
-        print(f"\n=== 开始处理CUI: {cui} ===")
-        print(f"目标词汇表: {vocabularies}")
+        print(f"\n=== Starting to process CUI: {cui} ===")
+        print(f"Target vocabularies: {vocabularies}")
         
         ticket = self.get_service_ticket()
         headers = {'Accept': 'application/json'}
         params = {'ticket': ticket}
         api_url = f"{self.API_ENDPOINT}/rest/content/current/CUI/{cui}/atoms"
-        print(f"API请求URL: {api_url}")
-        print(f"请求参数: {params}")
-        print(f"请求头: {headers}")
+        print(f"API request URL: {api_url}")
+        print(f"Request parameters: {params}")
+        print(f"Request headers: {headers}")
         
         r = requests.get(api_url, headers=headers, params=params)
-        print(f"API响应状态码: {r.status_code}")
-        print(f"API响应头: {dict(r.headers)}")
+        print(f"API response status code: {r.status_code}")
+        print(f"API response headers: {dict(r.headers)}")
         
         if r.status_code != 200:
             print(f"Failed to retrieve atoms for CUI {cui}")
-            print(f"错误响应内容: {r.text}")
+            print(f"Error response content: {r.text}")
             return {}
         
-        # 打印原始API响应
+        # Print raw API response
         raw_response = r.json()
-        print(f"=== 原始API响应 ===")
+        print(f"=== Raw API Response ===")
         print(json.dumps(raw_response, indent=2, ensure_ascii=False))
         
         results = raw_response.get('result', [])
-        print(f"=== 解析结果 ===")
-        print(f"结果数组长度: {len(results)}")
+        print(f"=== Parsing Results ===")
+        print(f"Results array length: {len(results)}")
         
         if not results:
-            print("警告: results数组为空")
+            print("Warning: results array is empty")
             return {}
         
         codes = {}
@@ -81,7 +81,7 @@ class UMLSClient:
         for atom in results:
             atom_count += 1
             print(f"\n--- Atom #{atom_count} ---")
-            print(f"完整atom数据: {json.dumps(atom, indent=2, ensure_ascii=False)}")
+            print(f"Complete atom data: {json.dumps(atom, indent=2, ensure_ascii=False)}")
             
             source = atom.get('rootSource')
             code = atom.get('code')
@@ -90,78 +90,78 @@ class UMLSClient:
             print(f"rootSource: {source}")
             print(f"code: {code}")
             print(f"name: {name}")
-            print(f"是否在目标词汇表中: {source in vocabularies}")
+            print(f"Is in target vocabularies: {source in vocabularies}")
             
             if source in vocabularies:
                 matched_count += 1
-                print(f"✓ 匹配词汇表 {source}")
+                print(f"✓ Matches vocabulary {source}")
                 if source not in codes:
                     codes[source] = set()
                 codes[source].add(code)
             else:
-                print(f"✗ 不匹配任何目标词汇表")
+                print(f"✗ Does not match any target vocabulary")
         
-        print(f"\n=== 处理总结 ===")
-        print(f"总atom数: {atom_count}")
-        print(f"匹配的atom数: {matched_count}")
-        print(f"找到的词汇表: {list(codes.keys())}")
+        print(f"\n=== Processing Summary ===")
+        print(f"Total atoms: {atom_count}")
+        print(f"Matched atoms: {matched_count}")
+        print(f"Found vocabularies: {list(codes.keys())}")
         
         # Convert sets to lists
         for source in codes:
             codes[source] = list(codes[source])
-            print(f"{source}的代码: {codes[source]}")
+            print(f"Codes for {source}: {codes[source]}")
         
-        print(f"CUI {cui} 最终结果: {codes}")
+        print(f"Final result for CUI {cui}: {codes}")
         return codes
 
 def convert_cuis_to_codes(cuis, vocabularies, api_key):
-    print(f"=== 开始批量转换CUI ===")
-    print(f"CUI列表: {cuis}")
-    print(f"目标词汇表: {vocabularies}")
+    print(f"=== Starting Batch CUI Conversion ===")
+    print(f"CUI list: {cuis}")
+    print(f"Target vocabularies: {vocabularies}")
     
     client = UMLSClient(api_key)
     all_codes = {}
     
     for i, cui in enumerate(cuis, 1):
         print(f"\n{'='*50}")
-        print(f"处理第 {i}/{len(cuis)} 个CUI: {cui}")
+        print(f"Processing CUI {i}/{len(cuis)}: {cui}")
         print(f"{'='*50}")
         
         try:
             codes = client.get_codes_for_cui(cui, vocabularies)
             all_codes[cui] = codes
-            print(f"✓ CUI {cui} 处理成功")
+            print(f"✓ CUI {cui} processed successfully")
         except Exception as e:
-            print(f"✗ 处理CUI {cui}时出错: {e}")
-            print(f"错误类型: {type(e).__name__}")
+            print(f"✗ Error processing CUI {cui}: {e}")
+            print(f"Error type: {type(e).__name__}")
             import traceback
-            print(f"错误详情: {traceback.format_exc()}")
+            print(f"Error details: {traceback.format_exc()}")
             all_codes[cui] = {}
         
-        print(f"等待0.5秒以遵守API速率限制...")
+        print(f"Waiting 0.5 seconds to respect API rate limits...")
         time.sleep(0.5)  # To respect API rate limits
     
-    print(f"\n=== 批量处理完成 ===")
-    print(f"处理结果概览:")
+    print(f"\n=== Batch Processing Complete ===")
+    print(f"Processing results overview:")
     for cui, result in all_codes.items():
-        print(f"  {cui}: {len(result)} 个词汇表")
+        print(f"  {cui}: {len(result)} vocabularies")
     
     return all_codes
 
 # Example usage:
 if __name__ == "__main__":
-    print("=== UMLS CUI到其他编码系统转换工具 ===")
+    print("=== UMLS CUI to Other Coding Systems Conversion Tool ===")
     API_KEY = '8a34672e-87c0-4110-b070-0a015d3509e9'  # Replace with your actual API key
-    cuis = ['C0011849', 'C0015967']  # Example CUIs
+    cuis = ['C0203028', 'C4028586', 'C0332471']  # Example CUIs
     vocabularies = ['ICD10CM', 'RXNORM', 'LOINC']
     
-    print(f"配置信息:")
+    print(f"Configuration information:")
     print(f"  API Key: {API_KEY[:20]}...")
     print(f"  CUIs: {cuis}")
-    print(f"  词汇表: {vocabularies}")
+    print(f"  Vocabularies: {vocabularies}")
     print()
     
     codes = convert_cuis_to_codes(cuis, vocabularies, API_KEY)
     
-    print(f"\n=== 最终结果 ===")
+    print(f"\n=== Final Results ===")
     print(json.dumps(codes, indent=2, ensure_ascii=False))
