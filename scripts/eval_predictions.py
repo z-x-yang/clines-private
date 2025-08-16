@@ -3,6 +3,10 @@ import pandas as pd
 import json
 from datetime import datetime
 from typing import List, Tuple, Dict
+import torch
+import transformers
+from sklearn.metrics.pairwise import cosine_similarity
+import numpy as np
 
 
 def load_csv_files(prediction_dir, groundtruth_dir, model_name):
@@ -44,6 +48,86 @@ def load_csv_files(prediction_dir, groundtruth_dir, model_name):
     return file_pairs
 
 
+class SimpleEmbeddingService:
+    """简化的embedding服务，用于code相似度比较"""
+
+    def __init__(self, model_name='cambridgeltl/SapBERT-from-PubMedBERT-fulltext', use_gpu=False):
+        self.tokenizer = transformers.AutoTokenizer.from_pretrained(
+            model_name, use_fast=True, do_lower_case=True)
+        self.encoder = transformers.AutoModel.from_pretrained(
+            model_name, trust_remote_code=True)
+
+        self.use_gpu = use_gpu and torch.cuda.is_available()
+
+        if self.use_gpu:
+            self.encoder = self.encoder.cuda()
+        else:
+            self.encoder = self.encoder.cpu()
+
+        self.encoder.eval()
+
+    def embed_texts(self, texts, batch_size=32):
+        """将文本列表转换为embeddings"""
+        if not texts:
+            return np.array([])
+
+        # 清理文本
+        texts = [str(text).lower().strip()
+                 for text in texts if text is not None and str(text).strip()]
+        if not texts:
+            return np.array([])
+
+        embeddings = []
+
+        with torch.no_grad():
+            for i in range(0, len(texts), batch_size):
+                batch_texts = texts[i:i + batch_size]
+
+                # Tokenize
+                tokenized = self.tokenizer.batch_encode_plus(
+                    batch_texts,
+                    add_special_tokens=True,
+                    truncation=True,
+                    max_length=25,
+                    padding="max_length",
+                    return_tensors='pt'
+                )
+
+                # Move to device
+                if self.use_gpu:
+                    tokenized = {k: v.cuda() for k, v in tokenized.items()}
+
+                # Get embeddings
+                outputs = self.encoder(**tokenized)
+                # CLS token
+                batch_embeddings = outputs.last_hidden_state[:, 0, :]
+
+                # Normalize
+                batch_embeddings = batch_embeddings / \
+                    torch.norm(batch_embeddings, p=2, dim=-1, keepdim=True)
+
+                # Move to CPU
+                batch_embeddings = batch_embeddings.cpu().numpy()
+                embeddings.append(batch_embeddings)
+
+                # Clear GPU cache
+                if self.use_gpu:
+                    torch.cuda.empty_cache()
+
+        return np.vstack(embeddings) if embeddings else np.array([])
+
+
+def extract_standard_term(code_str):
+    """从code字符串中提取||后面的标准术语部分"""
+    if not isinstance(code_str, str):
+        code_str = str(code_str)
+
+    if '||' in code_str:
+        return code_str.split('||', 1)[1].strip()
+    else:
+        return code_str.strip()
+
+
 def standardize_date(date_str):
     """
     将各种格式的日期标准化为YYYY-MM-DD格式。
@@ -80,17 +164,29 @@ def standardize_date(date_str):
         return date_str
 
 
-def evaluate_entity_extraction(file_pairs: List[Tuple[str, str]], columns: List[str]) -> Dict[str, Dict]:
+def evaluate_entity_extraction(file_pairs: List[Tuple[str, str]], columns: List[str], similarity_threshold: float = 0.95) -> Dict[str, Dict]:
     """
     Evaluate entity extraction accuracy for specified columns, grouped by dataset.
 
     Args:
         file_pairs: List of tuples containing (prediction_file, groundtruth_file) paths
         columns: List of column names to evaluate
+        similarity_threshold: Threshold for code similarity comparison (default: 0.95)
 
     Returns:
         Dictionary containing evaluation metrics for each dataset and column
     """
+    # Initialize embedding service for code comparison
+    embedding_service = None
+    if 'code' in columns:
+        print("Initializing embedding service for code comparison...")
+        try:
+            embedding_service = SimpleEmbeddingService(use_gpu=True)
+            print("✓ Embedding service initialized")
+        except Exception as e:
+            print(f"⚠ Failed to initialize embedding service: {e}")
+            print("Code comparison will fall back to string matching")
+
     # Group file pairs by dataset
     dataset_file_pairs = {}
     for pred_file, gt_file in file_pairs:
@@ -200,8 +296,86 @@ def evaluate_entity_extraction(file_pairs: List[Tuple[str, str]], columns: List[
                             results[dataset][col]['error_cases'].append(
                                 error_info)
 
+                        # 特殊处理assertion status相关列
+                        if 'assertion' in col.lower() and 'status' in col.lower():
+                            # 如果预测值是Historical，则当做Present来处理
+                            if str(pred_value).strip().lower() == 'historical':
+                                pred_value = 'Present'
+
+                            # 忽略大小写进行比较
+                            pred_value_lower = str(pred_value).strip().lower()
+                            gt_value_lower = str(gt_value).strip().lower()
+
+                            if pred_value_lower == gt_value_lower:
+                                results[dataset][col]['tp'] += 1
+                            else:
+                                results[dataset][col]['fp'] += 1
+                                record_error()
+                        # 特殊处理code列，使用embedding相似度比较
+                        elif col.lower() == 'code' and embedding_service is not None:
+                            try:
+                                # 提取标准术语部分
+                                pred_term = extract_standard_term(pred_value)
+                                gt_term = extract_standard_term(gt_value)
+
+                                if pred_term and gt_term:
+                                    # 计算embedding
+                                    pred_embedding = embedding_service.embed_texts([
+                                                                                   pred_term])
+                                    gt_embedding = embedding_service.embed_texts([
+                                                                                 gt_term])
+
+                                    if pred_embedding.size > 0 and gt_embedding.size > 0:
+                                        # 计算余弦相似度
+                                        similarity = cosine_similarity(
+                                            pred_embedding, gt_embedding)[0][0]
+
+                                        if similarity >= similarity_threshold:
+                                            results[dataset][col]['tp'] += 1
+                                        else:
+                                            results[dataset][col]['fp'] += 1
+                                            # 记录相似度信息到错误案例
+                                            error_info = {
+                                                'dataset': dataset,
+                                                'file': os.path.basename(pred_file),
+                                                'position': pos_key,
+                                                'gt_position': (gt_row['start_pos'], gt_row['end_pos']),
+                                                'intersection_length': max_intersection,
+                                                'predicted': pred_value,
+                                                'ground_truth': gt_value,
+                                                'predicted_term': pred_term,
+                                                'ground_truth_term': gt_term,
+                                                'similarity': float(similarity),
+                                                'threshold': similarity_threshold,
+                                                'context': pred_row.get('text', '')
+                                            }
+                                            results[dataset][col]['error_cases'].append(
+                                                error_info)
+                                    else:
+                                        # 如果embedding失败，回退到字符串比较
+                                        if pred_term.lower() == gt_term.lower():
+                                            results[dataset][col]['tp'] += 1
+                                        else:
+                                            results[dataset][col]['fp'] += 1
+                                            record_error()
+                                else:
+                                    # 如果无法提取术语，回退到字符串比较
+                                    if str(pred_value).lower().strip() == str(gt_value).lower().strip():
+                                        results[dataset][col]['tp'] += 1
+                                    else:
+                                        results[dataset][col]['fp'] += 1
+                                        record_error()
+                            except Exception as e:
+                                print(
+                                    f"Error in code similarity comparison: {e}")
+                                # 回退到字符串比较
+                                if str(pred_value).lower().strip() == str(gt_value).lower().strip():
+                                    results[dataset][col]['tp'] += 1
+                                else:
+                                    results[dataset][col]['fp'] += 1
+                                    record_error()
                         # 在比较值之前添加日期标准化处理
-                        if 'date' in col.lower():
+                        elif 'date' in col.lower():
                             pred_value = str(standardize_date(pred_value))
                             gt_value = str(standardize_date(gt_value))
 
@@ -302,6 +476,8 @@ def main():
                         help='Output file to save evaluation results')
     parser.add_argument('--model_name', type=str, required=True,
                         help='Name of the model to evaluate')
+    parser.add_argument('--similarity_threshold', type=float, default=0.95,
+                        help='Similarity threshold for code comparison (default: 0.95)')
 
     args = parser.parse_args()
 
@@ -314,7 +490,8 @@ def main():
         return
 
     # Evaluate entity extraction
-    metrics, results = evaluate_entity_extraction(file_pairs, args.columns)
+    metrics, results = evaluate_entity_extraction(
+        file_pairs, args.columns, args.similarity_threshold)
 
     # Print results for each dataset
     print("\nEvaluation Results:")

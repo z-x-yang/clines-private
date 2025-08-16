@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 import torch
-from model import Retriever
+from llm_interface.retrieval.retriever_coordinator import RetrieverCoordinator as Retriever
 import json
 from datetime import datetime
 
@@ -24,23 +24,48 @@ def load_csv_files(original_dir, reviewed_dir):
         print(f"\nProcessing dataset: {dataset}")
         print(f"Found {len(reviewed_files)} reviewed files")
 
+        # Get all original files for this dataset
+        original_files = [f for f in os.listdir(original_dir)
+                          if f.startswith(f"{dataset}_") and f.endswith('_for_review.csv')]
+
         for reviewed_file in reviewed_files:
-            # Extract the number from reviewed file (e.g., "21" from "21_reviewed.csv")
-            file_number = reviewed_file.split('_')[0]
+            # Extract the base name from reviewed file (remove '_reviewed.csv')
+            base_name = reviewed_file.replace('_reviewed.csv', '')
 
-            # Construct original file name (e.g., "coral_annotated_breastca_21_for_review.csv")
-            original_file = os.path.join(
-                original_dir, f"{dataset}_{file_number}_for_review.csv")
+            # Try to find matching original file
+            matching_original = None
 
-            if os.path.exists(original_file):
+            # Strategy 1: Direct match - look for files containing the base name
+            for orig_file in original_files:
+                if base_name in orig_file:
+                    matching_original = orig_file
+                    break
+
+            # Strategy 2: If no direct match, try partial matching
+            if not matching_original:
+                # Handle cases like "report07" -> "report07_default"
+                for orig_file in original_files:
+                    orig_base = orig_file.replace(
+                        f"{dataset}_", "").replace("_for_review.csv", "")
+                    # Check if base_name is a substring of orig_base or vice versa
+                    if (base_name in orig_base) or (orig_base.replace("_default", "") == base_name):
+                        matching_original = orig_file
+                        break
+
+            if matching_original:
+                original_file_path = os.path.join(
+                    original_dir, matching_original)
                 file_pairs.append((
-                    original_file,
+                    original_file_path,
                     os.path.join(reviewed_dataset_dir, reviewed_file)
                 ))
-                print(
-                    f"✓ Matched: {reviewed_file} -> {os.path.basename(original_file)}")
+                print(f"✓ Matched: {reviewed_file} -> {matching_original}")
             else:
                 print(f"✗ No matching original file for: {reviewed_file}")
+                # Print available original files for debugging
+                # Show first 5
+                print(
+                    f"  Available original files: {[f for f in original_files][:5]}...")
 
     return file_pairs
 
@@ -69,11 +94,19 @@ def compare_entities(original_df, reviewed_df):
                     code = str(reviewed_row['code'])
                     if code == '' or code == 'nan':
                         code = reviewed_row['mention']
+
+                    # Extract the standard term from code if it has "||" format
+                    retrieval_term = code
+                    if '||' in code:
+                        retrieval_term = code.split(
+                            '||')[1]  # Take the part after ||
+
                     changes.append({
                         'position': pos_key,
                         'mention': reviewed_row['mention'],
                         'original_code': original_row['code'],
-                        'reviewed_code': code
+                        'reviewed_code': code,
+                        'retrieval_term': retrieval_term
                     })
                     print(f"Changed entity: {reviewed_row['mention']}")
                     print(f"Original code: {original_row['code']}")
@@ -83,10 +116,18 @@ def compare_entities(original_df, reviewed_df):
                 code = str(reviewed_row['code'])
                 if code == '' or code == 'nan':
                     code = reviewed_row['mention']
+
+                # Extract the standard term from code if it has "||" format
+                retrieval_term = code
+                if '||' in code:
+                    retrieval_term = code.split(
+                        '||')[1]  # Take the part after ||
+
                 new_entities.append({
                     'position': pos_key,
                     'mention': reviewed_row['mention'],
-                    'code': code
+                    'code': code,
+                    'retrieval_term': retrieval_term
                 })
                 print(f"New entity: {reviewed_row['mention']}")
                 print(f"Code: {code}")
@@ -119,9 +160,10 @@ def get_umls_info(mentions, retriever):
 
 def update_csv_with_umls(reviewed_df, changes, new_entities, retriever):
     """Update reviewed CSV with UMLS information only for changed and new entities."""
-    # Get mentions from changes and new entities
-    changed_mentions = [c['reviewed_code'] for c in changes]
-    new_mentions = [e['code'] for e in new_entities]
+    # Get retrieval terms from changes and new entities (use retrieval_term if available)
+    changed_mentions = [
+        c.get('retrieval_term', c['reviewed_code']) for c in changes]
+    new_mentions = [e.get('retrieval_term', e['code']) for e in new_entities]
     all_mentions = changed_mentions + new_mentions
 
     if not all_mentions:
@@ -130,14 +172,14 @@ def update_csv_with_umls(reviewed_df, changes, new_entities, retriever):
     # Get UMLS info for all mentions
     umls_info = get_umls_info(all_mentions, retriever)
 
-    # Create a mapping from mention to UMLS info
+    # Create a mapping from retrieval term to UMLS info
     umls_map = {info['mention']: info for info in umls_info}
 
     # Create position-based mappings for changes and new entities
     change_positions = {(c['position'][0], c['position'][1],
-                         c['mention']): c['reviewed_code'] for c in changes}
+                         c['mention']): c.get('retrieval_term', c['reviewed_code']) for c in changes}
     new_positions = {(e['position'][0], e['position'][1],
-                      e['mention']): e['code'] for e in new_entities}
+                      e['mention']): e.get('retrieval_term', e['code']) for e in new_entities}
 
     # Update code and type columns only for changed and new entities
     for idx, row in reviewed_df.iterrows():
@@ -177,7 +219,7 @@ def main():
     # Directories containing CSV files
     original_dir = 'outputs/final'
     reviewed_dir = 'outputs/reviewed'
-    output_dir = 'outputs/reviewed_updated'  # New directory for updated files
+    output_dir = 'outputs/reviewed_updated2'  # New directory for updated files
 
     # Create output directory if it doesn't exist
     os.makedirs(output_dir, exist_ok=True)
@@ -203,13 +245,41 @@ def main():
         print(f"Reviewed: {reviewed_file}")
 
         # Load CSVs
-        original_df = pd.read_csv(original_file)
-        reviewed_df = pd.read_csv(reviewed_file)
+        try:
+            original_df = pd.read_csv(original_file, encoding='utf-8')
+        except UnicodeDecodeError:
+            try:
+                original_df = pd.read_csv(original_file, encoding='latin-1')
+            except UnicodeDecodeError:
+                original_df = pd.read_csv(original_file, encoding='cp1252')
+
+        try:
+            reviewed_df = pd.read_csv(reviewed_file, encoding='utf-8')
+        except UnicodeDecodeError:
+            try:
+                reviewed_df = pd.read_csv(reviewed_file, encoding='latin-1')
+            except UnicodeDecodeError:
+                reviewed_df = pd.read_csv(reviewed_file, encoding='cp1252')
+
         print(
             f"✓ Loaded {len(original_df)} original and {len(reviewed_df)} reviewed entities")
 
+        # Remove rows where code is nan for both dataframes
+        original_df_clean = original_df.dropna(subset=['code'])
+        reviewed_df_clean = reviewed_df.dropna(subset=['code'])
+
+        # Also remove rows where code is string 'nan'
+        original_df_clean = original_df_clean[original_df_clean['code'].astype(
+            str) != 'nan']
+        reviewed_df_clean = reviewed_df_clean[reviewed_df_clean['code'].astype(
+            str) != 'nan']
+
+        print(
+            f"✓ After removing nan codes: {len(original_df_clean)} original and {len(reviewed_df_clean)} reviewed entities")
+
         # Compare entities
-        changes, new_entities = compare_entities(original_df, reviewed_df)
+        changes, new_entities = compare_entities(
+            original_df_clean, reviewed_df_clean)
         total_changes += len(changes)
         total_new += len(new_entities)
 
@@ -218,7 +288,7 @@ def main():
             print(
                 "\nUpdating reviewed CSV with UMLS information for changes and new entities...")
             updated_df = update_csv_with_umls(
-                reviewed_df, changes, new_entities, retriever)
+                reviewed_df_clean, changes, new_entities, retriever)
 
             # Get the relative path from reviewed_dir to maintain directory structure
             rel_path = os.path.relpath(reviewed_file, reviewed_dir)
@@ -231,7 +301,7 @@ def main():
             # Save updated CSV maintaining the directory structure
             output_file = os.path.join(output_subdir, os.path.basename(
                 reviewed_file).replace('_reviewed.csv', '_updated.csv'))
-            updated_df.to_csv(output_file, index=False)
+            updated_df.to_csv(output_file, index=False, encoding='utf-8')
             print(f"✓ Saved updated CSV to: {output_file}")
 
     # Print summary

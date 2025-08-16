@@ -6,7 +6,7 @@ SCRIPTS_DIR="${BASE_DIR}/scripts"
 OUTPUT_DIR="${BASE_DIR}/outputs"
 
 # Create evaluation results directory
-EVAL_DIR="${OUTPUT_DIR}/evaluation_results"
+EVAL_DIR="${OUTPUT_DIR}/evaluation_results_0611_v2"
 mkdir -p "${EVAL_DIR}"
 
 # Get current timestamp for unique output files
@@ -57,6 +57,12 @@ run_evaluation "llama" \
     "${OUTPUT_DIR}/with_positions" \
     "${OUTPUT_DIR}/reviewed_updated" \
     "${EVAL_DIR}/llama_eval_${TIMESTAMP}.json"
+
+# Evaluate O3Mini output
+run_evaluation "o3mini" \
+    "${OUTPUT_DIR}/with_positions" \
+    "${OUTPUT_DIR}/reviewed_updated" \
+    "${EVAL_DIR}/o3mini_eval_${TIMESTAMP}.json"
 
 echo "All evaluations completed!"
 echo "Results saved in: ${EVAL_DIR}"
