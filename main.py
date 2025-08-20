@@ -74,6 +74,10 @@ if __name__ == '__main__':
                         help='Chunk size for the model')
     parser.add_argument('--use_faiss_gpu', action='store_true',
                         help='Use GPU for FAISS')
+    parser.add_argument('--chunk_max_retries', type=int, default=2,
+                        help='Maximum retries for a single chunk before skipping it')
+    parser.add_argument('--chunk_retry_delay', type=float, default=0.5,
+                        help='Delay in seconds between chunk retry attempts')
 
     args = parser.parse_args()
 
@@ -95,7 +99,9 @@ if __name__ == '__main__':
     # Instantiate PipelineCoordinator instead of PIPELINE
     pipeline_executor = PipelineCoordinator(llm_model, args.schema, args.output_type,
                                             args.marker, use_gpu=torch.cuda.is_available(),
-                                            use_faiss_gpu=args.use_faiss_gpu, output_dir=args.output_dir)
+                                            use_faiss_gpu=args.use_faiss_gpu, output_dir=args.output_dir,
+                                            chunk_max_retries=args.chunk_max_retries,
+                                            chunk_retry_delay=args.chunk_retry_delay)
     logger.info("PipelineCoordinator initialized")
 
     if args.start_index > 0 and os.path.exists(args.error_log_file):

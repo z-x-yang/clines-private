@@ -36,7 +36,8 @@ class PipelineCoordinator:
     Orchestrates the EHR processing pipeline, coordinating various NLP tasks.
     """
 
-    def __init__(self, model, schema='i2b2', format_type='csv', marker="", use_gpu=True, use_faiss_gpu=None, output_dir="outputs"):
+    def __init__(self, model, schema='i2b2', format_type='csv', marker="", use_gpu=True, use_faiss_gpu=None, output_dir="outputs",
+                 chunk_max_retries: int = 2, chunk_retry_delay: float = 0.5):
         self.logger = logging.getLogger(self.__class__.__name__)
         self.model = model
         self.output_schema = SchemaProcessor(
@@ -82,9 +83,62 @@ class PipelineCoordinator:
             self.deduplication
         )
 
+        # Chunk-level retry configuration
+        self.chunk_max_retries = chunk_max_retries
+        self.chunk_retry_delay = chunk_retry_delay
+
         self.reinitialize()
         self.logger.info(
             "PipelineCoordinator initialized with retriever, prompts, and processors.")
+
+    def _process_chunk_with_retry(self, chunk_text: str, prev_chunk_text: str | None,
+                                   chunk_offset: int, original_ehr: str,
+                                   chunk_index: int, total_chunks: int) -> None:
+        """
+        Process a single chunk with bounded retries. Failures are logged and the
+        pipeline continues with subsequent chunks. Always finalizes chunk stats once.
+
+        Args:
+            chunk_text: Current chunk text
+            prev_chunk_text: Previous chunk text or None
+            chunk_offset: Offset of current chunk in original document
+            original_ehr: The full original EHR text
+            chunk_index: 1-based index of current chunk
+            total_chunks: Total number of chunks
+        """
+        attempts = 0
+        success = False
+        while attempts <= self.chunk_max_retries and not success:
+            try:
+                if attempts > 0:
+                    self.logger.warning(
+                        f"Retrying chunk {chunk_index}/{total_chunks} (attempt {attempts}/{self.chunk_max_retries})…")
+
+                # Set original chunk token count before processing
+                self.model.set_chunk_original_tokens(chunk_text)
+                self.call_single(chunk_text, prev_ehr=prev_chunk_text,
+                                  chunk_offset=chunk_offset, original_ehr=original_ehr)
+                success = True
+            except Exception as e:
+                if attempts < self.chunk_max_retries:
+                    self.logger.warning(
+                        f"Chunk {chunk_index}/{total_chunks} failed: {e}. Will retry after {self.chunk_retry_delay}s.")
+                    time.sleep(self.chunk_retry_delay)
+                else:
+                    self.logger.error(
+                        f"Chunk {chunk_index}/{total_chunks} failed after {self.chunk_max_retries} retries: {e}",
+                        exc_info=True)
+                attempts += 1
+            finally:
+                # Ensure we finalize chunk statistics once per attempt cycle only when success
+                # We will finalize after loop to ensure exactly-once semantics per chunk
+                pass
+
+        # Finalize chunk statistics once per chunk regardless of success
+        try:
+            self.model.finish_chunk()
+        except Exception as e:
+            self.logger.error(f"Error finalizing chunk {chunk_index}/{total_chunks}: {e}", exc_info=True)
 
     def reinitialize(self):
         self.pipeline_result = {
@@ -418,11 +472,14 @@ class PipelineCoordinator:
 
         if len(chunked_ehr) == 1:
             self.logger.info("Processing single chunk...")
-            # Set original chunk token count before processing
-            self.model.set_chunk_original_tokens(ehr)
-            self.call_single(ehr, prev_ehr=None,
-                             chunk_offset=0, original_ehr=ehr)
-            self.model.finish_chunk()
+            self._process_chunk_with_retry(
+                chunk_text=ehr,
+                prev_chunk_text=None,
+                chunk_offset=0,
+                original_ehr=ehr,
+                chunk_index=1,
+                total_chunks=1,
+            )
         else:
             self.logger.info("Processing multiple chunks sequentially...")
             current_offset = 0
@@ -447,11 +504,14 @@ class PipelineCoordinator:
                 self.logger.info(
                     f"Chunk {i+1} offset in original document: {current_offset}")
 
-                # Set original chunk token count before processing
-                self.model.set_chunk_original_tokens(current_chunk_ehr)
-                self.call_single(current_chunk_ehr, prev_ehr=prev_chunk_ehr,
-                                 chunk_offset=current_offset, original_ehr=ehr)
-                self.model.finish_chunk()
+                self._process_chunk_with_retry(
+                    chunk_text=current_chunk_ehr,
+                    prev_chunk_text=prev_chunk_ehr,
+                    chunk_offset=current_offset,
+                    original_ehr=ehr,
+                    chunk_index=i+1,
+                    total_chunks=len(chunked_ehr),
+                )
 
                 # Update offset for next iteration
                 current_offset += len(current_chunk_ehr)
