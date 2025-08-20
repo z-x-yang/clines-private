@@ -78,6 +78,12 @@ if __name__ == '__main__':
                         help='Maximum retries for a single chunk before skipping it')
     parser.add_argument('--chunk_retry_delay', type=float, default=0.5,
                         help='Delay in seconds between chunk retry attempts')
+    parser.add_argument('--num_workers', type=int, default=2,
+                        help='Number of parallel workers for processing notes (1-5)')
+    parser.add_argument('--run_report_file', type=str, default='run_report.jsonl',
+                        help='Path to JSONL run report file')
+    parser.add_argument('--retry_list_file', type=str, default='retry_list.jsonl',
+                        help='Path to JSONL retry list file for failed/partial notes')
 
     args = parser.parse_args()
 
@@ -97,11 +103,24 @@ if __name__ == '__main__':
         os.makedirs(args.output_dir)
 
     # Instantiate PipelineCoordinator instead of PIPELINE
-    pipeline_executor = PipelineCoordinator(llm_model, args.schema, args.output_type,
-                                            args.marker, use_gpu=torch.cuda.is_available(),
-                                            use_faiss_gpu=args.use_faiss_gpu, output_dir=args.output_dir,
-                                            chunk_max_retries=args.chunk_max_retries,
-                                            chunk_retry_delay=args.chunk_retry_delay)
+    # Initialize shared retriever once
+    from llm_interface.retrieval.retriever_coordinator import RetrieverCoordinator
+    shared_retriever = RetrieverCoordinator('cambridgeltl/SapBERT-from-PubMedBERT-fulltext',
+                                            use_gpu=torch.cuda.is_available(),
+                                            use_faiss_gpu=args.use_faiss_gpu)
+    shared_retriever.load_dictionary_all('./umls_dictionary.txt')
+    shared_retriever.load_dictionary_bodyloc('./umls_body_loc_dictionary.txt')
+    shared_retriever.embed_dictionary(32768)
+    shared_retriever.faiss_setup()
+
+    # Helper to append a JSON line thread-safely
+    import threading, json as _json
+    write_lock = threading.Lock()
+    def append_jsonl(path, obj):
+        line = _json.dumps(obj, ensure_ascii=False)
+        with write_lock:
+            with open(path, 'a', encoding='utf-8') as f:
+                f.write(line + '\n')
     logger.info("PipelineCoordinator initialized")
 
     if args.start_index > 0 and os.path.exists(args.error_log_file):
@@ -151,10 +170,11 @@ if __name__ == '__main__':
     total_processing_time = 0
     processed_notes_count = 0
 
-    for i in tqdm(range(args.start_index, len(notes)), desc="Processing notes"):
+    # Prepare worker for parallel execution
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+    def process_one_note(idx_and_item):
+        i, note_item = idx_and_item
         start_time = time.time()
-
-        note_item = notes[i]
         key_prefix = args.marker
         ehr_text = ""
         note_id_for_key = ""
@@ -173,126 +193,69 @@ if __name__ == '__main__':
             ehr_text = note_item['text']
 
         key = f"{key_prefix}_{note_id_for_key}"
-        logger.info(
-            f"========= Processing note {i+1}/{len(notes)}: {key} ==========")
+        logger.info(f"========= Processing note {i+1}/{len(notes)}: {key} ==========")
 
+        # Skip if output exists
         output_file = f"{args.output_dir}/{key}_{args.schema}.csv"
-        if args.output_type != 'csv':  # Adjust for other output types if necessary
+        if args.output_type != 'csv':
             output_file = f"{args.output_dir}/{key}_{args.schema}.{args.output_type}"
-
         if os.path.exists(output_file):
-            logger.info(
-                f"Skipping {key} - output file already exists: {output_file}")
-            continue
+            logger.info(f"Skipping {key} - output file already exists: {output_file}")
+            return {'note_key': key, 'skipped': True}
 
-        # Actual processing call
-        if args.debug:
-            pipeline_executor(ehr_text, key)  # Call the instance
-        else:
-            for attempt in range(args.max_retries):
-                try:
-                    pipeline_executor(ehr_text, key)  # Call the instance
-                    break
-                except Exception as e:
-                    if attempt < args.max_retries - 1:
-                        logger.info(
-                            f"Attempt {attempt + 1} failed for {key}: {e}. Retrying...")
-                    else:
-                        traceback_str = traceback.format_exc()
-                        error_log.append(
-                            {"index": i, "key": key, "error": str(e), "traceback": traceback_str})
-                        logger.error(
-                            f"Error processing note {key} after {args.max_retries} attempts: {e}")
-                        logger.debug(f"Traceback: {traceback_str}")
-                        with open(args.error_log_file, 'w') as f:
-                            json.dump(error_log, f, indent=4)
+        # Create per-note LLMManager and Coordinator (inject shared retriever)
+        local_llm = LLMManager(args.model_name, chunk_size=args.chunk_size)
+        coord = PipelineCoordinator(local_llm, args.schema, args.output_type,
+                                    args.marker, use_gpu=torch.cuda.is_available(),
+                                    use_faiss_gpu=args.use_faiss_gpu, output_dir=args.output_dir,
+                                    chunk_max_retries=args.chunk_max_retries,
+                                    chunk_retry_delay=args.chunk_retry_delay,
+                                    shared_retriever=shared_retriever)
+
+        report = None
+        for attempt in range(args.max_retries):
+            try:
+                report = coord(ehr_text, key)  # returns report dict
+                break
+            except Exception as e:
+                if attempt < args.max_retries - 1:
+                    logger.info(f"Attempt {attempt + 1} failed for {key}: {e}. Retrying...")
+                    continue
+                else:
+                    traceback_str = traceback.format_exc()
+                    error_log.append({"index": i, "key": key, "error": str(e), "traceback": traceback_str})
+                    logger.error(f"Error processing note {key} after {args.max_retries} attempts: {e}")
+                    logger.debug(f"Traceback: {traceback_str}")
+        
+        # Append to run report
+        if report is None:
+            report = {'note_key': key, 'overall_status': 'failed', 'errors': ['unhandled exception'], 'chunk_stats': [], 'aggregation_success': False}
+        append_jsonl(args.run_report_file, report)
+
+        # Append retry list for partial/failed
+        if report.get('overall_status') in ['failed', 'partial']:
+            reason = []
+            if any(not cs.get('success', False) for cs in report.get('chunk_stats', [])):
+                skipped = sum(1 for cs in report['chunk_stats'] if not cs.get('success', False))
+                reason.append(f"chunks_skipped={skipped}")
+            if not report.get('aggregation_success', True):
+                reason.append('aggregation_failed')
+            if report.get('errors'):
+                reason.append('errors_present')
+            append_jsonl(args.retry_list_file, {'note_key': key, 'reason': ','.join(reason) or 'unknown', 'attempts': args.max_retries, 'last_error': (report.get('errors') or [None])[-1]})
 
         logger.info(f"========= Processing of {key} complete. ==========")
         elapsed_time = time.time() - start_time
-        total_processing_time += elapsed_time
-        processed_notes_count += 1
-        avg_time = total_processing_time / \
-            processed_notes_count if processed_notes_count else 0
+        return {'note_key': key, 'skipped': False, 'duration_sec': elapsed_time}
 
-        if llm_model.note_token_stats:
-            latest_note_stats = llm_model.note_token_stats[-1]
-            logger.info("\nToken Usage Statistics for the note:")
-            logger.info(
-                f"  Total prompt tokens: {latest_note_stats['total_prompt_tokens']}")
-            logger.info(
-                f"  Total completion tokens: {latest_note_stats['total_completion_tokens']}")
-            logger.info(f"  Total tokens: {latest_note_stats['total_tokens']}")
-            logger.info(
-                f"  Number of chunks: {latest_note_stats['num_chunks']}")
-            logger.info(
-                f"  Average tokens per chunk: {latest_note_stats['avg_tokens_per_chunk']:.2f}")
+    # Constrain workers between 1 and 5
+    workers = max(1, min(5, int(args.num_workers)))
+    with ThreadPoolExecutor(max_workers=workers) as executor:
+        futures = [executor.submit(process_one_note, (i, note)) for i, note in enumerate(notes[args.start_index:])]
+        for fut in as_completed(futures):
+            try:
+                _ = fut.result()
+            except Exception as e:
+                logger.error(f"Unhandled exception in worker: {e}")
 
-            # New enhanced statistics
-            logger.info(
-                f"  Total original chunk tokens: {latest_note_stats['total_original_chunk_tokens']}")
-            logger.info(
-                f"  Average original chunk tokens: {latest_note_stats['avg_original_chunk_tokens']:.2f}")
-            logger.info(
-                f"  Average prompt tokens per chunk: {latest_note_stats['avg_prompt_tokens_per_chunk']:.2f}")
-            logger.info(
-                f"  Average completion tokens per chunk: {latest_note_stats['avg_completion_tokens_per_chunk']:.2f}")
-            logger.info(
-                f"  Average LLM calls per chunk: {latest_note_stats['avg_calls_per_chunk']:.2f}")
-
-            # Overall averages might be better calculated across all notes processed in this run
-            # This requires accumulating totals outside the loop or adjusting LLMManager
-            # For now, displaying based on current llm_model.note_token_stats accumulation
-            total_notes_processed_in_run = len(llm_model.note_token_stats)
-            if total_notes_processed_in_run > 0:
-                # Calculate total statistics for this run
-                total_prompt_tokens_run = sum(
-                    note['total_prompt_tokens'] for note in llm_model.note_token_stats)
-                total_completion_tokens_run = sum(
-                    note['total_completion_tokens'] for note in llm_model.note_token_stats)
-                total_tokens_run = sum(
-                    note['total_tokens'] for note in llm_model.note_token_stats)
-                total_chunks_run = sum(
-                    note['num_chunks'] for note in llm_model.note_token_stats)
-                total_original_chunk_tokens_run = sum(
-                    note['total_original_chunk_tokens'] for note in llm_model.note_token_stats)
-
-                logger.info("\nOverall Token Usage Summary (this run):")
-                logger.info(f"  Total notes processed: {total_notes_processed_in_run}")
-                logger.info(f"  Total chunks processed: {total_chunks_run}")
-                logger.info(f"  Total prompt tokens: {total_prompt_tokens_run}")
-                logger.info(f"  Total completion tokens: {total_completion_tokens_run}")
-                logger.info(f"  Total tokens: {total_tokens_run}")
-                logger.info(f"  Total original chunk tokens: {total_original_chunk_tokens_run}")
-
-                # Calculate average statistics for this run
-                avg_prompt_tokens_overall = total_prompt_tokens_run / total_notes_processed_in_run
-                avg_completion_tokens_overall = total_completion_tokens_run / total_notes_processed_in_run
-                avg_total_tokens_overall = total_tokens_run / total_notes_processed_in_run
-                avg_original_chunk_tokens_overall = sum(
-                    note['avg_original_chunk_tokens'] for note in llm_model.note_token_stats) / total_notes_processed_in_run
-                avg_prompt_tokens_per_chunk_overall = sum(
-                    note['avg_prompt_tokens_per_chunk'] for note in llm_model.note_token_stats) / total_notes_processed_in_run
-                avg_completion_tokens_per_chunk_overall = sum(
-                    note['avg_completion_tokens_per_chunk'] for note in llm_model.note_token_stats) / total_notes_processed_in_run
-
-                logger.info("\nOverall Token Usage Averages (this run):")
-                logger.info(
-                    f"  Average prompt tokens per note: {avg_prompt_tokens_overall:.2f}")
-                logger.info(
-                    f"  Average completion tokens per note: {avg_completion_tokens_overall:.2f}")
-                logger.info(
-                    f"  Average total tokens per note: {avg_total_tokens_overall:.2f}")
-                logger.info(
-                    f"  Average original chunk tokens per note: {avg_original_chunk_tokens_overall:.2f}")
-                logger.info(
-                    f"  Average prompt tokens per chunk (overall): {avg_prompt_tokens_per_chunk_overall:.2f}")
-                logger.info(
-                    f"  Average completion tokens per chunk (overall): {avg_completion_tokens_per_chunk_overall:.2f}")
-
-        logger.info(
-            f"Time taken for {key}: {elapsed_time:.2f} seconds ({elapsed_time/60:.2f} minutes)")
-        logger.info(
-            f"Average processing time per note (this run): {avg_time:.2f} seconds ({avg_time/60:.2f} minutes)")
-
-        if torch.cuda.is_available():
-            torch.cuda.empty_cache()
+        # Token usage summary from the previous single-threaded flow is omitted in parallel mode

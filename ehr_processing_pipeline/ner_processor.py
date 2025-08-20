@@ -617,6 +617,7 @@ class NERProcessor:
 
     def process_ner(self, ehr_text: str, original_ehr_text: str = None, chunk_offset: int = 0) -> NERData:
         """Processes EHR text to identify named entities and their contexts."""
+        self.last_run_stats = {'status': 'success', 'fallback_used': False, 'error': None}
         # Use the utility function, passing self.model, self.logger, and self.prompt_json_debug
         ner_results_raw = process_llm_query(
             model=self.model,

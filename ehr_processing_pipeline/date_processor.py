@@ -128,35 +128,40 @@ class DateProcessor:
                       current_admission_date: str | None = None,
                       current_discharge_date: str | None = None) -> DateData:
         """Main method to process dates for a given EHR segment."""
+        self.last_run_stats = {'status': 'success', 'fallback_used': False, 'error': None}
         if current_admission_date:
             self.current_admission_date = current_admission_date
         if current_discharge_date:
             self.current_discharge_date = current_discharge_date
 
-        if prev_ehr is None:
-            date_data = self._process_initial_dates(
-                ehr, ner_results_text, parsed_ner_tags)
-        else:
-            if not self.current_admission_date:
-                self.logger.warning(
-                    "Processing subsequent dates without an initial admission date. Date normalization might be affected.")
-                basic_info_fallback = process_llm_query(
-                    model=self.model,
-                    prompt_obj=self.prompt_basic_info,
-                    template_vars={'note': ehr},
-                    prompt_json_debug=self.prompt_json_debug,
-                    logger=self.logger,
-                    parse_json=True,
-                    new_chat=True
-                )
-                self.current_admission_date = basic_info_fallback.get(
-                    'admission_date')
-                self.current_discharge_date = basic_info_fallback.get(
-                    'discharge_date')
-                self.logger.info(
-                    f"Fallback basic info from chunk: Adm: {self.current_admission_date}, Dis: {self.current_discharge_date}")
+        try:
+            if prev_ehr is None:
+                date_data = self._process_initial_dates(
+                    ehr, ner_results_text, parsed_ner_tags)
+            else:
+                if not self.current_admission_date:
+                    self.logger.warning(
+                        "Processing subsequent dates without an initial admission date. Date normalization might be affected.")
+                    basic_info_fallback = process_llm_query(
+                        model=self.model,
+                        prompt_obj=self.prompt_basic_info,
+                        template_vars={'note': ehr},
+                        prompt_json_debug=self.prompt_json_debug,
+                        logger=self.logger,
+                        parse_json=True,
+                        new_chat=True
+                    )
+                    self.current_admission_date = basic_info_fallback.get(
+                        'admission_date')
+                    self.current_discharge_date = basic_info_fallback.get(
+                        'discharge_date')
+                    self.logger.info(
+                        f"Fallback basic info from chunk: Adm: {self.current_admission_date}, Dis: {self.current_discharge_date}")
 
-            date_data = self._process_subsequent_dates(
-                ner_results_text, prev_ehr, parsed_ner_tags)
+                date_data = self._process_subsequent_dates(
+                    ner_results_text, prev_ehr, parsed_ner_tags)
+        except Exception as e:
+            self.last_run_stats = {'status': 'failed', 'fallback_used': False, 'error': str(e)}
+            raise
 
         return date_data

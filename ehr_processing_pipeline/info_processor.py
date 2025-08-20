@@ -30,7 +30,13 @@ class InfoProcessor:
     # Moved from PipelineCoordinator and renamed
     def process_information(self, ner_results_text: str, parsed_ner_tags: list) -> InfoData:
         self.logger.debug(f"Processing information for {len(parsed_ner_tags)} entities")
-        
+        self.last_run_stats = {
+            'status': 'success',
+            'fallback_used': False,
+            'error': None,
+            'status_module': {'status': 'success', 'fallback_used': False, 'error': None},
+            'info_module': {'status': 'success', 'fallback_used': False, 'error': None},
+        }
         # status_results - use type-safe processing
         try:
             status_results = process_llm_query_with_contract(
@@ -53,6 +59,8 @@ class InfoProcessor:
             # Use fallback strategy
             status_results = self.status_contract.fallback_generator(ner_results_text, parsed_ner_tags)
             self.logger.warning("Used fallback for status results")
+            self.last_run_stats['status_module'] = {'status': 'partial', 'fallback_used': True, 'error': str(e)}
+            self.last_run_stats['fallback_used'] = True
 
         # info_results - use type-safe processing
         try:
@@ -76,6 +84,8 @@ class InfoProcessor:
             # Use fallback strategy
             info_results = self.info_contract.fallback_generator(ner_results_text, parsed_ner_tags)
             self.logger.warning("Used fallback for info results")
+            self.last_run_stats['info_module'] = {'status': 'partial', 'fallback_used': True, 'error': str(e)}
+            self.last_run_stats['fallback_used'] = True
 
         # Entity linking for body_location
         if len(info_results) > 0:
@@ -108,4 +118,8 @@ class InfoProcessor:
                 "Info results is empty, skipping bodyloc linking.")
         
         self.logger.debug(f"Completed processing: {len(status_results)} status results, {len(info_results)} info results")
+        if self.last_run_stats['status_module']['status'] != 'partial' and self.last_run_stats['info_module']['status'] != 'partial':
+            self.last_run_stats['status'] = 'success'
+        else:
+            self.last_run_stats['status'] = 'partial'
         return InfoData(status_results=status_results, info_results=info_results)

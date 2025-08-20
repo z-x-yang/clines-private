@@ -76,40 +76,45 @@ class EntityProcessor:
         """Process entity relationships and cleaning."""
         # ner_results_text is the string output from NERProcessor with <1>entity</1> tags
         # parsed_ner_tags is the list of tags like ["1", "2", ...]
+        self.last_run_stats = {'status': 'success', 'fallback_used': False, 'error': None}
+        try:
+            relate_results = process_llm_query(
+                model=self.model,
+                prompt_obj=self.prompt_relate,
+                template_vars={'note': ner_results_text},
+                prompt_json_debug=self.prompt_json_debug,
+                logger=self.logger,
+                parse_json=True,  # Expect JSON output
+                new_chat=True
+            )
+            # Use the passed deduplication function
+            relate_results = self.deduplication(
+                relate_results, 'tag', parsed_ner_tags)
+            self.logger.debug(f"Relate results:\n{pprint.pformat(relate_results)}")
 
-        relate_results = process_llm_query(
-            model=self.model,
-            prompt_obj=self.prompt_relate,
-            template_vars={'note': ner_results_text},
-            prompt_json_debug=self.prompt_json_debug,
-            logger=self.logger,
-            parse_json=True,  # Expect JSON output
-            new_chat=True
-        )
-        # Use the passed deduplication function
-        relate_results = self.deduplication(
-            relate_results, 'tag', parsed_ner_tags)
-        self.logger.debug(f"Relate results:\n{pprint.pformat(relate_results)}")
+            clean_results = process_llm_query(
+                model=self.model,
+                prompt_obj=self.prompt_clean,
+                template_vars={'note': ner_results_text},
+                prompt_json_debug=self.prompt_json_debug,
+                logger=self.logger,
+                parse_json=True,  # Expect JSON output
+                new_chat=True
+            )
+            clean_results = self.deduplication(
+                clean_results, 'TAG', parsed_ner_tags)
+            self.logger.debug(
+                f"Clean results before linking:\n{pprint.pformat(clean_results)}")
 
-        clean_results = process_llm_query(
-            model=self.model,
-            prompt_obj=self.prompt_clean,
-            template_vars={'note': ner_results_text},
-            prompt_json_debug=self.prompt_json_debug,
-            logger=self.logger,
-            parse_json=True,  # Expect JSON output
-            new_chat=True
-        )
-        clean_results = self.deduplication(
-            clean_results, 'TAG', parsed_ner_tags)
-        self.logger.debug(
-            f"Clean results before linking:\n{pprint.pformat(clean_results)}")
+            clean_results = self.entity_linking(clean_results, type='all')
+            self.logger.debug(
+                f"Clean results after linking:\n{pprint.pformat(clean_results)}")
 
-        clean_results = self.entity_linking(clean_results, type='all')
-        self.logger.debug(
-            f"Clean results after linking:\n{pprint.pformat(clean_results)}")
-
-        return EntityData(
-            relate_results=relate_results,
-            clean_results=clean_results
-        )
+            return EntityData(
+                relate_results=relate_results,
+                clean_results=clean_results
+            )
+        except Exception as e:
+            # Record and propagate to trigger chunk-level retry
+            self.last_run_stats = {'status': 'failed', 'fallback_used': False, 'error': str(e)}
+            raise

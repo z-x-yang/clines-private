@@ -37,19 +37,24 @@ class PipelineCoordinator:
     """
 
     def __init__(self, model, schema='i2b2', format_type='csv', marker="", use_gpu=True, use_faiss_gpu=None, output_dir="outputs",
-                 chunk_max_retries: int = 2, chunk_retry_delay: float = 0.5):
+                 chunk_max_retries: int = 2, chunk_retry_delay: float = 0.5,
+                 shared_retriever: RetrieverCoordinator | None = None):
         self.logger = logging.getLogger(self.__class__.__name__)
         self.model = model
         self.output_schema = SchemaProcessor(
             schema, format_type, marker, output_dir)
 
-        self.retriever = RetrieverCoordinator(
-            'cambridgeltl/SapBERT-from-PubMedBERT-fulltext', use_gpu=use_gpu, use_faiss_gpu=use_faiss_gpu)
-        self.retriever.load_dictionary_all('./umls_dictionary.txt')
-        self.retriever.load_dictionary_bodyloc(
-            './umls_body_loc_dictionary.txt')
-        self.retriever.embed_dictionary(32768)
-        self.retriever.faiss_setup()
+        if shared_retriever is not None:
+            self.retriever = shared_retriever
+            self.logger.info("Using shared RetrieverCoordinator instance (skipping local initialization)")
+        else:
+            self.retriever = RetrieverCoordinator(
+                'cambridgeltl/SapBERT-from-PubMedBERT-fulltext', use_gpu=use_gpu, use_faiss_gpu=use_faiss_gpu)
+            self.retriever.load_dictionary_all('./umls_dictionary.txt')
+            self.retriever.load_dictionary_bodyloc(
+                './umls_body_loc_dictionary.txt')
+            self.retriever.embed_dictionary(32768)
+            self.retriever.faiss_setup()
 
         self.prompt_ner = PromptManager('findentity')
         self.prompt_relate = PromptManager('findrelated')
@@ -93,7 +98,8 @@ class PipelineCoordinator:
 
     def _process_chunk_with_retry(self, chunk_text: str, prev_chunk_text: str | None,
                                    chunk_offset: int, original_ehr: str,
-                                   chunk_index: int, total_chunks: int) -> None:
+                                   chunk_index: int, total_chunks: int,
+                                   chunk_stats: list | None = None) -> None:
         """
         Process a single chunk with bounded retries. Failures are logged and the
         pipeline continues with subsequent chunks. Always finalizes chunk stats once.
@@ -108,6 +114,8 @@ class PipelineCoordinator:
         """
         attempts = 0
         success = False
+        error_messages: list[str] = []
+        start_ts = time.time()
         while attempts <= self.chunk_max_retries and not success:
             try:
                 if attempts > 0:
@@ -120,6 +128,7 @@ class PipelineCoordinator:
                                   chunk_offset=chunk_offset, original_ehr=original_ehr)
                 success = True
             except Exception as e:
+                error_messages.append(str(e))
                 if attempts < self.chunk_max_retries:
                     self.logger.warning(
                         f"Chunk {chunk_index}/{total_chunks} failed: {e}. Will retry after {self.chunk_retry_delay}s.")
@@ -139,6 +148,31 @@ class PipelineCoordinator:
             self.model.finish_chunk()
         except Exception as e:
             self.logger.error(f"Error finalizing chunk {chunk_index}/{total_chunks}: {e}", exc_info=True)
+
+        # Record per-chunk stats
+        if chunk_stats is not None:
+            duration_sec = max(0.0, time.time() - start_ts)
+            entry = {
+                'index': chunk_index,
+                'offset': chunk_offset,
+                'size_chars': len(chunk_text) if isinstance(chunk_text, str) else 0,
+                'attempts': attempts if attempts > 0 else 1,
+                'success': bool(success),
+                'skipped': (not success),
+                'error_messages': error_messages,
+                'duration_sec': duration_sec,
+            }
+            # Attach module stats if success
+            if success:
+                entry['module_stats'] = {
+                    'ner': getattr(self.ner_processor, 'last_run_stats', None),
+                    'entity': getattr(self.entity_processor, 'last_run_stats', None),
+                    'info': getattr(self.info_processor, 'last_run_stats', None),
+                    'date': getattr(self.date_processor, 'last_run_stats', None),
+                }
+            else:
+                entry['module_stats'] = None
+            chunk_stats.append(entry)
 
     def reinitialize(self):
         self.pipeline_result = {
@@ -457,6 +491,10 @@ class PipelineCoordinator:
         self.reinitialize()
         # Reset token statistics for new note processing
         self.model.start_new_note()
+        note_started_at = datetime.utcnow().isoformat()
+        note_errors: list[str] = []
+        note_warnings: list[str] = []
+        chunk_stats: list[dict] = []
         self.logger.info("====== Starting EHR chunking process... ======")
         chunked_ehr = [""]
         for item in self.model.chunker(ehr):
@@ -479,6 +517,7 @@ class PipelineCoordinator:
                 original_ehr=ehr,
                 chunk_index=1,
                 total_chunks=1,
+                chunk_stats=chunk_stats,
             )
         else:
             self.logger.info("Processing multiple chunks sequentially...")
@@ -511,6 +550,7 @@ class PipelineCoordinator:
                     original_ehr=ehr,
                     chunk_index=i+1,
                     total_chunks=len(chunked_ehr),
+                    chunk_stats=chunk_stats,
                 )
 
                 # Update offset for next iteration
@@ -518,9 +558,63 @@ class PipelineCoordinator:
 
         self.logger.info("====== Chunk processing complete. ======")
         self.logger.info("====== Starting result aggregation... ======")
-        self.result_aggregation(key)
-        self.logger.info("====== Aggregation processing complete. ======")
+        aggregation_success = True
+        try:
+            self.result_aggregation(key)
+            self.logger.info("====== Aggregation processing complete. ======")
+        except Exception as e:
+            aggregation_success = False
+            note_errors.append(f"Aggregation error: {e}")
+            self.logger.error(f"Aggregation failed for key {key}: {e}", exc_info=True)
         
         # Finalize note-level token statistics
         self.model.finish_note()
         self.logger.info("====== Note statistics finalized. ======")
+
+        # Build report
+        note_finished_at = datetime.utcnow().isoformat()
+        # Determine overall status
+        any_skipped = any(not cs.get('success', False) for cs in chunk_stats)
+        if not any_skipped and aggregation_success:
+            overall_status = 'success'
+        elif aggregation_success:
+            overall_status = 'partial'
+        else:
+            overall_status = 'partial'
+
+        # Derive output path
+        output_path = None
+        try:
+            schema_name = self.output_schema.schema_name.value
+            output_type = self.output_schema.output_type.value
+            base_dir = self.output_schema.output_dir
+            if output_type == 'csv':
+                output_path = os.path.join(base_dir, f"{key}_{schema_name}.csv")
+            elif output_type == 'json':
+                output_path = os.path.join(base_dir, f"{key}_{schema_name}.json")
+            elif output_type == 'sqlite':
+                # database path
+                output_path = getattr(getattr(self.output_schema, 'formatter', None), 'db_path', None)
+        except Exception:
+            pass
+
+        report = {
+            'note_key': key,
+            'started_at': note_started_at,
+            'finished_at': note_finished_at,
+            'duration_sec': max(0.0, (datetime.fromisoformat(note_finished_at) - datetime.fromisoformat(note_started_at)).total_seconds()) if note_started_at and note_finished_at else None,
+            'overall_status': overall_status,
+            'chunk_stats': chunk_stats,
+            'module_stats': {
+                'ner': getattr(self.ner_processor, 'last_run_stats', None),
+                'entity': getattr(self.entity_processor, 'last_run_stats', None),
+                'info': getattr(self.info_processor, 'last_run_stats', None),
+                'date': getattr(self.date_processor, 'last_run_stats', None),
+            },
+            'aggregation_success': aggregation_success,
+            'output_file_path': output_path,
+            'errors': note_errors,
+            'warnings': note_warnings,
+        }
+
+        return report
