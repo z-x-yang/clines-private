@@ -35,3 +35,5 @@ umls_body_loc_dictionary.txt
 umls_dictionary.txt
 .task/
 *.csv
+.DS_Store
+*/.DS_Store
