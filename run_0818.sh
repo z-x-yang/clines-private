@@ -27,7 +27,6 @@ CUDA_VISIBLE_DEVICES=0 OPENAIKEY=${OPENAIKEY} OPENAIENDPOINT=${OPENAIENDPOINT} p
     --max_retries ${MAX_RETRIES} \
     --schema ${SCHEMA} \
     --marker ${MARKER} \
-    --debug true \
     --output_dir ${OUTPUT_DIR} \
     --chunk_size 1024 \
     2>&1 | tee ${LOG_FILE}
