@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 # Fixed configuration per user specification
-API_VERSION = "2024-02-15-preview"
+API_VERSION = "2024-12-01-preview"
 AZURE_OPENAI_ENDPOINT = "https://mgb-verity-bioinformatics-ai-e2-private-openai-service.openai.azure.com/"
 SCOPE = "https://cognitiveservices.azure.com/.default"
 
