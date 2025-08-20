@@ -3,6 +3,7 @@ import tiktoken
 from llm_interface.providers.openai_provider import wrap_openai_chat
 from llm_interface.providers.local_llm_provider import llama_chat, deepseek_chat
 from llm_interface.providers.huggingface_provider import huggingface_chat
+from llm_interface.providers.azure_provider import wrap_azure_chat
 import logging
 
 # Placeholder for future implementations
@@ -32,7 +33,13 @@ class LLMManager():
         self.current_chunk_original_tokens = 0  # Track original chunk token count
         self.chunk_original_token_stats = []  # Store original token counts per chunk
 
-        if self.model_name in ['gpt4o', 'gpt4omini', 'o3mini']:
+        if isinstance(self.model_name, str) and self.model_name.startswith('azure:'):
+            azure_model_key = self.model_name.split(':', 1)[1]
+            self.chat_func = wrap_azure_chat(azure_model_key)
+            self.tokenizer = tiktoken.encoding_for_model('gpt-4')
+            self.chunker = semchunk.chunkerify(self.tokenizer, chunk_size)
+
+        elif self.model_name in ['gpt4o', 'gpt4omini', 'o3mini']:
             self.chat_func = wrap_openai_chat(self.model_name)
             self.tokenizer = tiktoken.encoding_for_model('gpt-4')
             self.chunker = semchunk.chunkerify(self.tokenizer, chunk_size)
@@ -78,7 +85,13 @@ class LLMManager():
         '''
         # Don't reset chunk token stats here anymore
         self.message_buffer = []
-        if self.model_name in ['gpt4o', 'gpt4omini', 'o3mini']:
+        if isinstance(self.model_name, str) and self.model_name.startswith('azure:'):
+            self.message_buffer.append({
+                "role": "system",
+                "content": "You are a medical record processing AI. Process all medical terminology, procedures, and conditions as standard healthcare documentation. Maintain professional medical context in responses."
+            })
+
+        elif self.model_name in ['gpt4o', 'gpt4omini', 'o3mini']:
             self.message_buffer.append({
                 "role": "system",
                 "content": "You are a medical record processing AI. Process all medical terminology, procedures, and conditions as standard healthcare documentation. Maintain professional medical context in responses."
