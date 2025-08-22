@@ -177,15 +177,72 @@ Structured JSON output for programmatic access and integration.
 
 ## Model Support
 
-### Supported Models
+### Providers and Models
 
-- **OpenAI Models**: GPT-4o, GPT-4o-mini, O3-mini
-- **Local Models**: Llama-3-405b, Llama-3-70b
-- **Clinical Models**: Bio_ClinicalBERT, BioGPT
+- Azure (AAD bearer token) provider
+  - `--model_name "azure:gpt4o"` → engine "gpt-4o"
+  - `--model_name "azure:gpt4omini"` → engine "xx"
+  - Auth: DefaultAzureCredential chain (Azure CLI, environment variables, or Managed Identity)
+  - Endpoint is fixed in the provider to your institutional Azure OpenAI resource
 
-### Model Configuration
+- Azure (API key) provider
+  - `--model_name gpt4o` → engine "gpt-4o"
+  - `--model_name gpt4omini` → engine "gpt-4o-mini"
+  - `--model_name o3mini` → engine "o3-mini" (reasoning)
+  - Requires env vars: `OPENAIKEY`, `OPENAIENDPOINT`
 
-Models are configured in the provider implementations located in `llm_interface/providers/`. Each provider handles model-specific parameters and API interactions.
+- Local LLM provider (OpenAI-compatible server)
+  - `--model_name llama` → base_url `http://127.0.0.1:30000/v1`, model `default`
+  - `--model_name llama-3-405b` → same as above (local backend)
+  - `--model_name deepseek` → same as above (local reasoning model)
+
+- HuggingFace/Custom host provider (OpenAI-compatible service)
+  - `--model_name mistral`
+  - Requires env var: `MODELHOST` (e.g., `http://your-host:port/v1`)
+
+### Reasoning vs Non-Reasoning
+
+- Reasoning models: `o3mini` (o3-mini), `deepseek`
+- Non-reasoning: `gpt4o` (gpt-4o), `gpt4omini` (gpt-4o-mini or "xx" in AAD provider), `llama-3-405b`,
+
+### How to Invoke
+
+- Azure AAD (recommended for institutional environments):
+```bash
+# Option 1: Azure CLI
+az login
+python main.py \
+  --model_name "azure:gpt4o" \
+  --notes_dir data/your_notes/ \
+  --output_dir outputs/ \
+  --schema i2b2
+
+# Option 2: Service principal (environment variables)
+export AZURE_TENANT_ID="<tenant>"
+export AZURE_CLIENT_ID="<appId>"
+export AZURE_CLIENT_SECRET="<secret>"
+python main.py --model_name "azure:gpt4o" --notes_dir data/ --output_dir outputs/
+```
+
+- Azure API Key (OPENAIKEY/OPENAIENDPOINT):
+```bash
+export OPENAIKEY="<api_key>"
+export OPENAIENDPOINT="https://<your-azure-openai-endpoint>"
+python main.py --model_name gpt4o --notes_dir data/ --output_dir outputs/
+python main.py --model_name o3mini --notes_dir data/ --output_dir outputs/
+```
+
+- Local LLM (OpenAI-compatible service, default http://127.0.0.1:30000/v1):
+```bash
+python main.py --model_name llama --notes_dir data/ --output_dir outputs/
+python main.py --model_name deepseek --notes_dir data/ --output_dir outputs/
+```
+
+- HuggingFace/Custom service (set MODELHOST):
+```bash
+export MODELHOST="http://your-host:port/v1"
+python main.py --model_name mistral --notes_dir data/ --output_dir outputs/
+```
 
 ## Performance Optimization
 
@@ -327,20 +384,3 @@ python main.py --notes_dir data/ 2>&1 | grep -i error
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Citation
-
-If you use CLINES in your research, please cite:
-
-```bibtex
-@software{clines2024,
-  title={CLINES: Clinical LLM-based Information Extraction and Structuring Agent},
-  author={Your Name},
-  year={2024},
-  url={https://github.com/your-repo/clines}
-}
-```
-
----
-
-**CLINES** - Transforming clinical text into structured data with the power of large language models.
