@@ -4,6 +4,7 @@ import json
 import csv
 import argparse
 import logging
+import re
 from datetime import datetime
 from pathlib import Path
 
@@ -74,10 +75,18 @@ def count_tokens(text: str, tokenizer) -> int:
     return len(tokenizer.encode(text))
 
 
+def count_words_en(text: str) -> int:
+    # Count sequences of English letters, optionally with internal apostrophes (e.g., don't)
+    if not text:
+        return 0
+    return len(re.findall(r"[A-Za-z]+(?:'[A-Za-z]+)?", text))
+
+
 def estimate_note_stats(path: str, tokenizer, chunk_size: int) -> dict:
     text = read_text_file(path, use_fallback=True)
     num_chars = len(text)
     tokens_total = count_tokens(text, tokenizer)
+    word_count = count_words_en(text)
 
     initial_items = initial_semantic_chunks(text, tokenizer, chunk_size)
     initial_chunk_count = len(initial_items)
@@ -91,6 +100,7 @@ def estimate_note_stats(path: str, tokenizer, chunk_size: int) -> dict:
         'note_path': path,
         'num_chars': num_chars,
         'tokens_total': tokens_total,
+        'word_count': word_count,
         'initial_chunk_count': initial_chunk_count,
         'merged_chunk_count': merged_chunk_count,
         'merged_chunk_tokens': merged_chunk_tokens,
@@ -106,7 +116,7 @@ def write_json(path: str, payload: dict) -> None:
 
 def write_csv(path: str, rows: list[dict]) -> None:
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    fieldnames = ['note_path', 'num_chars', 'tokens_total', 'initial_chunk_count', 'merged_chunk_count', 'estimated_cost']
+    fieldnames = ['note_path', 'num_chars', 'word_count', 'tokens_total', 'initial_chunk_count', 'merged_chunk_count', 'estimated_cost']
     with open(path, 'w', encoding='utf-8', newline='') as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
@@ -162,6 +172,7 @@ def main():
     total_merged_chunks = 0
     total_estimated_cost = 0.0
     skipped_notes = 0
+    total_words = 0
 
     rows: list[dict] = []
 
@@ -169,6 +180,7 @@ def main():
         try:
             stats = estimate_note_stats(path, tokenizer, args.chunk_size)
             total_tokens += stats['tokens_total']
+            total_words += stats['word_count']
             total_initial_chunks += stats['initial_chunk_count']
             total_merged_chunks += stats['merged_chunk_count']
             total_estimated_cost += stats['estimated_cost']
@@ -177,13 +189,17 @@ def main():
             skipped_notes += 1
             logger.warning(f"Skipping file due to error: {path} -> {e}")
 
+    denom = len(rows) if rows else 1
     summary = {
         'total_notes': len(rows),
         'total_tokens': total_tokens,
+        'total_words': total_words,
         'total_initial_chunks': total_initial_chunks,
         'total_merged_chunks': total_merged_chunks,
         'total_estimated_cost': round(total_estimated_cost, 4),
         'skipped_notes': skipped_notes,
+        'avg_words_per_note': round(total_words / denom, 2) if rows else 0.0,
+        'avg_tokens_per_note': round(total_tokens / denom, 2) if rows else 0.0,
         'notes': rows,
     }
 

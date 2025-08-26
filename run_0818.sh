@@ -5,7 +5,7 @@ SCHEMA="default"
 # Model settings
 MODEL_NAME="azure:gpt4o"
 MAX_RETRIES=1
-NUM_WORKERS=3
+NUM_WORKERS=2
 
 # Add timestamp variable at the beginning
 TIMESTAMP=$(date +"%Y%m%d_%H%M")
