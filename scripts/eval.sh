@@ -6,7 +6,7 @@ SCRIPTS_DIR="${BASE_DIR}/scripts"
 OUTPUT_DIR="${BASE_DIR}/outputs"
 
 # Create evaluation results directory
-EVAL_DIR="${OUTPUT_DIR}/evaluation_results_0611_v2"
+EVAL_DIR="${OUTPUT_DIR}/evaluation_results_0904"
 mkdir -p "${EVAL_DIR}"
 
 # Get current timestamp for unique output files
