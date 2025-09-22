@@ -159,12 +159,23 @@ def standardize_date(date_str):
 
     # 清理日期字符串
     date_str = date_str.strip()
+    if not date_str:
+        return None
+
+    # 明确将自然语言或无效日期视为 null
+    lower = date_str.lower()
+    if lower in {'unknown', 'unk', 'na', 'n/a', 'none', 'null'}:
+        return None
+    if re.match(r'^\d+\s+(year|years|month|months|day|days)\s+ago$', lower):
+        return None
+    if lower in {'today', 'yesterday'}:
+        return None
 
     try:
         # 尝试不同的日期格式
         for fmt in [
             '%Y-%m-%d', '%Y/%m/%d', '%d/%m/%Y', '%m/%d/%Y',
-            '%Y-%m', '%Y/%m', '%m/%Y', '%Y.%m.%d', '%d.%m.%Y',
+            '%Y-%m', '%m-%Y', '%Y/%m', '%m/%Y', '%Y.%m.%d', '%d.%m.%Y',
             '%Y'
         ]:
             try:
@@ -179,9 +190,10 @@ def standardize_date(date_str):
                 return parsed_date.strftime('%Y-%m-%d')
             except ValueError:
                 continue
-        return date_str  # 如果无法解析，返回原始字符串
+        # 不可解析则返回 None
+        return None
     except Exception:
-        return date_str
+        return None
 
 
 def evaluate_entity_extraction(file_items: List[Dict[str, str]], columns: List[str], similarity_threshold: float = 0.95):
@@ -256,6 +268,15 @@ def evaluate_entity_extraction(file_items: List[Dict[str, str]], columns: List[s
             # Load CSV files
             pred_df = pd.read_csv(pred_file)
             gt_df = pd.read_csv(gt_file)
+
+            # Ensure start_pos/end_pos are numeric to avoid type comparison issues
+            for df in (pred_df, gt_df):
+                if 'start_pos' in df.columns:
+                    df['start_pos'] = pd.to_numeric(
+                        df['start_pos'], errors='coerce')
+                if 'end_pos' in df.columns:
+                    df['end_pos'] = pd.to_numeric(
+                        df['end_pos'], errors='coerce')
 
             # Filter out rows where start_pos or end_pos is missing or -1
             pred_df = pred_df.dropna(subset=['start_pos', 'end_pos'])
@@ -417,8 +438,15 @@ def evaluate_entity_extraction(file_items: List[Dict[str, str]], columns: List[s
                                     record_error()
                         # 在比较值之前添加日期标准化处理
                         elif 'date' in col.lower():
-                            pred_value = str(standardize_date(pred_value))
-                            gt_value = str(standardize_date(gt_value))
+                            std_pred = standardize_date(pred_value)
+                            std_gt = standardize_date(gt_value)
+
+                            # If any side is non-standard (e.g., "11 years ago"), treat as null and skip comparison
+                            if std_pred is None or std_gt is None:
+                                continue
+
+                            pred_value = str(std_pred)
+                            gt_value = str(std_gt)
 
                             if pred_value in gt_value or gt_value in pred_value or pred_value == gt_value:
                                 results[dataset_label][col]['tp'] += 1

@@ -43,26 +43,26 @@ echo "=========================================="
 # Evaluate GPT-4 output
 run_evaluation "gpt4o" \
     "${OUTPUT_DIR}/with_positions" \
-    "${OUTPUT_DIR}/reviewed_updated" \
+    "${OUTPUT_DIR}/reviewed_updated2" \
     "${EVAL_DIR}/gpt4_eval_${TIMESTAMP}.json"
 
-# Evaluate DeepSeek output
-run_evaluation "deepseek" \
-    "${OUTPUT_DIR}/with_positions" \
-    "${OUTPUT_DIR}/reviewed_updated" \
-    "${EVAL_DIR}/deepseek_eval_${TIMESTAMP}.json"
+# # Evaluate DeepSeek output
+# run_evaluation "deepseek" \
+#     "${OUTPUT_DIR}/with_positions" \
+#     "${OUTPUT_DIR}/reviewed_updated" \
+#     "${EVAL_DIR}/deepseek_eval_${TIMESTAMP}.json"
 
 # Evaluate LLaMA output
 run_evaluation "llama" \
     "${OUTPUT_DIR}/with_positions" \
-    "${OUTPUT_DIR}/reviewed_updated" \
+    "${OUTPUT_DIR}/reviewed_updated2" \
     "${EVAL_DIR}/llama_eval_${TIMESTAMP}.json"
 
-# Evaluate O3Mini output
-run_evaluation "o3mini" \
-    "${OUTPUT_DIR}/with_positions" \
-    "${OUTPUT_DIR}/reviewed_updated" \
-    "${EVAL_DIR}/o3mini_eval_${TIMESTAMP}.json"
+# # Evaluate O3Mini output
+# run_evaluation "o3mini" \
+#     "${OUTPUT_DIR}/with_positions" \
+#     "${OUTPUT_DIR}/reviewed_updated" \
+#     "${EVAL_DIR}/o3mini_eval_${TIMESTAMP}.json"
 
 echo "All evaluations completed!"
 echo "Results saved in: ${EVAL_DIR}"
