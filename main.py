@@ -5,7 +5,6 @@ import json
 import torch
 import numpy as np
 from llm_interface.llm_manager import LLMManager
-from llm_interface.retrieval.retriever_coordinator import RetrieverCoordinator
 # from prompt import PROMPT # Unused import
 import re
 import demjson3
@@ -84,6 +83,10 @@ if __name__ == '__main__':
                         help='Path to JSONL run report file')
     parser.add_argument('--retry_list_file', type=str, default='retry_list.jsonl',
                         help='Path to JSONL retry list file for failed/partial notes')
+    parser.add_argument('--retriever_server', type=str, default=None,
+                        help="Use remote retrieval service (host:port) instead of local RetrieverCoordinator")
+    parser.add_argument('--retriever_authkey', type=str, default='retriever',
+                        help="Auth key for remote retrieval server")
 
     args = parser.parse_args()
 
@@ -103,15 +106,20 @@ if __name__ == '__main__':
         os.makedirs(args.output_dir)
 
     # Instantiate PipelineCoordinator instead of PIPELINE
-    # Initialize shared retriever once
-    from llm_interface.retrieval.retriever_coordinator import RetrieverCoordinator
-    shared_retriever = RetrieverCoordinator('cambridgeltl/SapBERT-from-PubMedBERT-fulltext',
-                                            use_gpu=torch.cuda.is_available(),
-                                            use_faiss_gpu=args.use_faiss_gpu)
-    shared_retriever.load_dictionary_all('./umls_dictionary.txt')
-    shared_retriever.load_dictionary_bodyloc('./umls_body_loc_dictionary.txt')
-    shared_retriever.embed_dictionary(32768)
-    shared_retriever.faiss_setup()
+    # Initialize shared retriever once (local or remote)
+    if args.retriever_server:
+        from llm_interface.retrieval.remote_retriever import RemoteRetrieverProxy
+        shared_retriever = RemoteRetrieverProxy(args.retriever_server, args.retriever_authkey)
+        logger.info(f"Using remote retriever at {args.retriever_server}")
+    else:
+        from llm_interface.retrieval.retriever_coordinator import RetrieverCoordinator
+        shared_retriever = RetrieverCoordinator('cambridgeltl/SapBERT-from-PubMedBERT-fulltext',
+                                                use_gpu=torch.cuda.is_available(),
+                                                use_faiss_gpu=args.use_faiss_gpu)
+        shared_retriever.load_dictionary_all('./umls_dictionary.txt')
+        shared_retriever.load_dictionary_bodyloc('./umls_body_loc_dictionary.txt')
+        shared_retriever.embed_dictionary(32768)
+        shared_retriever.faiss_setup()
 
     # Helper to append a JSON line thread-safely
     import threading, json as _json
