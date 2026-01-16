@@ -37,3 +37,4 @@ umls_dictionary.txt
 *.csv
 .DS_Store
 */.DS_Store
+figures/
