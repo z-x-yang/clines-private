@@ -50,7 +50,7 @@ trap 'kill ${SRV_PID} 2>/dev/null || true' EXIT
 
 # Run main workflow pointing to the local server
 RETRIEVER_SERVER="${SRV_HOST}:${SRV_PORT}" RETRIEVER_AUTHKEY="${SRV_AUTHKEY}" \
-CUDA_VISIBLE_DEVICES=0 OPENAIKEY=${OPENAIKEY} OPENAIENDPOINT=${OPENAIENDPOINT} python main.py \
+CUDA_VISIBLE_DEVICES=0 python main.py \
   --notes_dir "${NOTES_DIR}" \
   --error_log_file "${ERROR_LOG_FILE}" \
   --start_index "${START_IDX}" \
