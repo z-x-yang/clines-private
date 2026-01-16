@@ -48,6 +48,31 @@ SRV_PID=$!
 echo "Started CPU retrieval server PID=${SRV_PID} on ${SRV_HOST}:${SRV_PORT}"
 trap 'kill ${SRV_PID} 2>/dev/null || true' EXIT
 
+# Wait for server to accept connections (max 120s)
+MAX_WAIT=120
+WAITED=0
+until python - <<'PY' "${SRV_HOST}" "${SRV_PORT}"
+import socket, sys
+host = sys.argv[1]; port = int(sys.argv[2])
+s = socket.socket()
+s.settimeout(1.0)
+try:
+    s.connect((host, port))
+    s.close()
+    sys.exit(0)
+except Exception:
+    sys.exit(1)
+PY
+do
+  WAITED=$((WAITED+1))
+  if [ ${WAITED} -ge ${MAX_WAIT} ]; then
+    echo "Retriever server did not become ready within ${MAX_WAIT}s; see ${SRV_LOG}"
+    exit 1
+  fi
+  sleep 1
+done
+echo "Retriever server is ready after ${WAITED}s"
+
 # Run main workflow pointing to the local server
 RETRIEVER_SERVER="${SRV_HOST}:${SRV_PORT}" RETRIEVER_AUTHKEY="${SRV_AUTHKEY}" \
 CUDA_VISIBLE_DEVICES=0 python main.py \
