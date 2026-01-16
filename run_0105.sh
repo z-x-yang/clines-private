@@ -7,7 +7,7 @@ set -euo pipefail
 SCHEMA="default"          # or "i2b2"
 MODEL_NAME="azure:gpt4omini"
 MAX_RETRIES=5
-NUM_WORKERS=5             # main.py caps at 5
+NUM_WORKERS=10             # main.py caps at 5
 CHUNK_SIZE=1024
 
 # Marker / paths

@@ -78,7 +78,7 @@ if __name__ == '__main__':
     parser.add_argument('--chunk_retry_delay', type=float, default=0.5,
                         help='Delay in seconds between chunk retry attempts')
     parser.add_argument('--num_workers', type=int, default=2,
-                        help='Number of parallel workers for processing notes (1-5)')
+                        help='Number of parallel workers for processing notes (>=1)')
     parser.add_argument('--run_report_file', type=str, default='run_report.jsonl',
                         help='Path to JSONL run report file')
     parser.add_argument('--retry_list_file', type=str, default='retry_list.jsonl',
@@ -256,8 +256,8 @@ if __name__ == '__main__':
         elapsed_time = time.time() - start_time
         return {'note_key': key, 'skipped': False, 'duration_sec': elapsed_time}
 
-    # Constrain workers between 1 and 5
-    workers = max(1, min(5, int(args.num_workers)))
+    # Constrain workers to at least 1 (no upper cap enforced here)
+    workers = max(1, int(args.num_workers))
     with ThreadPoolExecutor(max_workers=workers) as executor:
         futures = [executor.submit(process_one_note, (i, note)) for i, note in enumerate(notes[args.start_index:])]
         for fut in as_completed(futures):
