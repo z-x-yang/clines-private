@@ -7,6 +7,7 @@ from .embedding_service import EmbeddingService
 from .index_service import IndexService
 import logging
 import traceback
+import threading
 
 
 class RetrieverCoordinator():
@@ -40,6 +41,7 @@ class RetrieverCoordinator():
         self.term_list_bodyloc = []
         self.dense_embeds_all = None
         self.dense_embeds_bodyloc = None
+        self._embed_lock = threading.Lock()
 
     def load_dictionary_all(self, file_path):
         self.dict_map = {}
@@ -253,7 +255,9 @@ class RetrieverCoordinator():
             return [None] * len(term)
 
     def embedding_retrieval_all(self, term, batch_size=256, top_k=1):
-        return self._common_retrieval_logic('all', self.index_service.search_all, term, batch_size, top_k)
+        with self._embed_lock:
+            return self._common_retrieval_logic('all', self.index_service.search_all, term, batch_size, top_k)
 
     def embedding_retrieval_bodyloc(self, term, batch_size=256, top_k=1):
-        return self._common_retrieval_logic('bodyloc', self.index_service.search_bodyloc, term, batch_size, top_k)
+        with self._embed_lock:
+            return self._common_retrieval_logic('bodyloc', self.index_service.search_bodyloc, term, batch_size, top_k)

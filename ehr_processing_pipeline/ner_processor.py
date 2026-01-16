@@ -584,10 +584,10 @@ class NERProcessor:
 
         changes_made = any(old != new for old, new in zip(old_tags, new_tags))
         if changes_made:
-            self.logger.info("Tag corrections made in parse_ner_result_text:")
+            self.logger.debug("Tag corrections made in parse_ner_result_text:")
             for old, new in zip(old_tags, new_tags):
                 if old != new:
-                    self.logger.info(f"  Tag {old} -> {new}")
+                    self.logger.debug(f"  Tag {old} -> {new}")
 
         return entities, new_tags, updated_string, entity_positions
 

@@ -95,6 +95,11 @@ if __name__ == '__main__':
     logging.basicConfig(level=log_level,
                         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                         handlers=[logging.StreamHandler()])
+    # Quiet noisy libraries
+    logging.getLogger("azure").setLevel(logging.WARNING)
+    logging.getLogger("azure.identity").setLevel(logging.WARNING)
+    logging.getLogger("azure.core.pipeline.policies.http_logging_policy").setLevel(logging.ERROR)
+    logging.getLogger("httpx").setLevel(logging.WARNING)
 
     logger.info("Start initializing model")
     # model instance name matches the one used in PipelineCoordinator
@@ -177,6 +182,7 @@ if __name__ == '__main__':
 
     total_processing_time = 0
     processed_notes_count = 0
+    logger.info(f"Loaded {len(notes)} notes (source: {notes_source_type})")
 
     # Prepare worker for parallel execution
     from concurrent.futures import ThreadPoolExecutor, as_completed

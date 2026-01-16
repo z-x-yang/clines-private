@@ -128,14 +128,15 @@ class PipelineCoordinator:
                                   chunk_offset=chunk_offset, original_ehr=original_ehr)
                 success = True
             except Exception as e:
-                error_messages.append(str(e))
+                msg = str(e) if str(e) else repr(e)
+                error_messages.append(msg)
                 if attempts < self.chunk_max_retries:
                     self.logger.warning(
-                        f"Chunk {chunk_index}/{total_chunks} failed: {e}. Will retry after {self.chunk_retry_delay}s.")
+                        f"Chunk {chunk_index}/{total_chunks} failed: {msg}. Will retry after {self.chunk_retry_delay}s.")
                     time.sleep(self.chunk_retry_delay)
                 else:
                     self.logger.error(
-                        f"Chunk {chunk_index}/{total_chunks} failed after {self.chunk_max_retries} retries: {e}",
+                        f"Chunk {chunk_index}/{total_chunks} failed after {self.chunk_max_retries} retries: {msg}",
                         exc_info=True)
                 attempts += 1
             finally:

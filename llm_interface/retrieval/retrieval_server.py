@@ -59,6 +59,10 @@ def main():
     )
     logger = logging.getLogger("retrieval_server")
 
+    # Avoid tokenizer/rayon spawning many threads inside the service
+    os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
+    os.environ.setdefault("RAYON_NUM_THREADS", "1")
+
     # Ensure relative paths resolve from project root
     project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
     if not os.path.isabs(args.dictionary_all):
