@@ -14,6 +14,8 @@ CHUNK_SIZE=1024
 TIMESTAMP=$(date +"%Y%m%d_%H%M")
 MARKER="DAS_Human_Label_1228"
 NOTES_DIR="/PHShome/zy098/Zongxin_yang/Works/DAS-Agent/data/DAS_human_label_251228/notes"
+# Notes ordering: "asc" or "desc"
+NOTES_ORDER="desc"
 LOG_FILE="./logs/${MARKER}_${TIMESTAMP}.log"
 ERROR_LOG_FILE="./logs/${MARKER}_errors_${TIMESTAMP}.log"
 REPORT_FILE="./logs/${MARKER}_report_${TIMESTAMP}.json"
@@ -97,6 +99,7 @@ CUDA_VISIBLE_DEVICES=0 python main.py \
   --chunk_size "${CHUNK_SIZE}" \
   --num_workers "${NUM_WORKERS}" \
   --run_report_file "${REPORT_FILE}" \
+  --notes_order "${NOTES_ORDER}" \
   --retriever_server "${SRV_HOST}:${SRV_PORT}" \
   --retriever_authkey "${SRV_AUTHKEY}" \
   2>&1 | tee "${LOG_FILE}"

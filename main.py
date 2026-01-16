@@ -83,6 +83,8 @@ if __name__ == '__main__':
                         help='Path to JSONL run report file')
     parser.add_argument('--retry_list_file', type=str, default='retry_list.jsonl',
                         help='Path to JSONL retry list file for failed/partial notes')
+    parser.add_argument('--notes_order', type=str, choices=['asc', 'desc'], default='asc',
+                        help='Order to process notes when reading from a directory or CSV (asc/desc)')
     parser.add_argument('--retriever_server', type=str, default=None,
                         help="Use remote retrieval service (host:port) instead of local RetrieverCoordinator")
     parser.add_argument('--retriever_authkey', type=str, default='retriever',
@@ -155,8 +157,10 @@ if __name__ == '__main__':
     # Adapt notes loading based on whether notes_dir is a CSV or a directory of .txt files
     notes = []
     if os.path.isdir(args.notes_dir):
-        notes = [item for item in os.listdir(
-            args.notes_dir) if item.endswith('.txt')]
+        notes = sorted(
+            [item for item in os.listdir(args.notes_dir) if item.endswith('.txt')],
+            reverse=(args.notes_order == 'desc')
+        )
         notes_source_type = 'dir'
     elif os.path.isfile(args.notes_dir) and args.notes_dir.endswith('.csv'):
         try:
@@ -166,6 +170,8 @@ if __name__ == '__main__':
             if 'note_id' in notes_df.columns and 'text' in notes_df.columns:
                 notes = notes_df.apply(lambda row: {'id': str(
                     row['note_id']), 'text': row['text']}, axis=1).tolist()
+                # Optional ordering by note_id for CSV
+                notes = sorted(notes, key=lambda x: x['id'], reverse=(args.notes_order == 'desc'))
                 notes_source_type = 'csv'
             else:
                 logger.error(
