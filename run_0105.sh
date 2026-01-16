@@ -32,6 +32,16 @@ SRV_LOG="./logs/retrieval_server_${TIMESTAMP}.log"
 
 mkdir -p ./logs
 
+# Kill any existing process on the retriever port to avoid stale servers
+if command -v lsof >/dev/null 2>&1; then
+  EXISTING_PID=$(lsof -ti tcp:${SRV_PORT} || true)
+  if [ -n "${EXISTING_PID}" ]; then
+    echo "Killing existing process on port ${SRV_PORT}: ${EXISTING_PID}"
+    kill ${EXISTING_PID} 2>/dev/null || true
+    sleep 1
+  fi
+fi
+
 # Start retrieval server in background
 python -m llm_interface.retrieval.retrieval_server \
   --host "${SRV_HOST}" \
