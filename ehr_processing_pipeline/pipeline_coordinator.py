@@ -248,10 +248,16 @@ class PipelineCoordinator:
                 }
 
                 clean_item = clean_results_list[i]
-                mapped_code = json.loads(clean_item['CODE'])
-                tmp['code'] = list(mapped_code.keys())[0]
-                tmp['type'] = mapped_code[tmp['code']][1]
-                tmp['code'] = tmp['code'] + '||' + mapped_code[tmp['code']][0]
+                code_raw = clean_item.get('CODE') if isinstance(clean_item, dict) else None
+                if code_raw:
+                    mapped_code = json.loads(code_raw)
+                    tmp['code'] = list(mapped_code.keys())[0]
+                    tmp['type'] = mapped_code[tmp['code']][1]
+                    tmp['code'] = tmp['code'] + '||' + mapped_code[tmp['code']][0]
+                else:
+                    self.logger.warning(f"Missing CODE for key {key}, item {i}; setting code/type to None")
+                    tmp['code'] = None
+                    tmp['type'] = None
 
                 status_item = status_results_list[i] if i < len(
                     status_results_list) else {}
