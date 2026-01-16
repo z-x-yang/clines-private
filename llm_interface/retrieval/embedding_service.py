@@ -37,8 +37,7 @@ class EmbeddingService:
                 batch_tokenized_names = self.tokenizer.batch_encode_plus(
                     batch, add_special_tokens=True,
                     truncation=True, max_length=25,
-                    padding="max_length", return_tensors='pt',
-                    num_threads=1)  # keep tokenization single-threaded to avoid rayon pool issues
+                    padding="max_length", return_tensors='pt')
 
                 if self.use_gpu:
                     batch_tokenized_names = {
