@@ -14,7 +14,7 @@
 
 - **绝对日期**: 2026-05-25 (launch)
 - **SLURM Job IDs**: TBD (recorded in `runs/EXP-G/logs/job_ids.txt` after `bash jobs/EXP-G_submit_all.sh`)
-- **commit hash (launch)**: `<COMMIT_HASH>`
+- **commit hash (launch)**: `95b3292d7934b7456996179be2fabd4f187192de`
 - **branch**: `exp/EXP-G_ablation`
 - **baseline**: i2b2 @ `8735bbb` (HEAD at branch-out)
 
