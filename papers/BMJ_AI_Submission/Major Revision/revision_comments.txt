@@ -1,0 +1,293 @@
+
+bmjdh-2026-000027 - "CLINES: Clinical LLM-based Information Extraction and Structuring Agent"
+
+Dear Dr. Yang,
+
+Following review of your article to BMJ Digital Health & AI, we invite you to submit a major revision.
+
+Please note that your revision may be subject to further review and that this initial decision does not guarantee acceptance.
+
+To submit your revised article please click this link: *** PLEASE NOTE: This is a two-step process. After clicking on the link, you will be directed to a webpage to confirm. ***
+
+https://mc.manuscriptcentral.com/bmjdh?URL_MASK=9362ed5567284b4e9c449b3cac000880. Alternatively, you can log on to your Author Dashboard in ScholarOne and under "Action" click "create a revision".
+
+Please read and respond to all of the peer review comments. You should provide a point-by-point response to explain any changes you have (or have not) made to the original article and be as specific as possible in your responses.
+
+The original files will be available to you when you start your revision. Please delete any files that you intend to replace with updated versions and upload the following using the appropriate file designation:
+- “Main Document’’ - This is a clean copy (without tracked or highlighted changes) of your revised article. Please delete your original submission file.
+- “Main Document - marked copy” - This is the edited version of your original article, including edits to address the peer review comments. Any changes have been highlighted using a track change function or bold or coloured text.
+Please replace any other files that have been updated e.g. Images, forms.
+
+Pay close attention to detail when you submit your revision. In addition to the main content please ensure the accuracy of information relating to your article, including author names and affiliations, title, abstract and required statements (e.g. competing interests, contributorship, funding). These details will be taken directly from the information held in ScholarOne, and not from the article file. Please check that this information has been entered correctly and has been updated as appropriate.
+
+If your revised article is accepted, we only permit minor changes after acceptance. Significant changes requested after acceptance may require further scrutiny from the editors, and may be declined.
+
+Please ensure that all ORCID IDs have been added to co-authors’ ScholarOne accounts before completing your submission. Note that only the individual user can add ORCID IDs to their account and the corresponding author is unable to add this to co-authors’ accounts on their behalf. Additionally, BMJ is unable to add ORCID IDs to users accounts on their behalf. ORCID IDs should be linked to their ScholarOne account prior to acceptance. BMJ cannot add ORCID IDs during the production process or after publication.
+
+Please submit your revised article by 17-May-2026. If we have not received it by this date, the opportunity to submit a revision will expire and your article may be treated as a new submission. If you need to request an extension, please contact the Editorial Office as soon as possible.
+
+Thank you for submitting your article to BMJ Digital Health & AI; we look forward to receiving your revision.
+
+If you have any queries, please contact the Editorial Office at info.bmjdh@bmj.com.
+
+Kind regards,
+
+Dr. Chris Paton
+Editor in Chief, BMJ Digital Health & AI
+
+
+Formatting Amendments (where applicable):
+
+
+Reviewer(s)' Comments to Author (if any):
+
+Reviewer: 1
+
+Comments to the Author
+Thank you for this manuscript presenting CLINES, a modular LLM-based pipeline for clinical information extraction and structuring from EHR narratives. The work addresses a genuinely important problem in clinical informatics, and the evaluation across four diverse corpora spanning critical care, COVID-19, and oncology is commendable. The modular, model-agnostic design is a practical strength for institutional deployment. However, I have identified several concerns, organised by severity, that I believe should be addressed before the manuscript is suitable for publication.
+
+
+MAJOR CONCERNS
+
+1. Missing Inter-Annotator Agreement
+
+The absence of inter-annotator agreement (IAA) reporting is the most significant methodological weakness. The manuscript acknowledges this limitation (Section 4.8, Limitation iv) and proposes it as future work, but for a study that benchmarks a system against gold-standard annotations, the absence of IAA fundamentally undermines confidence in the evaluation. The annotation protocol describes five annotators following a consensus protocol, yet it remains unclear whether any subset of documents was double-annotated. For MIMIC-III, annotations were produced by one expert per paragraph with no redundancy verification. Without IAA, it is impossible to determine whether observed performance differences between CLINES and baselines exceed the inherent variability among human annotators, rendering the absolute F1 scores difficult to interpret. I would strongly encourage the authors to either report IAA for existing annotations or double-annotate a representative subset and report agreement statistics (e.g., Cohen's kappa, F1-based IAA) in a revised manuscript.
+
+2. Absence of Confidence Intervals and Statistical Testing on Core Results
+
+The main results (Figure 3A-D) report point-estimate F1 scores without confidence intervals or formal statistical comparisons. The note-length analysis (Figure 3E) includes 95% bootstrap confidence intervals, which demonstrates the authors' capacity to compute them, making their absence from the primary benchmark results more conspicuous. Given the small evaluation sets (24 MIMIC-III paragraphs, 21 4CE notes, 29 CORAL notes split into 13 and 16 documents), the reported gains of +0.21 to +0.38 F1 may or may not be statistically significant, and the reader has no basis to assess this. Bootstrap confidence intervals and/or permutation tests should be provided for all primary comparisons.
+
+3. Small and Heterogeneous Evaluation Sets
+
+The annotated evaluation sets are notably small. No rationale is provided for why these particular subsets were selected for annotation, nor is there any power analysis or variance estimation to contextualise the precision of the performance estimates. The authors should at minimum provide stability analyses (e.g., bootstrap variance of F1 across document-level resamples) to characterise how sensitive the reported metrics are to the specific documents in each evaluation set.
+
+4. Inappropriate Reporting Guideline
+
+The STROBE (Strengthening the Reporting of Observational Studies in Epidemiology) checklist is designed for observational epidemiological studies involving human participants, exposures, and health outcomes. This manuscript is a computational methods benchmarking paper evaluating an NLP pipeline against annotated text corpora. The STROBE framework is not fit for purpose here, and several checklist items are marked NA or awkwardly mapped. The authors should instead adopt a reporting guideline appropriate for AI and machine learning studies in healthcare, such as MI-CLAIM (Minimum Information about Clinical Artificial Intelligence Modeling), TRIPOD+AI, or STARD-AI. Adherence to such a guideline would also naturally prompt inclusion of missing elements such as computational resource requirements, processing time, error analysis, and reproducibility details.
+
+5. No Cost, Latency, or Computational Efficiency Reporting
+
+For a system positioned as a practical, scalable alternative to manual chart review, the absence of any cost or latency analysis is a significant omission. The manuscript reports that o3-mini produced approximately 24,334 completion tokens per chunk versus approximately 2,795 for GPT-4o, yet there is no discussion of API cost per note, wall-clock processing time, or total computational burden. Review of the supplementary material reveals that the actual pipeline involves 11 distinct prompt types and six to nine separate LLM invocations per chunk (entity extraction, relationship linking, normalization, assertion classification, attribute enrichment, date extraction, plus patient information extraction, date normalization helpers, and JSON repair), which substantially exceeds what the "four-step" architectural framing implies. For the locally hosted Llama-3.1-405B variant (8 x H100 GPUs), the infrastructure cost alone is substantial. Without this information, the claim of practical scalability remains unsubstantiated. I would encourage the authors to provide a transparent accounting of the total number of LLM invocations per note, stratified by model and dataset, along with per-note wall-clock processing time and estimated API cost.
+
+
+MODERATE CONCERNS
+
+6. Overclaiming of "Agentic" Architecture
+
+The manuscript describes CLINES as an "agentic pipeline" and "agent" throughout. In the current AI literature, agentic systems are typically characterised by autonomous decision-making, dynamic tool selection, self-correction or reflection loops, and adaptive planning. CLINES, as described, is a fixed sequential pipeline with predetermined prompts. While the modular decomposition is a legitimate and effective engineering strategy, characterising it as "agentic" overstates the architectural sophistication. The authors should either provide a clearer definition of what they mean by "agentic" in this context or adopt more precise terminology such as "multi-step pipeline" or "modular orchestration."
+
+7. Incomplete Baseline Landscape
+
+The baseline comparisons omit several relevant contemporary systems. No comparison is made with other multi-step or pipeline-based LLM extraction systems, nor is there a comparison against GPT-4o or o3-mini using chain-of-thought prompting in a single call (rather than a single-call "compact prompt"), which would be a more informative ablation of the multi-step decomposition strategy.
+
+8. Prompt Sensitivity and Ablation
+
+No ablation study is provided to quantify the contribution of individual pipeline stages. For instance, what is the marginal gain from the SapBERT-based normalization step over LLM-only normalization? How much does semantic chunking improve performance over naive fixed-length chunking? What is the incremental benefit of the date processing module? The authors acknowledge that prompts were not optimised per dataset or model but provide no sensitivity analysis to characterise how brittle or robust the pipeline is to prompt variation.
+
+9. Hallucination Assessment
+
+The manuscript acknowledges hallucination risk (Section 4.8, Limitation iii) and provides a single illustrative example. No systematic quantification of hallucination rates is provided across models or datasets. Given that the pipeline makes inferences about implicit units, resolves ambiguous dates, and assigns assertion statuses, the potential for plausible but incorrect outputs is substantial. A structured error analysis categorising false positives by error type (hallucinated entity, incorrect normalization, wrong assertion, fabricated date) would significantly strengthen the evaluation.
+
+10. Reference Error
+
+Reference 14 is cited in the context of the "i2b2-2010 concepts" benchmark (Section 2.5), but the reference itself is Kohane et al. 2012, which describes the i2b2 translational engine rather than the i2b2 2010 NER shared task. The correct citation should be Uzuner et al. (2011), "2010 i2b2/VA challenge on concepts, assertions, and relations in clinical text," JAMIA 18(5):552-556.
+
+11. Prompt Examples Redacted from Supplementary Material
+
+Close examination of the supplementary prompt suite reveals that all in-context few-shot examples have been replaced with placeholders such as "[Example input/output unchanged; omitted here for brevity]." Few-shot examples are widely recognised as among the most consequential determinants of LLM output behaviour. Their omission significantly undermines the reproducibility value of the prompt suite. Without the actual examples, an independent researcher cannot reconstruct the pipeline's behaviour from the supplement alone. The authors should include the complete prompts with examples in the supplementary material.
+
+12. Discrepancy Between Described Architecture and Actual Pipeline Complexity
+
+The main manuscript describes CLINES as a "four-step pipeline." However, the supplementary prompt suite reveals at least 11 distinct prompt types, implying that a single chunk traversal involves considerably more LLM invocations than the four-step framing suggests. This discrepancy has direct implications for cost, latency, and error propagation, and should be transparently addressed in the architectural description.
+
+13. Unevaluated Relation Extraction Module
+
+Supplementary Section 2.2 describes a complete entity relationship linking module that assigns directed clinical relations between extracted entities. This module is architecturally integrated into the pipeline and presumably runs on every processed chunk. Yet the main manuscript does not evaluate relation extraction performance at all. If this module is a functioning component of the deployed system, its performance should be reported; if it was excluded from the evaluation for principled reasons, those reasons should be stated.
+
+14. UMLS Retrieval Parameters Underspecified
+
+The UMLS retrieval procedure (Supplementary Algorithm 1) is described at a very high level. Critical implementation parameters are absent: which SapBERT checkpoint was used (original SapBERT, SapBERT-from-PubMedBERT, or another variant); which FAISS index type was employed (flat, IVF, HNSW); the top-k retrieval depth; the similarity threshold for accepting a match; the procedure for resolving ties; and the specific UMLS version and subset queried. These details are essential for reproducibility.
+
+15. Research Ethics: Annotator Credentialing and Commercial API Data Governance
+
+The annotation process involved five human annotators reviewing de-identified clinical notes from credentialed-access datasets. The manuscript does not confirm whether all annotators held appropriate data access credentials under the respective data-use agreements. Additionally, the pipeline transmits de-identified clinical text to commercial API endpoints (OpenAI). While the notes are de-identified, the MIMIC-III and CORAL DUAs contain specific provisions about data handling that may impose restrictions on external processing. The manuscript should explicitly address whether API-based processing was permissible under the respective DUAs and whether data processing agreements were established.
+
+16. Extraction of Sensitive Demographic Attributes
+
+The supplementary material reveals that the pipeline includes a dedicated prompt (Supplement 2.6) that routinely extracts race, ethnicity, gender, and zip code from clinical notes. The manuscript does not discuss the intended use cases for these extracted demographic fields, whether extraction performance varies across demographic subgroups, or the potential risks of making demographic attributes machine-actionable in cohort discovery and real-world evidence pipelines. These considerations are particularly important for a system designed to operate at scale.
+
+
+MINOR ISSUES
+
+17. Entity Extraction F1 on MIMIC-III
+
+The entity extraction F1 on MIMIC-III (0.69 for the best CLINES variant) is notably lower than on other datasets (0.81-0.87). The manuscript does not adequately address this discrepancy. The authors should discuss whether this is driven by the heterogeneity of critical care notes, annotation inconsistencies from the single-annotator-per-paragraph protocol, or limitations of the extraction prompts for ICU-specific terminology.
+
+18. Abstract Structure
+
+The abstract uses Lancet-style headings (Background, Methods, Findings, Interpretation) rather than BMJ-style structured abstract headings. The authors should verify whether BMJ Digital Health & AI requires a specific abstract format and adjust accordingly.
+
+19. STROBE Checklist Text Artifacts
+
+Several cells in the STROBE checklist (pages 39-42) contain garbled text, likely resulting from PDF conversion artifacts (e.g., truncated words, misplaced characters). These should be corrected.
+
+20. Missing Patient and Public Involvement Statement
+
+BMJ journals typically require a Patient and Public Involvement (PPI) statement. While the study uses de-identified data without patient contact, an explicit statement to this effect should be included, consistent with BMJ editorial policy.
+
+21. Ethics Approval Statement
+
+The ethics approval section references "the policies of our institution" without naming the specific institution or IRB that confirmed exempt status. Given the multi-institutional authorship, the reviewing authority should be explicitly identified.
+
+22. Terminology Consistency
+
+The manuscript inconsistently uses "value&unit" (abstract), "value-unit" (results), and "value/unit" (discussion) to describe the same extraction task. Consistent terminology should be adopted throughout.
+
+
+ACKNOWLEDGED STRENGTHS
+
+Despite the concerns enumerated above, the manuscript has several notable strengths. The problem of automated clinical information extraction is genuinely important and well-motivated. The modular pipeline design is architecturally sound and its model-agnostic framing is a practical advantage for institutional deployment. The evaluation across four diverse corpora provides broader coverage than many comparable studies. The note-length robustness analysis demonstrating stable CLINES performance where transformer baselines degrade is a valuable empirical contribution. The inclusion of prompt templates in the supplementary material, while incomplete due to the redaction of few-shot examples, nonetheless provides substantially more methodological transparency than most comparable LLM-based NLP studies. The detailed JSON and i2b2 schema specifications are useful for understanding the structured output design. The web demonstrator indicates attention to practical integration considerations.
+
+I believe that with a thorough revision addressing the concerns above, particularly the annotation quality, statistical reporting, reproducibility, and ethics-related gaps, this manuscript could make a strong contribution to the journal.
+
+Reviewer: 2
+
+Comments to the Author
+Summary
+This manuscript introduces CLINES, a modular, agentic LLM-based pipeline for clinical information extraction, designed to translate unstructured EHR texts into structured, ontology-grounded data. The authors evaluate CLINES on three corpora (MIMIC‑III, 4CE, CORAL) and compare it against rule-based systems, transformer encoders, and single-prompt LLM baselines.
+The topic is timely, the approach is novel, and the manuscript is well-written. However, there are some improvements to be made.
+
+
+Major comments:
+1. While the proposed approach does not rely on task‑specific supervised training data, the authors clearly incorporates prompt engineering, task decomposition, retrieval‑augmented reasoning (e.g., SapBERT), and rule‑based post‑processing. Under standard NLP definitions, this does not constitute true zero‑shot learning. Please reconsider naming the "zero-shot" evaluation.
+
+2. It would be more rigorous if the authors can provide annotation reliability or provide rationale why this is not needed. Different reviewers can disagree when interpreting the same clinical note, extracting concepts, or assigning labels.
+
+3. The authors themselves acknowledge hallucination risk — but do not measure it. This would also affect the safety when the extracted will be used for cohort discovery, phenotyping, and real-world evidence. F1, precision, and recall quantify agreement with a reference annotation but do not assess whether predicted entities or attributes are supported by the source text. Reporting some hallucination metric would help establish the evidence.
+
+4. The study evaluation leverages a reasonably diverse set of EHR note corpora spanning critical care, COVID 19 clinical care, and oncology, with meaningful variation in note length and writing style. However, annotated data are unevenly distributed across datasets, not covering several common note types (e.g., discharge summaries, operative or radiology reports). Claims regarding generalizability should be framed accordingly.
+
+Minor comment:
+1. Would suggest toning down absolute phrasing, indicating that CLINES can replace chart‑review with hallucination still present, and would still need manual reviews
+
+
+Reviewer: 3
+
+Comments to the Author
+This manuscript addresses an important problem in clinical NLP and presents a potentially useful pipeline for extracting structured information from narrative EHR text. The study is timely and relevant. However, several aspects of the manuscript would benefit from further clarification, stronger positioning within prior literature, and deeper methodological and analytical detail before the contribution can be fully assessed.
+
+1. The Introduction would benefit from additional relevant citations to strengthen its scholarly grounding. For example, the statement that measurements such as cardiac ejection fraction or tumor size often do not fit neatly into predefined problem lists or billing codes, yet remain central to clinical interpretation, is highly important in this context and should be supported with appropriate references.
+
+2. The literature framing in the Introduction moves directly from rule-based approaches to transformer-based LLM methods. However, this transition overlooks the substantial body of intermediate work based on conventional machine learning and deep learning methods. This omission raises an important question: what ML/DL approaches have previously been applied to this problem, and what limitations of those methods motivated the current approach? Including this missing layer of prior work would make the progression of the field much clearer.
+
+3. The four methodological steps should be described in a more detailed and technically transparent manner. For instance, in Step 1, the chunking strategy is not sufficiently explained. It remains unclear whether a sliding-window approach was used, how chunk boundaries were determined, whether truncation was applied, and how contextual integrity within chunks was preserved. Similar lack of detail appears in other stages. For example, the manuscript mentions duplicate creation and subsequent deduplication, but does not clearly explain where or why duplicates arose in the first place.
+
+4. Step 4, which discusses reconciliation and harmonization of chunk-level outputs, requires more explanation. This appears to be a critical component of the pipeline, yet the manuscript does not provide enough detail on how conflicting outputs were merged, prioritized, or resolved across chunks.
+
+5. Because the study emphasizes a four-step pipeline, it would be important to show how each step contributes to final performance. At present, no ablation study or component-wise performance analysis is reported. Such analysis would be highly valuable for demonstrating the necessity and contribution of each stage of the proposed framework.
+
+6. The manuscript uses the term “words” in several important places, but this term is not defined. It is unclear whether “words” refers to whitespace-delimited items, tokenizer-based units, or another operational definition. It would also be helpful to clarify whether stopwords were included in these counts.
+
+7. A similar issue applies to the use of the term “clinical phrases.” This term should be explicitly defined, as it currently remains somewhat ambiguous and may be interpreted differently by readers.
+
+8. The baseline comparison in the Methods appears limited in that it does not include prior deep learning-based approaches. Given that such methods have been widely studied in clinical NLP, their absence weakens the comparative positioning of the proposed method.
+
+9. Figure 3 would benefit from improvement in readability. The current presentation makes it difficult to interpret efficiently, and clearer formatting or labeling would strengthen the presentation of results.
+
+10. The Results section would benefit from more descriptive and insightful interpretation. At present, the writing largely reports performance numbers, but does not sufficiently discuss the main takeaways, practical significance, or why the observed patterns matter.
+
+11. The manuscript briefly mentions several limitations, but the discussion remains underdeveloped. In addition to identifying limitations, the paper should more clearly outline possible paths for overcoming them in future iterations of the work.
+
+12. Current writing lacks a Conclusion seciton wihch is supposed to contian the main take-home message. A clearer concluding statement is needed to highlight the main contribution of the study and what readers should retain as the central significance of the work.
+
+13. The Future Work section would benefit from greater elaboration. At present it is rather brief, and a more concrete discussion of next steps would help readers understand how this framework could be extended, validated, or translated into broader clinical use.
+
+Reviewer: 4
+
+Comments to the Author
+The authors briefly mention their chunking strategies; however, I would appreciate more detailed explanations of how these strategies are implemented and how they preserve information continuity. This is particularly important in the context of electronic health records, where information in one chunk may be closely related to content in adjacent chunks.
+
+Similarly, I would like to see more detail regarding Step 4, where information extracted from different chunks is aggregated. Specifically, it would be helpful to understand how the approach handles entities identified across multiple chunks. Is there a validation or consistency-checking mechanism to ensure that the final output remains coherent and accurate with respect to the entire EHR document?
+
+The authors report F1 scores and provide clear comparisons with both alternative methods and different LLMs. While their approach consistently achieves the highest performance, I would strongly encourage the inclusion of an error analysis. In particular, it would be valuable to understand in which scenarios the model fails, what types of errors occur, and the potential underlying causes.
+
+Additionally, the paper claims that the approach is model-agnostic and can be applied with both open-source and proprietary models, considering trade-offs such as cost, performance, and privacy. However, since the proposed method relies on multiple LLM calls across several steps, it would be important to include a detailed cost analysis, especially for proprietary models, which appear to deliver the best performance.
+
+Finally, it would be interesting to explore whether different LLMs could be used at different stages of the pipeline. For example, LLaMA could be used for earlier stages such as entity extraction, while more powerful models could be reserved for steps requiring deeper reasoning. This kind of hybrid approach could significantly improve cost-efficiency without sacrificing performance.
+
+I thank the authors for their contribution and encourage them to expand on these aspects to further strengthen the paper.
+
+Reviewer: 5
+
+Comments to the Author
+1. Overview and acknowledgement of strengths
+As I understand, your paper uses a newly created system called CLINES that uses a 4-step architectural pipeline to extract data from electronic health records. You claim that this system is innovative and addresses current problems of data extraction tasks in the medical documentation context.
+This is a valid problem setting which is to this date in the oppinion of this reviewer not fully solved. You also acknowledge the trade-off between different backbone-models, privacy and accessibility. The clinical examples in section 4.4 demonstrate that very well.
+The use of 3 main data corpora is commendable and reaches above that in much of the literature known to me.
+
+2. General considerations and formatting
+2.1. Please reframe your abstract sections to the BMJ DH&AI standard: “Objective”, “Methods and Analysis”, “Results” and “Conclusion”
+2.2 A small section that will be published as a summary box is missing after the abstract, here is the excerpt from the BMJ digital health and AI guidelines for original research: what is known, what does this study add and how this study may affect. Please refer to the author guidelines under "Original research".
+2.3. The definition given for the acronym CLINES in the title is not fully consistent with the written acronym expansion on page 6, line 11.
+2.4. The pdf available for review does not show clear graphics
+o the size of the graphics especially in figure 3 does not allow to identify decimal point numbers clearly without enlarging the size considerably. Please provide higher resolutions on submission or adapt the graphical illustration. Alternatively, consider tables with F1 values in a larger font size.
+o The shaded ribbons are barely visible in the current format available for review
+
+3. Minor findings, suggestions for improvement
+3.1. Please confirm whether the whole prompt-suite will be made available on publication and confirm the URL of the repository.
+3.2. Limitation (iii) mentions hallucination risk with a single illustrative example ("OD 2 gtt qd" misread as overdose). A quantitative error analysis distinguishing hallucinated entities from span boundary errors and normalization mismatches would substantially strengthen the safety framing and is warranted given the clinical deployment claims.
+3.3. STROBE as a checklist is not tailored for the use in clinical AI. The authors may consider adopting other checklists like TRIPOD-AI or other NLP-specific reporting standards
+3.4. SemChunk is described as a valid methodology to capture clinical reasoning flow, which is problematic, given the descriptions in the text and in the caption of figure 2:
+o Clinical reasoning is not constrained by the semantic units kept by SemChunk. The reasoning may very well spread over several sentences and may be split by a chunk boundary.
+o Entity recognition and context window are processed only after the chunks have been formed. That means a missed reasoning across boundaries will still be lost to extraction.
+o There is no detailed description of the context window mechanism which could resolve this issue. If there is such, please provide as supplementary information.
+3.5. The note-length analysis in Figure 3E uses quantile-based bins with 95% bootstrap confidence intervals. The figure caption does not report notes per bin. For longer bins (2,500–3,000 words), small populations may make CIs unstable and the visual impression of stability unreliable. The number of notes per bin should be reported.
+
+4. Major issues, action required:
+4.1 The Single-Prompt LLM Comparison does not support the claim to improvement by architectural choices. The comparison against outdated systems is valid but does not prove a claimed innovation compared to modern architectures. The +0.21–0.38 F1 improvement over single-prompt LLMs is presented as evidence that the CLINES architecture advances the state of the art. This inference is not supported by the experimental design
+o The most critical comparison (o3-mini single-prompt versus o3-mini in CLINES) is entirely absent. The single-prompt baseline does not include o3-mini. This absence is not acknowledged as a limitation anywhere in the paper.
+o The baseline is impoverished relative to the current state of the art in prompting. The clinical NLP prompting literature from 2024–2025 has established that modern LLMs perform substantially better on structured extraction tasks with chain-of-thought instructions, few-shot clinical examples, and explicit task decomposition. None of these are present in the CLINES baseline. The current baseline tests the minimum possible performance of modern LLMs, not their actual capability.
+Action required for point 4.1:
+Either do include the missing o3-mini single-prompt condition and a chain-of-thought-enabled GPT-4o condition, and revise performance claims accordingly or substantially reframe the central contribution claim to acknowledge that the observed F1 gains reflect the combined and undisentangled effects of model selection, prompt engineering investment, reasoning budget, and pipeline architecture.
+
+4.2  Absence of Inter annotator agreement metrics
+Without IAA data, sub-percentage F1 differences on this dataset cannot be interpreted as meaningful. For MIMIC-III, paragraphs were annotated by "one expert per paragraph." There is no consensus label, no adjudication, and no second opinion. The gold standard for 448 phrases is a collection of 24 individual, unreconciled judgments. Reporting F1 against this standard as a quantitative benchmark is methodologically problematic. Assertion status is even more problematic in this context.
+Action required for 4.2:
+Report a valid metric like Cohen's κ for all four extraction tasks across all annotated datasets, computed on at least 10–15% of annotations. Where single-annotation was unavoidable (MIMIC-III), explicitly reframe F1 as agreement-with-annotator. Consider adjudicating a consensus gold standard for at least one dataset. IAA reporting limitation needs to be part of the main Methods section.
+
+4.3 Scalability claims do not reflect real-world deployment conditions
+CLINES takes clean, de-identified, plain-text notes as input. The manuscript is entirely silent on the processes required to produce that input operationally. To arrive from messy and unstructured data to a single text input which is de-identified requires enormous effort which is not feasible for many non academic institutions and even there hard to realize.
+The computational hardware to be able to run Llama3.1-405B is about a cluster of 8times NVIDIA H100 or 2 clusters of 8xA100 including IT staff able to handle the orchestration. This is not feasible for most small to medium healthcare institutions around the world. An 8-node H100 cluster provides approximately 640GB VRAM, insufficient for the 405B model at standard FP16  precision. The only single 8-GPU H100 configuration that accommodates this model is FP8 quantisation, confirmed by Meta's own documentation. That reduces the output quality.
+The GPT-4o and o3-mini variants require external API calls incompatible with most hospital governance frameworks and, in European jurisdictions, with GDPR. The mean completion token count for o3-mini (~24,334 per 768-token chunk) raises unanswered questions about cost at scale.
+
+4.4 Output schema portability and downstream interoperability are overstated
+CLINES produces UMLS CUIs concatenated with preferred term strings. UMLS is a research-oriented metathesaurus, not a production clinical coding system. UMLS's knowledge structure is explicitly not compliant with FHIR or any known healthcare interoperability standard; production FHIR resources require SNOMED-CT, LOINC, or RxNorm codes, not raw CUIs. OMOP-CDM, the dominant standard for real-world evidence in Europe and globally, is unaddressed. The hallucination risk acknowledged in limitations compounds this: an incorrect CUI maps to an entirely different clinical concept in any downstream terminology system.
+
+Action required for 4.3 and 4.4:
+Specify the inference precision used for Llama-3.1-405B. Acknowledge the effort necessary to arrive at an input data structure valid for CLINES. Acknowledge and enumerate the intermediate mapping steps required to move from UMLS CUI output to SNOMED-CT, FHIR, or OMOP-CDM compatibility. If already available in your architecture, please describe more explicitly.
+Revise scalability and interoperability claims throughout the manuscript and in Section 4.7.
+
+4.5. Baseline Selection: Omission of Contemporary State-of-the-Art Comparators
+The comparison framework is built around baselines that are outdated. The most relevant contemporary alternatives are entirely absent. Here some examples relevant to this reviewer
+a) John Snow Labs Healthcare NLP / Spark NLP
+Healthcare NLP (version 6.3, February 2026) is a widely deployed production-grade clinical NLP platform. It seems to implement every capability CLINES claims as innovative: clinical NER covering 400+ entity types; the identical assertion taxonomy; entity resolution to UMLS CUI, ICD-10-CM, SNOMED CT, RxNorm, LOINC, and CPT-4 via SapBERT-family embeddings; temporal relation extraction; native de-identification; and output to OMOP-CDM. It integrates LLMs natively in hybrid pipelines, architecturally the exact approach CLINES describes as innovative. Available under an academic free licence, it has been in active development since 2017.
+
+b) CLEAR Lopez, I., Swaminathan, A., Vedula, K. et al. Clinical entity augmented retrieval for clinical information extraction. npj Digit. Med. 8, 45 (2025). https://doi.org/10.1038/s41746-024-01377-1
+CLEAR is a directly comparable LLM-augmented agentic pipeline It was available in final published form exactly twelve months before this manuscript was submitted. Its omission from both related work and the baseline comparison is difficult to justify.
+
+c) BMJ Health & Care Informatics evaluation Ntinopoulos V, et al. Large language models for data extraction from unstructured and semi-structured electronic health records: a multiple model performance evaluation. BMJ Health & Care Informatics. 2025;32:e101139. https://doi.org/10.1136/bmjhci-2024-101139
+The authors evaluated 18 LLMs for structured EHR data extraction in a sister BMJ journal, published on 19 January 2025. That study included output consistency assessment over several outputs, a methodological standard CLINES does not meet.
+
+Action required for 4.5:
+A direct empirical comparison with the given state of the art architecture. The examples given by this reviewer may be used or a statement, why commercially available systems like Healthcare NLP or Spark NLP or other recent literature examples are not considered in the discussion given. The BMJ digital health and AI abstracts demands a short box stating “what is already known”. It is hard to justify omitting current systems or state of the art literature.
+
+Conclusion:
+With all that said, I do believe your work is a valid contribution to the corpus of knowledge covering this highly relevant field of data extraction. I do acknowledge the contribution of well known researcher in this field who are authors of this article. Both of these facts are independent reasons why I do hope for this journal to receive a revised version of your article to be reviewed.
+
+Editor(s)' Comments to Author (if any):
+
+Associate Editor
+Comments to the Author:
+Dear Author,
+Thank you for submitting your manuscript.
+Based on the reviewers' comments, I am writing to inform you that your paper requires major revision before it can be considered for publication. While all reviewers recognize the inherent value of your work, there are concerns regarding some aspects of the methodology.

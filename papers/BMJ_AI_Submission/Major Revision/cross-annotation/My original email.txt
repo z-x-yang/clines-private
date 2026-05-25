@@ -1,0 +1,32 @@
+Hi Mo and Enci,
+
+I hope you are both doing well.
+
+Thank you again for your earlier help with the 4CE and CORAL note annotations. Our CLINES manuscript has now received a major revision decision, and one reviewer asked us to report an inter-annotator agreement / annotation consistency measure. To address this, could I ask each of you to independently annotate a small subset of notes that was originally annotated by the other person?
+
+I attached three files:
+EHR_Annotation_Tool_source.zip — the annotation tool source package, in case you no longer have the old local copy
+For_Mo_IAA_cross_annotation.zip — 3 4CE notes and 2 CORAL notes originally annotated by Enci
+For_Enci_IAA_cross_annotation.zip — 3 4CE notes and 2 CORAL notes originally annotated by Mo
+
+The tool is the EHR Annotation Tool we used previously. As a reminder, after unzipping the tool package, you can run it locally with:
+
+1. Open Terminal in the unzipped EHR_Annotation_Tool_source folder.
+2. Run: npm install
+3. Run: npm start
+4. Open http://localhost:3000 in your browser.
+
+If you prefer Docker, you can also run:
+
+    docker compose up --build
+
+For this cross-annotation task, please load each assigned note .txt file together with the corresponding annotation .csv file, review/edit the annotations independently, and then export the completed reviewed CSV files. Please do not refer to the previous completed labels while annotating.
+
+Once finished, could you please send back the completed reviewed CSV files? If possible, it would be very helpful if you could complete this soon, since we need the agreement analysis for the revision response.
+
+Please let me know if the tool or files give you any trouble, and I can help fix them quickly.
+
+Thank you very much again for your help!
+
+Best,
+Zongxin 
