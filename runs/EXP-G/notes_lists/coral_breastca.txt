@@ -1,0 +1,12 @@
+# EXP-G representative CORAL-breast notes (5 notes).
+# Selection criteria (mixed):
+#   - 23: 446 rows, 91 dated, ~2.1k words → largest + date-heavy
+#   - 34: 430 rows, 102 dated, ~2.9k words → multi-chunk + date-heavy
+#   - 36: 314 rows, 105 dated, ~2.1k words → date-heavy
+#   - 21: 296 rows, 64 dated, ~2.3k words → mid-size
+#   - 24: 267 rows, 50 dated, ~1.5k words → smaller baseline
+23
+34
+36
+21
+24

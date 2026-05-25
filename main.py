@@ -85,7 +85,28 @@ if __name__ == '__main__':
     parser.add_argument('--retry_list_file', type=str, default='retry_list.jsonl',
                         help='Path to JSONL retry list file for failed/partial notes')
 
+    # EXP-G ablation flags (BMJ revision). Each toggles OFF one CLINES
+    # pipeline component to measure its individual contribution to F1.
+    # Defaults are all OFF → full pipeline (production behavior unchanged).
+    parser.add_argument('--disable_sapbert', action='store_true',
+                        help='EXP-G(a): skip SapBERT/FAISS UMLS retrieval; emit placeholder codes')
+    parser.add_argument('--disable_semchunk', action='store_true',
+                        help='EXP-G(b): replace semchunk with fixed-length tiktoken chunker')
+    parser.add_argument('--disable_date', action='store_true',
+                        help='EXP-G(c): skip the Date module entirely (no date parsing/normalization)')
+    parser.add_argument('--disable_step4_reconcile', action='store_true',
+                        help='EXP-G(d): skip Step 4 reconciliation (tag-based alignment/dedup)')
+    parser.add_argument('--note_id_list', type=str, default=None,
+                        help='Optional path to a text file with one note_id per line; if set, only these notes are processed (intersection with notes_dir)')
+
     args = parser.parse_args()
+
+    ablation_flags = {
+        'disable_sapbert': args.disable_sapbert,
+        'disable_semchunk': args.disable_semchunk,
+        'disable_date': args.disable_date,
+        'disable_step4_reconcile': args.disable_step4_reconcile,
+    }
 
     # Configure logging
     log_level = logging.DEBUG if args.debug else logging.INFO
@@ -93,9 +114,12 @@ if __name__ == '__main__':
                         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                         handlers=[logging.StreamHandler()])
 
+    logger.info(f"EXP-G ablation_flags: {ablation_flags}")
+
     logger.info("Start initializing model")
     # model instance name matches the one used in PipelineCoordinator
-    llm_model = LLMManager(args.model_name, chunk_size=args.chunk_size)
+    llm_model = LLMManager(args.model_name, chunk_size=args.chunk_size,
+                           disable_semchunk=ablation_flags['disable_semchunk'])
     logger.info("Model initialized")
     logger.info("Start initializing pipeline")
 
@@ -103,15 +127,20 @@ if __name__ == '__main__':
         os.makedirs(args.output_dir)
 
     # Instantiate PipelineCoordinator instead of PIPELINE
-    # Initialize shared retriever once
-    from llm_interface.retrieval.retriever_coordinator import RetrieverCoordinator
-    shared_retriever = RetrieverCoordinator('cambridgeltl/SapBERT-from-PubMedBERT-fulltext',
-                                            use_gpu=torch.cuda.is_available(),
-                                            use_faiss_gpu=args.use_faiss_gpu)
-    shared_retriever.load_dictionary_all('./umls_dictionary.txt')
-    shared_retriever.load_dictionary_bodyloc('./umls_body_loc_dictionary.txt')
-    shared_retriever.embed_dictionary(32768)
-    shared_retriever.faiss_setup()
+    # Initialize shared retriever once (skip entirely when SapBERT disabled to
+    # avoid the 5.7M-term UMLS dict load + FAISS index build cost).
+    shared_retriever = None
+    if not ablation_flags['disable_sapbert']:
+        from llm_interface.retrieval.retriever_coordinator import RetrieverCoordinator
+        shared_retriever = RetrieverCoordinator('cambridgeltl/SapBERT-from-PubMedBERT-fulltext',
+                                                use_gpu=torch.cuda.is_available(),
+                                                use_faiss_gpu=args.use_faiss_gpu)
+        shared_retriever.load_dictionary_all('./umls_dictionary.txt')
+        shared_retriever.load_dictionary_bodyloc('./umls_body_loc_dictionary.txt')
+        shared_retriever.embed_dictionary(32768)
+        shared_retriever.faiss_setup()
+    else:
+        logger.info("EXP-G ablation: SapBERT DISABLED at main.py; shared_retriever=None, skipping UMLS dict + FAISS")
 
     # Helper to append a JSON line thread-safely
     import threading, json as _json
@@ -139,11 +168,22 @@ if __name__ == '__main__':
     with open(args.error_log_file, 'w') as f:
         json.dump(error_log, f, indent=4)
 
+    # Optional note_id allowlist (EXP-G: each ablation runs only a small
+    # representative sample, not the full dataset)
+    allowed_ids = None
+    if args.note_id_list:
+        with open(args.note_id_list, 'r') as f:
+            allowed_ids = {line.strip() for line in f if line.strip() and not line.startswith('#')}
+        logger.info(f"note_id_list active: {len(allowed_ids)} ids = {sorted(allowed_ids)}")
+
     # Adapt notes loading based on whether notes_dir is a CSV or a directory of .txt files
     notes = []
     if os.path.isdir(args.notes_dir):
         notes = [item for item in os.listdir(
             args.notes_dir) if item.endswith('.txt')]
+        if allowed_ids is not None:
+            notes = [n for n in notes if n.rstrip('.txt') in allowed_ids]
+            logger.info(f"After note_id_list filter: {len(notes)} notes remain: {sorted(notes)}")
         notes_source_type = 'dir'
     elif os.path.isfile(args.notes_dir) and args.notes_dir.endswith('.csv'):
         try:
@@ -153,6 +193,9 @@ if __name__ == '__main__':
             if 'note_id' in notes_df.columns and 'text' in notes_df.columns:
                 notes = notes_df.apply(lambda row: {'id': str(
                     row['note_id']), 'text': row['text']}, axis=1).tolist()
+                if allowed_ids is not None:
+                    notes = [n for n in notes if n['id'] in allowed_ids]
+                    logger.info(f"After note_id_list filter: {len(notes)} notes remain")
                 notes_source_type = 'csv'
             else:
                 logger.error(
@@ -204,13 +247,15 @@ if __name__ == '__main__':
             return {'note_key': key, 'skipped': True}
 
         # Create per-note LLMManager and Coordinator (inject shared retriever)
-        local_llm = LLMManager(args.model_name, chunk_size=args.chunk_size)
+        local_llm = LLMManager(args.model_name, chunk_size=args.chunk_size,
+                               disable_semchunk=ablation_flags['disable_semchunk'])
         coord = PipelineCoordinator(local_llm, args.schema, args.output_type,
                                     args.marker, use_gpu=torch.cuda.is_available(),
                                     use_faiss_gpu=args.use_faiss_gpu, output_dir=args.output_dir,
                                     chunk_max_retries=args.chunk_max_retries,
                                     chunk_retry_delay=args.chunk_retry_delay,
-                                    shared_retriever=shared_retriever)
+                                    shared_retriever=shared_retriever,
+                                    ablation_flags=ablation_flags)
 
         report = None
         for attempt in range(args.max_retries):

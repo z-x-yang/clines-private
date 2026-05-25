@@ -12,15 +12,19 @@ from .data_contracts import ContractRegistry
 
 
 class InfoProcessor:
-    def __init__(self, model, prompt_status, prompt_info, prompt_json_debug, retriever, deduplication_fn):
+    def __init__(self, model, prompt_status, prompt_info, prompt_json_debug, retriever, deduplication_fn,
+                 disable_sapbert=False, disable_step4_reconcile=False):
         self.logger = logging.getLogger(self.__class__.__name__)
         self.model = model  # LLMManager instance
         self.prompt_status = prompt_status
         self.prompt_info = prompt_info
         self.prompt_json_debug = prompt_json_debug  # Used by utility process_llm_query
-        self.retriever = retriever  # RetrieverCoordinator instance
+        self.retriever = retriever  # RetrieverCoordinator instance (may be None when SapBERT disabled)
         self.deduplication = deduplication_fn  # Function from PipelineCoordinator
-        
+        # EXP-G ablation flags
+        self.disable_sapbert = bool(disable_sapbert)
+        self.disable_step4_reconcile = bool(disable_step4_reconcile)
+
         # Get data contracts
         self.status_contract = ContractRegistry.get_findstatus_contract()
         self.info_contract = ContractRegistry.get_findinfo_contract()
@@ -51,7 +55,12 @@ class InfoProcessor:
             )
             
             # Deduplication processing - input is now safe list of dictionaries
-            status_results = self.deduplication(status_results, 'tag', parsed_ner_tags)
+            if self.disable_step4_reconcile:
+                self.logger.info("EXP-G ablation: Step 4 reconcile DISABLED; skipping status-results dedup")
+                from .processing_utils import safe_deduplication_input as _safe
+                status_results = _safe(status_results, self.logger)
+            else:
+                status_results = self.deduplication(status_results, 'tag', parsed_ner_tags)
             self.logger.debug(f"Status results after deduplication:\n{pprint.pformat(status_results)}")
             
         except Exception as e:
@@ -76,7 +85,11 @@ class InfoProcessor:
             )
             
             # Deduplication processing - input is now safe list of dictionaries
-            info_results = self.deduplication(info_results, 'tag', parsed_ner_tags)
+            if self.disable_step4_reconcile:
+                from .processing_utils import safe_deduplication_input as _safe
+                info_results = _safe(info_results, self.logger)
+            else:
+                info_results = self.deduplication(info_results, 'tag', parsed_ner_tags)
             self.logger.debug(f"Info results before linking:\n{pprint.pformat(info_results)}")
             
         except Exception as e:
@@ -89,6 +102,22 @@ class InfoProcessor:
 
         # Entity linking for body_location
         if len(info_results) > 0:
+            # EXP-G ablation (a): SapBERT OFF → write placeholder body_code,
+            # skip embedding retrieval entirely.
+            if self.disable_sapbert:
+                self.logger.info("EXP-G ablation: SapBERT DISABLED for body_location linking; writing placeholder body_codes")
+                for item in info_results:
+                    bl = item.get('body_location')
+                    if bl is not None:
+                        item['body_code'] = json.dumps({f"NORM_OFF||{bl}": [bl, "NA"]})
+                # Skip downstream retrieval entirely
+                self.logger.debug(f"Completed processing (SapBERT off): {len(status_results)} status results, {len(info_results)} info results")
+                if self.last_run_stats['status_module']['status'] != 'partial' and self.last_run_stats['info_module']['status'] != 'partial':
+                    self.last_run_stats['status'] = 'success'
+                else:
+                    self.last_run_stats['status'] = 'partial'
+                return InfoData(status_results=status_results, info_results=info_results)
+
             clean_entities_bodyloc = []
             term_indices_bodyloc = []
             for i, item in enumerate(info_results):

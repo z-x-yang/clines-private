@@ -17,11 +17,27 @@ def claude_chat(input_message):
     NotImplementedError
 
 
+def _fixed_length_chunker_factory(tokenizer, chunk_size):
+    """
+    EXP-G ablation (b): naive fixed-length tiktoken chunker that ignores
+    semantic boundaries (no sentence/section awareness). Returns a callable
+    with the same shape as semchunk.chunkerify (text -> list[str]).
+    """
+    def _chunk(text):
+        if not isinstance(text, str) or not text:
+            return [text or ""]
+        ids = tokenizer.encode(text)
+        n = max(1, int(chunk_size))
+        return [tokenizer.decode(ids[i:i + n]) for i in range(0, len(ids), n)]
+    return _chunk
+
+
 class LLMManager():
 
-    def __init__(self, model_name, chunk_size=512):
+    def __init__(self, model_name, chunk_size=512, disable_semchunk=False):
         self.logger = logging.getLogger(self.__class__.__name__)
         self.model_name = model_name
+        self.disable_semchunk = bool(disable_semchunk)
         # Add token counting attributes
         self.total_prompt_tokens = 0
         self.total_completion_tokens = 0
@@ -33,16 +49,23 @@ class LLMManager():
         self.current_chunk_original_tokens = 0  # Track original chunk token count
         self.chunk_original_token_stats = []  # Store original token counts per chunk
 
+        def _make_chunker(tok, csize):
+            if self.disable_semchunk:
+                self.logger.info(
+                    f"EXP-G ablation: SemChunk DISABLED; using fixed-length chunker (size={csize})")
+                return _fixed_length_chunker_factory(tok, csize)
+            return semchunk.chunkerify(tok, csize)
+
         if isinstance(self.model_name, str) and self.model_name.startswith('azure:'):
             azure_model_key = self.model_name.split(':', 1)[1]
             self.chat_func = wrap_azure_chat(azure_model_key)
             self.tokenizer = tiktoken.encoding_for_model('gpt-4')
-            self.chunker = semchunk.chunkerify(self.tokenizer, chunk_size)
+            self.chunker = _make_chunker(self.tokenizer, chunk_size)
 
         elif self.model_name in ['gpt4o', 'gpt4omini', 'o3mini']:
             self.chat_func = wrap_openai_chat(self.model_name)
             self.tokenizer = tiktoken.encoding_for_model('gpt-4')
-            self.chunker = semchunk.chunkerify(self.tokenizer, chunk_size)
+            self.chunker = _make_chunker(self.tokenizer, chunk_size)
 
         elif self.model_name in ['gemini']:
             self.chat_func = gemini_chat
@@ -60,18 +83,18 @@ class LLMManager():
             # Tokenizer and chunker might need to be specific here
             # Using gpt-4 tokenizer as a placeholder, adjust as needed
             self.tokenizer = tiktoken.encoding_for_model('gpt-4')
-            self.chunker = semchunk.chunkerify(
+            self.chunker = _make_chunker(
                 self.tokenizer, chunk_size if chunk_size else 512)
 
         elif self.model_name in ['llama-3-405b']:
             self.chat_func = llama_chat
             self.tokenizer = tiktoken.encoding_for_model('gpt-4')
-            self.chunker = semchunk.chunkerify(self.tokenizer, 512)
+            self.chunker = _make_chunker(self.tokenizer, 512)
 
         elif self.model_name in ['deepseek']:
             self.chat_func = deepseek_chat
             self.tokenizer = tiktoken.encoding_for_model('gpt-4')
-            self.chunker = semchunk.chunkerify(self.tokenizer, 512)
+            self.chunker = _make_chunker(self.tokenizer, 512)
 
         else:
             raise ValueError(f"Unsupported model_name: {model_name}")

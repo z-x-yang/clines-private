@@ -14,7 +14,8 @@ from .processing_utils import parse_result, safe_json_decode, process_llm_query
 
 class DateProcessor:
     def __init__(self, model, prompt_basic_info, prompt_date_single,
-                 prompt_date_multi, norm_date_prompt, prompt_json_debug, deduplication_fn):
+                 prompt_date_multi, norm_date_prompt, prompt_json_debug, deduplication_fn,
+                 disable_step4_reconcile=False):
         self.logger = logging.getLogger(self.__class__.__name__)
         self.model = model
         self.prompt_basic_info = prompt_basic_info
@@ -23,6 +24,8 @@ class DateProcessor:
         self.norm_date_prompt = norm_date_prompt
         self.prompt_json_debug = prompt_json_debug  # Used by utility process_llm_query
         self.deduplication = deduplication_fn
+        # EXP-G ablation flag
+        self.disable_step4_reconcile = bool(disable_step4_reconcile)
 
         # These will be set during processing, potentially based on args to process_dates
         self.current_admission_date = None
@@ -100,7 +103,11 @@ class DateProcessor:
         )
         self.logger.debug(
             f"Initial date results (before deduplication and normalization):\n{pprint.pformat(date_results)}")
-        date_results = self.deduplication(date_results, 'tag', parsed_ner_tags)
+        if self.disable_step4_reconcile:
+            from .processing_utils import safe_deduplication_input as _safe
+            date_results = _safe(date_results, self.logger)
+        else:
+            date_results = self.deduplication(date_results, 'tag', parsed_ner_tags)
         date_results = self.normalize_date_list(date_results)
         return DateData(basic_results=basic_results, date_results=date_results)
 
@@ -119,7 +126,11 @@ class DateProcessor:
         )
         self.logger.debug(
             f"Subsequent date results (before deduplication and normalization):\n{pprint.pformat(date_results)}")
-        date_results = self.deduplication(date_results, 'tag', parsed_ner_tags)
+        if self.disable_step4_reconcile:
+            from .processing_utils import safe_deduplication_input as _safe
+            date_results = _safe(date_results, self.logger)
+        else:
+            date_results = self.deduplication(date_results, 'tag', parsed_ner_tags)
         date_results = self.normalize_date_list(date_results)
         return DateData(basic_results=None, date_results=date_results)
 

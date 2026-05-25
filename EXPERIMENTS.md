@@ -57,7 +57,7 @@ GPT-4o 案例集：`reports/gpt4o_case_studies.md`。
 | EXP-D | E4 | Cost / latency / GPU-h / API \$ 全表 | P0 | PENDING | 0（slurm-\*.out + evaluation\_results\_0904 反推） | TBD | experiments/EXP-D_cost.md |
 | EXP-E | E5 | Hallucination 5-class FP taxonomy | P0 | PENDING | 0（从现有 prediction 拉 FP + 人工归类） | TBD | experiments/EXP-E_hallucination.md |
 | EXP-F | E6 | Baseline 补强：o3-mini single-prompt + GPT-4o CoT single-call | P0 | PENDING | **新跑**（小规模） | TBD | experiments/EXP-F_baseline_extra.md |
-| EXP-G | E7 | Ablation: SapBERT / SemChunk / Date module / Step 4 | P1 | PENDING | Date/Step4 off 可在现有产物上**模拟**；SemChunk / SapBERT 新跑（API 可用） | TBD | experiments/EXP-G_ablation.md |
+| EXP-G | E7 | Ablation: SapBERT / SemChunk / Date module / Step 4 | P1 | LAUNCHED | **全 4 个 ablation 新跑**（Date / Step4 也不能在现有产物上模拟 — pre-flight §1.6 finding）；5 notes/dataset × 3 datasets × 4 ablations + 1 control = 15 sbatch jobs | TBD | experiments/EXP-G_ablation.md |
 | EXP-H | E8 | Full-size DL baseline: BioClinicalBERT 或 GatorTron | P1 | BLOCKED-CODE | **新跑**（GPU；不依赖 HMS API） | TBD | experiments/EXP-H_dl_baseline.md |
 | — | E9 | RE 不评测，Supp 写明 | P1 | WRITING-ONLY | 0 | n/a | —（不立 EXP） |
 
@@ -85,3 +85,4 @@ GPT-4o 案例集：`reports/gpt4o_case_studies.md`。
 
 - 2026-05-13：初版创建。锁定 Phase 风格 + 9 项实验编号 E1-E9 / EXP-A..EXP-H。E9 走方案 (b)（不评测，Supp 写明），不立 EXP 项。User 拍板"能不跑就不跑"策略（2026-05-13）。HMS API 暂不可用，BLOCKED-API 实验等 key 到位。
 - 2026-05-19：HMS API key 已拿到（user 从 SharePoint 取得，存放在 `OPENAIKEY` env var，不入 git）。Deployment probe 显示 `gpt-4o-1120` / `gpt-4o-mini-0718` / `gpt-4.1` 系列 / `o3-mini-0131` / `o4-mini-0416` 可用，alias（`gpt-4o` / `gpt-4o-mini` / `o3-mini`）全部 404。`openai_provider.py` 的 `n2n_dict` 同步修正（`gpt4omini→gpt-4o-mini-0718`、`o3mini→o3-mini-0131`），`o3mini` api_version 由 `2024-10-21` 升到 `2024-12-01-preview`（reasoning 推荐版本）。`run_inference.sh` 清除 hardcode 的失效 key / dev endpoint，改为 fail-fast 检查 `OPENAIKEY` env var 并默认 `OPENAIENDPOINT=https://azure-ai.hms.edu`。EXP-F 状态由 `BLOCKED-API` → `PENDING`；EXP-G 同步。
+- 2026-05-25：EXP-G launch — branch `exp/EXP-G_ablation`. 4 个 ablation 全部走"新跑"路径（pre-flight §1.6 finding: `outputs/with_positions/` 是 final aggregated 无 chunk_id，Date off / Step4 off 无法在现有产物上模拟）。Scope: 5 representative notes × 3 datasets (4CE / CORAL-P / CORAL-B; MIMIC / i2b2 无 gold) × 4 ablations + 1 matched control = 15 sbatch jobs (`gpu_quad`, 30min each). Implementation: `main.py` + 4 component processors 加 ablation CLI flags + `--note_id_list`. `jobs/EXP-G_run.sh` 参数化 sbatch; `jobs/EXP-G_submit_all.sh` 批量提交; `jobs/EXP-G_eval_all.sh` 后处理 + symlink bridge → `eval_predictions.py`. 详见 experiments/EXP-G_ablation.md.

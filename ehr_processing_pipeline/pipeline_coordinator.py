@@ -38,13 +38,29 @@ class PipelineCoordinator:
 
     def __init__(self, model, schema='i2b2', format_type='csv', marker="", use_gpu=True, use_faiss_gpu=None, output_dir="outputs",
                  chunk_max_retries: int = 2, chunk_retry_delay: float = 0.5,
-                 shared_retriever: RetrieverCoordinator | None = None):
+                 shared_retriever: RetrieverCoordinator | None = None,
+                 ablation_flags: dict | None = None):
         self.logger = logging.getLogger(self.__class__.__name__)
         self.model = model
         self.output_schema = SchemaProcessor(
             schema, format_type, marker, output_dir)
 
-        if shared_retriever is not None:
+        # EXP-G ablation flags
+        flags = ablation_flags or {}
+        self.disable_sapbert = bool(flags.get('disable_sapbert', False))
+        self.disable_semchunk = bool(flags.get('disable_semchunk', False))
+        self.disable_date = bool(flags.get('disable_date', False))
+        self.disable_step4_reconcile = bool(flags.get('disable_step4_reconcile', False))
+        if any([self.disable_sapbert, self.disable_semchunk, self.disable_date, self.disable_step4_reconcile]):
+            self.logger.info(
+                f"EXP-G ablation flags active: sapbert={self.disable_sapbert} "
+                f"semchunk={self.disable_semchunk} date={self.disable_date} "
+                f"step4_reconcile={self.disable_step4_reconcile}")
+
+        if self.disable_sapbert:
+            self.logger.info("EXP-G ablation: SapBERT DISABLED; retriever skipped")
+            self.retriever = None
+        elif shared_retriever is not None:
             self.retriever = shared_retriever
             self.logger.info("Using shared RetrieverCoordinator instance (skipping local initialization)")
         else:
@@ -73,19 +89,24 @@ class PipelineCoordinator:
         # Instantiate EntityProcessor, passing the deduplication method from this class
         self.entity_processor = EntityProcessor(
             self.model, self.prompt_relate, self.prompt_clean,
-            self.prompt_json_debug, self.retriever, self.deduplication
+            self.prompt_json_debug, self.retriever, self.deduplication,
+            disable_sapbert=self.disable_sapbert,
+            disable_step4_reconcile=self.disable_step4_reconcile,
         )
         # Instantiate InfoProcessor, passing the deduplication method from this class
         self.info_processor = InfoProcessor(
             self.model, self.prompt_status, self.prompt_info,
-            self.prompt_json_debug, self.retriever, self.deduplication
+            self.prompt_json_debug, self.retriever, self.deduplication,
+            disable_sapbert=self.disable_sapbert,
+            disable_step4_reconcile=self.disable_step4_reconcile,
         )
         # Instantiate DateProcessor
         self.date_processor = DateProcessor(
             self.model, self.prompt_basic_info, self.prompt_date_single,
             # norm_date is a PromptManager object
             self.prompt_date_multi, self.norm_date, self.prompt_json_debug,
-            self.deduplication
+            self.deduplication,
+            disable_step4_reconcile=self.disable_step4_reconcile,
         )
 
         # Chunk-level retry configuration
@@ -379,10 +400,33 @@ class PipelineCoordinator:
     def _aggregate_results(self, ner_data: NERData, entity_data: EntityData,
                            info_data: InfoData, date_data: DateData) -> None:
         self.pipeline_result['clean_results'] += entity_data.clean_results
-        info_results, status_results, date_results, relate_results = process_lists_based_on_list1(
-            entity_data.clean_results, info_data.info_results,
-            info_data.status_results, date_data.date_results, entity_data.relate_results
-        )
+        # EXP-G ablation (d): when Step 4 reconciliation is OFF, skip the
+        # tag-based alignment / default-filling. Just pad each parallel list
+        # to the clean_results length so downstream result_aggregation can
+        # zip them positionally — duplicate / unaligned rows produced by the
+        # LLM are preserved as-is (this is what reviewers want to see).
+        if self.disable_step4_reconcile:
+            self.logger.info("EXP-G ablation: Step 4 reconcile DISABLED in _aggregate_results; using positional concat")
+            n = len(entity_data.clean_results)
+            def _pad(lst, default):
+                lst = list(lst) if lst else []
+                if len(lst) < n:
+                    lst = lst + [dict(default) for _ in range(n - len(lst))]
+                else:
+                    lst = lst[:n]
+                return lst
+            info_results = _pad(info_data.info_results, {
+                "tag": None, "body_location": None, "value": None, "unit": None,
+                "infer": None, "note": None, "freq": None, "route": None, "other": None,
+            })
+            status_results = _pad(info_data.status_results, {"tag": None, "assertion_status": None})
+            date_results = _pad(date_data.date_results, {"tag": None, "date": [None, None], "inferred": [None, None]})
+            relate_results = _pad(entity_data.relate_results, {"tag": None, "related": {}})
+        else:
+            info_results, status_results, date_results, relate_results = process_lists_based_on_list1(
+                entity_data.clean_results, info_data.info_results,
+                info_data.status_results, date_data.date_results, entity_data.relate_results
+            )
         self.pipeline_result['info_results'] += info_results
         self.pipeline_result['status_results'] += status_results
         self.pipeline_result['date_results'] += date_results
@@ -457,20 +501,34 @@ class PipelineCoordinator:
         self.logger.info(
             "Starting parallel processing with ThreadPoolExecutor...")
         entity_data_res, info_data_res, date_data_res = None, None, None
-        with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
-            # Use ner_data.ner_results (the string with updated tags) and ner_data.parsed_tags
-            entity_future = executor.submit(
-                self.entity_processor.process_entities, ner_data.ner_results, ner_data.parsed_tags)
-            info_future = executor.submit(
-                self.info_processor.process_information, ner_data.ner_results, ner_data.parsed_tags)
-            date_future = executor.submit(
-                self.date_processor.process_dates, ehr, ner_data.ner_results, prev_ehr,
-                ner_data.parsed_tags, self.admission_date, self.discharge_date
-            )
+        # EXP-G ablation (c): when Date module is OFF, skip the date worker
+        # entirely and return an empty DateData. This isolates the contribution
+        # of date parsing / normalization to overall pipeline F1.
+        if self.disable_date:
+            self.logger.info("EXP-G ablation: Date module DISABLED; skipping DateProcessor")
+            with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+                entity_future = executor.submit(
+                    self.entity_processor.process_entities, ner_data.ner_results, ner_data.parsed_tags)
+                info_future = executor.submit(
+                    self.info_processor.process_information, ner_data.ner_results, ner_data.parsed_tags)
+                entity_data_res = entity_future.result()
+                info_data_res = info_future.result()
+            date_data_res = DateData(basic_results=None, date_results=[])
+        else:
+            with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
+                # Use ner_data.ner_results (the string with updated tags) and ner_data.parsed_tags
+                entity_future = executor.submit(
+                    self.entity_processor.process_entities, ner_data.ner_results, ner_data.parsed_tags)
+                info_future = executor.submit(
+                    self.info_processor.process_information, ner_data.ner_results, ner_data.parsed_tags)
+                date_future = executor.submit(
+                    self.date_processor.process_dates, ehr, ner_data.ner_results, prev_ehr,
+                    ner_data.parsed_tags, self.admission_date, self.discharge_date
+                )
 
-            entity_data_res = entity_future.result()
-            info_data_res = info_future.result()
-            date_data_res = date_future.result()
+                entity_data_res = entity_future.result()
+                info_data_res = info_future.result()
+                date_data_res = date_future.result()
 
         # Update PipelineCoordinator's date state from DateProcessor's results
         if date_data_res and date_data_res.basic_results:

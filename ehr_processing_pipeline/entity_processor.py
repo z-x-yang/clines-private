@@ -11,14 +11,18 @@ from .processing_utils import parse_result, safe_json_decode, process_llm_query
 
 
 class EntityProcessor:
-    def __init__(self, model, prompt_relate, prompt_clean, prompt_json_debug, retriever, deduplication_fn):
+    def __init__(self, model, prompt_relate, prompt_clean, prompt_json_debug, retriever, deduplication_fn,
+                 disable_sapbert=False, disable_step4_reconcile=False):
         self.logger = logging.getLogger(self.__class__.__name__)
         self.model = model  # LLMManager instance
         self.prompt_relate = prompt_relate
         self.prompt_clean = prompt_clean
         self.prompt_json_debug = prompt_json_debug  # Used by utility process_llm_query
-        self.retriever = retriever  # RetrieverCoordinator instance
+        self.retriever = retriever  # RetrieverCoordinator instance (may be None if SapBERT disabled)
         self.deduplication = deduplication_fn  # Function from PipelineCoordinator
+        # EXP-G ablation flags
+        self.disable_sapbert = bool(disable_sapbert)
+        self.disable_step4_reconcile = bool(disable_step4_reconcile)
 
     # Removed duplicated helper methods: parse_result, safe_json_decode, _process_llm_query
 
@@ -26,6 +30,29 @@ class EntityProcessor:
     def entity_linking(self, results, type='all'):
         if not results:
             return results
+
+        # EXP-G ablation (a): SapBERT OFF → skip retrieval, write placeholder
+        # CODE that keeps the mention text as the "normalized" value. This
+        # measures pipeline F1 without UMLS-backed normalization.
+        if self.disable_sapbert:
+            self.logger.info(
+                f"EXP-G ablation: SapBERT DISABLED for entity_linking(type={type}); writing placeholder codes")
+            for i, item in enumerate(results):
+                if type == 'all':
+                    mention = item.get('CLEAN') or ''
+                    fake_code = json.dumps({
+                        f"NORM_OFF||{mention}": [mention, "NA"]
+                    })
+                    item['CODE'] = fake_code
+                elif type == 'bodyloc':
+                    bl = item.get('body_location')
+                    if bl is not None:
+                        fake_code = json.dumps({
+                            f"NORM_OFF||{bl}": [bl, "NA"]
+                        })
+                        item['body_code'] = fake_code
+            return results
+
         clean_entities = []
         term_indices = []
         for i, item in enumerate(results):
@@ -87,9 +114,16 @@ class EntityProcessor:
                 parse_json=True,  # Expect JSON output
                 new_chat=True
             )
-            # Use the passed deduplication function
-            relate_results = self.deduplication(
-                relate_results, 'tag', parsed_ner_tags)
+            # EXP-G ablation (d): when Step 4 reconciliation is OFF, skip the
+            # tag-filtered deduplication so duplicate / unmatched-tag rows
+            # leak through into aggregation (intentional degradation).
+            if self.disable_step4_reconcile:
+                self.logger.info("EXP-G ablation: Step 4 reconcile DISABLED; skipping relate-results dedup")
+                from .processing_utils import safe_deduplication_input as _safe
+                relate_results = _safe(relate_results, self.logger)
+            else:
+                relate_results = self.deduplication(
+                    relate_results, 'tag', parsed_ner_tags)
             self.logger.debug(f"Relate results:\n{pprint.pformat(relate_results)}")
 
             clean_results = process_llm_query(
@@ -101,8 +135,12 @@ class EntityProcessor:
                 parse_json=True,  # Expect JSON output
                 new_chat=True
             )
-            clean_results = self.deduplication(
-                clean_results, 'TAG', parsed_ner_tags)
+            if self.disable_step4_reconcile:
+                from .processing_utils import safe_deduplication_input as _safe
+                clean_results = _safe(clean_results, self.logger)
+            else:
+                clean_results = self.deduplication(
+                    clean_results, 'TAG', parsed_ner_tags)
             self.logger.debug(
                 f"Clean results before linking:\n{pprint.pformat(clean_results)}")
 
