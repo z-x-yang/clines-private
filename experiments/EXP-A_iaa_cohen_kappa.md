@@ -6,7 +6,7 @@
 - **作战表 E#**: E1 (covers R1 M1 / R2 M2 / **R5 A2 hard requirement**)
 - **日期**: 2026-05-25
 - **Job ID**: local (no SLURM; pure-CPU stats)
-- **Commit hash**: `<COMMIT_HASH>` (40-char launch hash, backfilled by experiments-rules.md §8.1 step 4)
+- **Commit hash**: `2d1fdf237faf1d444b8d751e6b810a0f5c438406` (40-char launch hash, backfilled by experiments-rules.md §8.1 step 4)
 - **Branch**: `exp/EXP-A_iaa_cohen_kappa`
 - **Owner**: zongxin (sub-agent: Claude Code)
 - **Baseline of**: `i2b2` @ 8735bbb (RESPONSE_PLAN.md + EXPERIMENTS.md scaffold)
