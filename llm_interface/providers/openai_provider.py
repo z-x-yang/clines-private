@@ -9,8 +9,8 @@ logger = logging.getLogger(__name__)
 def wrap_openai_chat(model_name):
     n2n_dict = {
         "gpt4o": "gpt-4o-1120",
-        "gpt4omini": "gpt-4o-mini",
-        "o3mini": "o3-mini",
+        "gpt4omini": "gpt-4o-mini-0718",
+        "o3mini": "o3-mini-0131",
     }
 
     if model_name not in n2n_dict:
@@ -18,7 +18,7 @@ def wrap_openai_chat(model_name):
             f"Unsupported model name: {model_name}. Supported models are: {list(n2n_dict.keys())}")
 
     engine_name = n2n_dict[model_name]
-    api_version = "2025-04-01-preview" if model_name != "o3mini" else "2024-10-21"
+    api_version = "2025-04-01-preview" if model_name != "o3mini" else "2024-12-01-preview"
 
     def openai_chat(inputs_message, retry=True, max_retries=3, retry_delay=1):
         # Check environment variables

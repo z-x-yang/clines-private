@@ -27,7 +27,7 @@
 ## ⚠️ Reproducibility limitations
 
 - **`runs/<EXP-ID>/snapshot/` 写入未实现**。半年后复现强度仅靠：(1) `experiments/<EXP-ID>_*.md` 字段 6 的 inline config copy；(2) `exp/<EXP-ID>_<short>` git branch（push to remote）上的 commit。**没有 byte-for-byte 同 ckpt 复现保证**；rerun 同分布结果可达。建议未来在 inference entrypoint（`main.py` / `run_inference.sh`）加一段约 10 行 bash：`git rev-parse HEAD > runs/<EXP>/snapshot/git_info.txt` / `pip freeze > runs/<EXP>/snapshot/env.txt` / 落 resolved CLI args。**本轮 revision 暂不引入此基建**（不与 deadline 抢工时）。
-- **HMS Azure OpenAI key 截至 2026-05-13 仍全失效**（详见 memory `hms-api-status`）。所有 `BLOCKED-API` 状态的实验需等到拿到有效 key 后才能开跑。
+- ~~**HMS Azure OpenAI key 截至 2026-05-13 仍全失效**~~（已解除，见 2026-05-19 更新日志；详见 memory `hms-api-status`）。当前可用 deployment：`gpt-4o-1120` / `gpt-4o-mini-0718` / `gpt-4.1` 系列 / `o3-mini-0131` / `o4-mini-0416`。HMS proxy 要求**完整 deployment ID**，不接受 alias。
 
 ## 已有 Baseline（pre-revision，archive）
 
@@ -56,8 +56,8 @@ GPT-4o 案例集：`reports/gpt4o_case_studies.md`。
 | EXP-C | E3 | Document-level resample stability | P1 | PENDING | 0（同上） | TBD | experiments/EXP-C_stability.md |
 | EXP-D | E4 | Cost / latency / GPU-h / API \$ 全表 | P0 | PENDING | 0（slurm-\*.out + evaluation\_results\_0904 反推） | TBD | experiments/EXP-D_cost.md |
 | EXP-E | E5 | Hallucination 5-class FP taxonomy | P0 | PENDING | 0（从现有 prediction 拉 FP + 人工归类） | TBD | experiments/EXP-E_hallucination.md |
-| EXP-F | E6 | Baseline 补强：o3-mini single-prompt + GPT-4o CoT single-call | P0 | BLOCKED-API | **新跑**（小规模） | TBD | experiments/EXP-F_baseline_extra.md |
-| EXP-G | E7 | Ablation: SapBERT / SemChunk / Date module / Step 4 | P1 | MIXED | Date/Step4 off 可在现有产物上**模拟**；SemChunk / SapBERT 必须新跑（依赖 API） | TBD | experiments/EXP-G_ablation.md |
+| EXP-F | E6 | Baseline 补强：o3-mini single-prompt + GPT-4o CoT single-call | P0 | PENDING | **新跑**（小规模） | TBD | experiments/EXP-F_baseline_extra.md |
+| EXP-G | E7 | Ablation: SapBERT / SemChunk / Date module / Step 4 | P1 | PENDING | Date/Step4 off 可在现有产物上**模拟**；SemChunk / SapBERT 新跑（API 可用） | TBD | experiments/EXP-G_ablation.md |
 | EXP-H | E8 | Full-size DL baseline: BioClinicalBERT 或 GatorTron | P1 | BLOCKED-CODE | **新跑**（GPU；不依赖 HMS API） | TBD | experiments/EXP-H_dl_baseline.md |
 | — | E9 | RE 不评测，Supp 写明 | P1 | WRITING-ONLY | 0 | n/a | —（不立 EXP） |
 
@@ -84,3 +84,4 @@ GPT-4o 案例集：`reports/gpt4o_case_studies.md`。
 ## 更新日志
 
 - 2026-05-13：初版创建。锁定 Phase 风格 + 9 项实验编号 E1-E9 / EXP-A..EXP-H。E9 走方案 (b)（不评测，Supp 写明），不立 EXP 项。User 拍板"能不跑就不跑"策略（2026-05-13）。HMS API 暂不可用，BLOCKED-API 实验等 key 到位。
+- 2026-05-19：HMS API key 已拿到（user 从 SharePoint 取得，存放在 `OPENAIKEY` env var，不入 git）。Deployment probe 显示 `gpt-4o-1120` / `gpt-4o-mini-0718` / `gpt-4.1` 系列 / `o3-mini-0131` / `o4-mini-0416` 可用，alias（`gpt-4o` / `gpt-4o-mini` / `o3-mini`）全部 404。`openai_provider.py` 的 `n2n_dict` 同步修正（`gpt4omini→gpt-4o-mini-0718`、`o3mini→o3-mini-0131`），`o3mini` api_version 由 `2024-10-21` 升到 `2024-12-01-preview`（reasoning 推荐版本）。`run_inference.sh` 清除 hardcode 的失效 key / dev endpoint，改为 fail-fast 检查 `OPENAIKEY` env var 并默认 `OPENAIENDPOINT=https://azure-ai.hms.edu`。EXP-F 状态由 `BLOCKED-API` → `PENDING`；EXP-G 同步。
