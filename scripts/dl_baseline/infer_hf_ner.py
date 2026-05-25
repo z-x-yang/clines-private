@@ -161,63 +161,107 @@ def softmax_predict(model, tokenizer, batch_windows, device, id2label):
     return out
 
 
+def _normalize_label(raw: str):
+    """Return (kind, ent_class) where kind ∈ {'O', 'B', 'I', 'X'}.
+
+    Handles three schemes encountered in HF NER checkpoints:
+      1. BIO  : 'B-<class>' / 'I-<class>' / 'O'
+                e.g. samrawal/bert-base-uncased_clinical-ner: B-problem, I-test, O
+      2. IO   : '<class>' (no prefix); 'O' or 'None' for outside
+                e.g. longluu/Clinical-NER-MedMentions-GatorTronBase: emits
+                "['Phenomena', 'Biologic Function']" for entity tokens and
+                literal 'None' for outside.
+      3. mixed: any of {'O','None','none','NONE','outside','OUT'} treated as O.
+
+    For IO scheme we cannot distinguish B- from I- by string alone, so the
+    caller treats every transition into a non-O class as a new entity start
+    and same-class consecutive tokens as a continuation.
+    """
+    if raw is None:
+        return ("O", None)
+    s = str(raw).strip()
+    if s in ("O", "None", "none", "NONE", "outside", "OUT", ""):
+        return ("O", None)
+    if s.startswith("B-"):
+        return ("B", s[2:])
+    if s.startswith("I-"):
+        return ("I", s[2:])
+    # IO scheme: the label IS the entity class
+    return ("X", s)
+
+
 def decode_entities(windows_pred, original_text: str, threshold: float):
-    """Decode BIO tags into entities with absolute character offsets in
-    the original text. Across overlapping windows, we deduplicate by
-    (start_char, end_char, label).
+    """Decode BIO or IO tag sequences into entities with absolute character
+    offsets in the original text. Across overlapping windows, we deduplicate
+    by (start_char, end_char, label).
 
     Returns list of dicts: {text, label, char_start, char_end, confidence}.
+
+    Rules:
+      * O / None / outside → ends any open entity.
+      * B-<c>  → starts a new entity of class c (force a boundary even if
+                 previous token was I-<c>).
+      * I-<c>  → continues current entity if class matches, else starts a
+                 fresh entity of class c (lenient: "stray I-X").
+      * X-<c>  (IO scheme) → continues current entity if class matches, else
+                 starts a new entity. This is the only signal we have for IO.
+      * confidence_threshold is the min over per-token argmax probabilities
+                 within the entity. If 0, accept every non-O label.
     """
     seen = set()
     entities = []
 
     for offsets, labels, probs in windows_pred:
-        # walk through tokens; merge B-X (I-X)* into single entity
         i = 0
         while i < len(labels):
-            tok_label = labels[i]
-            s, e = offsets[i]
-            # special tokens have (0,0) offset
-            if s == 0 and e == 0:
+            s_off, e_off = offsets[i]
+            # special tokens (e.g. [CLS]/[SEP]/[PAD]) have offset (0,0)
+            if s_off == 0 and e_off == 0:
                 i += 1
                 continue
-            if tok_label == "O":
+
+            kind, ent_class = _normalize_label(labels[i])
+            if kind == "O":
                 i += 1
                 continue
-            # accept B-X start; also accept stray I-X start (some models do it)
-            if tok_label.startswith(("B-", "I-")):
-                ent_class = tok_label.split("-", 1)[1]
-                ent_start, ent_end = s, e
-                min_prob = probs[i]
-                j = i + 1
-                # consume continuation I-<same_class> tokens
-                while j < len(labels):
-                    nxt = labels[j]
-                    ns, ne = offsets[j]
-                    if ns == 0 and ne == 0:
-                        j += 1
-                        continue
-                    if nxt.startswith("I-") and nxt.split("-", 1)[1] == ent_class:
-                        ent_end = ne
-                        min_prob = min(min_prob, probs[j])
-                        j += 1
-                    else:
-                        break
-                if min_prob >= threshold:
-                    surface = original_text[ent_start:ent_end]
-                    key = (ent_start, ent_end, ent_class)
-                    if key not in seen:
-                        seen.add(key)
-                        entities.append({
-                            "text": surface,
-                            "label": ent_class,
-                            "char_start": ent_start,
-                            "char_end": ent_end,
-                            "confidence": float(min_prob),
-                        })
-                i = j
-            else:
-                i += 1
+
+            ent_start = s_off
+            ent_end = e_off
+            min_prob = probs[i]
+            j = i + 1
+            # Walk forward while we see continuation tokens of the same class.
+            while j < len(labels):
+                ns, ne = offsets[j]
+                if ns == 0 and ne == 0:
+                    j += 1
+                    continue
+                nkind, ncls = _normalize_label(labels[j])
+                # B-<same_c> = explicit new boundary, stop here
+                if nkind == "B" and ncls == ent_class:
+                    break
+                # B-<other>, O, or class switch → stop
+                if nkind == "O":
+                    break
+                if ncls != ent_class:
+                    break
+                # I-<same_c> or X-<same_c> → continue
+                ent_end = ne
+                min_prob = min(min_prob, probs[j])
+                j += 1
+
+            if min_prob >= threshold:
+                surface = original_text[ent_start:ent_end]
+                key = (ent_start, ent_end, ent_class)
+                if key not in seen:
+                    seen.add(key)
+                    entities.append({
+                        "text": surface,
+                        "label": ent_class,
+                        "char_start": ent_start,
+                        "char_end": ent_end,
+                        "confidence": float(min_prob),
+                    })
+            i = j
 
     # sort by start_char
     entities.sort(key=lambda x: (x["char_start"], x["char_end"]))

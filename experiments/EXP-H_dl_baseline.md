@@ -5,7 +5,11 @@
 - **EXP-ID**: EXP-H
 - **作战表 E#**: E8
 - **日期**: 2026-05-25
-- **Job ID**: 41439872 (gpu_quad, HOLD_ON_FAIL=1, --exclude=compute-g-17-168). 前一次 41439516 在 compute-g-17-168 上拿到 L40S GPU 但触发 `CUDA error: uncorrectable ECC error` 硬件故障（VRAM ECC 错误），scancel + 重提排除该节点。
+- **Job ID**: TBD (gpu_quad, HOLD_ON_FAIL=1, --exclude=compute-g-17-168)
+- **Launch attempts (incident log)**:
+  1. 41439516 (2026-05-25 18:45) → compute-g-17-168 (L40S) → `CUDA error: uncorrectable ECC error` 硬件故障，scancel + 排除该节点。
+  2. 41439872 (2026-05-25 18:48) → compute-g-17-145 → bertbase_clin 4CE 跑通约 1 min 后被 scancel，原因：GatorTron-base 用 IO scheme + 'None' 非实体标签（不是标准 BIO + 'O'），原 decoder 把 'None' 当作实体起点会生成虚假实体。代码 bug，本身与硬件无关。Fix: `_normalize_label()` 显式区分 BIO/IO scheme + 把 'None'/'O'/'outside' 等都视作非实体；CPU 上 BCH_1 单 note smoke 验证两个模型都跑通（bertbase P=0.99/R=0.86/F1=0.92, gatortron P=0.99/R=0.76/F1=0.86）。
+  3. **TBD** — 修复 decoder 后重新提交。
 - **Commit hash**: `5668d67800da538d20c9b7b4734c05c2ed2f8344` (40 字符, launch 时刻; 回填于 launch commit 之后)
 - **Branch**: `exp/EXP-H_dl_baseline`
 - **Owner**: zongxin (sub-agent)
