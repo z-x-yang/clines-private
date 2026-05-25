@@ -27,6 +27,17 @@
 
 set -euo pipefail
 
+# Resolve to the directory from which sbatch was submitted (SLURM sets
+# SLURM_SUBMIT_DIR). Fall back to script-relative when running locally.
+if [[ -n "${SLURM_SUBMIT_DIR:-}" ]]; then
+    cd "${SLURM_SUBMIT_DIR}"
+fi
+# Sanity check: we should be at project root with data/ + jobs/ both visible.
+if [[ ! -d data || ! -d jobs ]]; then
+    echo "ERROR: EXP-G_run.sh must run from project root (need data/ + jobs/). cwd=$(pwd)" >&2
+    exit 4
+fi
+
 # HOLD_ON_FAIL hook (per CLAUDE.md §7) — only installs trap if env var set.
 source scripts/slurm_failure_hold.sh
 
