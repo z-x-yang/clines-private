@@ -18,7 +18,7 @@
 - **覆盖 reviewer**：R1 M5 / R1 M12 (per-step invocation table) / R4 C4 / R5 4.3 (deployment & quantization)
 - **日期**：2026-05-25
 - **Job ID**：本地 PID（脚本运行，无 SLURM）
-- **Commit hash**：`<COMMIT_HASH>`（launch 完成后回填）
+- **Commit hash**：`ade96d459cee54670bb402720825153c3941cdfa`（launch 完成后回填）
 - **Branch**：`exp/EXP-D_cost_table`
 - **Owner**：zongxin
 
