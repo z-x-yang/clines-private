@@ -6,7 +6,7 @@
 - **作战表 E#**: E8
 - **日期**: 2026-05-25
 - **Job ID**: TBD (sbatch job id)
-- **Commit hash**: `<COMMIT_HASH>` (40 字符, launch 时刻; 回填于 launch commit 之后)
+- **Commit hash**: `5668d67800da538d20c9b7b4734c05c2ed2f8344` (40 字符, launch 时刻; 回填于 launch commit 之后)
 - **Branch**: `exp/EXP-H_dl_baseline`
 - **Owner**: zongxin (sub-agent)
 
