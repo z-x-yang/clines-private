@@ -51,7 +51,7 @@ GPT-4o 案例集：`reports/gpt4o_case_studies.md`。
 
 | EXP-ID | E# | 名称 | 优先级 | 状态 | 新跑量 | 一句话结论 | 详情 |
 |---|---|---|---|---|---|---|---|
-| EXP-A | E1 | IAA Cohen's κ + F1-based agreement | P0 | BLOCKED-DATA | 0（等 Mo cross-annotation, ~05-21） | TBD | experiments/EXP-A_iaa.md |
+| EXP-A | E1 | IAA Cohen's κ + F1-based agreement | P0 | **PASS** | 0（纯统计计算 on cross-annotation） | κ_entity=0.29(4CE)/0.46(CORAL); F1_entity=0.80/0.81; κ_assertion=0.69/0.85；review-style caveat 进 Methods | [experiments/EXP-A_iaa_cohen_kappa.md](experiments/EXP-A_iaa_cohen_kappa.md) |
 | EXP-B | E2 | Bootstrap 95% CI + permutation test（Figure 3A-D） | P0 | PENDING | 0（复用 with_positions + reviewed_updated2，纯统计） | TBD | experiments/EXP-B_bootstrap_ci.md |
 | EXP-C | E3 | Document-level resample stability | P1 | PENDING | 0（同上） | TBD | experiments/EXP-C_stability.md |
 | EXP-D | E4 | Cost / latency / GPU-h / API \$ 全表 | P0 | PENDING | 0（slurm-\*.out + evaluation\_results\_0904 反推） | TBD | experiments/EXP-D_cost.md |
@@ -85,3 +85,4 @@ GPT-4o 案例集：`reports/gpt4o_case_studies.md`。
 
 - 2026-05-13：初版创建。锁定 Phase 风格 + 9 项实验编号 E1-E9 / EXP-A..EXP-H。E9 走方案 (b)（不评测，Supp 写明），不立 EXP 项。User 拍板"能不跑就不跑"策略（2026-05-13）。HMS API 暂不可用，BLOCKED-API 实验等 key 到位。
 - 2026-05-19：HMS API key 已拿到（user 从 SharePoint 取得，存放在 `OPENAIKEY` env var，不入 git）。Deployment probe 显示 `gpt-4o-1120` / `gpt-4o-mini-0718` / `gpt-4.1` 系列 / `o3-mini-0131` / `o4-mini-0416` 可用，alias（`gpt-4o` / `gpt-4o-mini` / `o3-mini`）全部 404。`openai_provider.py` 的 `n2n_dict` 同步修正（`gpt4omini→gpt-4o-mini-0718`、`o3mini→o3-mini-0131`），`o3mini` api_version 由 `2024-10-21` 升到 `2024-12-01-preview`（reasoning 推荐版本）。`run_inference.sh` 清除 hardcode 的失效 key / dev endpoint，改为 fail-fast 检查 `OPENAIKEY` env var 并默认 `OPENAIENDPOINT=https://azure-ai.hms.edu`。EXP-F 状态由 `BLOCKED-API` → `PENDING`；EXP-G 同步。
+- 2026-05-25：**EXP-A 跑完**（PASS）。9 个 paired notes（4CE n=5 / CORAL n=4），2 unpaired（BCH_7 / COL_4）。关键数字：κ_entity=0.29(4CE)/0.46(CORAL)/0.40(overall)；F1_entity=0.80/0.81/0.81；κ_assertion=0.69/0.85/0.79；value_agr=0.70；unit_agr=0.96。Code 在 `scripts/iaa/`；artifacts 在 `runs/EXP-A/`。Methods 必须写明 review-style cross-annotation（不是 blind double）；κ_type=0.95-1.00 实际上是 "annotators 不改 AI-suggested type" 的 artifact，建议改报 raw agreement rate 或加 caveat。详见 [experiments/EXP-A_iaa_cohen_kappa.md](experiments/EXP-A_iaa_cohen_kappa.md) §10。

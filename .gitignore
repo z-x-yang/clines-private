@@ -38,6 +38,14 @@ umls_dictionary.txt
 .DS_Store
 */.DS_Store
 
+# Experiment artifacts (CLAUDE.md §4 / experiments-rules.md §5):
+# runs/<EXP-ID>/ holds per-experiment ckpt / eval / tb / snapshot;
+# all PHI-bearing intermediates (CSV rows containing mention/context) stay
+# here and never enter git. Numeric metrics may be force-added (`git add -f`)
+# on a case-by-case basis if they contain no PHI.
+runs/
+logs/slurm/
+
 # papers/ is mostly large binaries (LaTeX build artifacts, PDFs, docx, zipped
 # annotation data with potential PHI). Only allow specific text artifacts in
 # the BMJ Revision response folder to enter git.
