@@ -56,6 +56,15 @@ echo "  CONDA_PYTHON: $CONDA_PYTHON"
 echo "  HOLD_ON_FAIL: ${HOLD_ON_FAIL:-0}"
 echo "=========================="
 
+# Sanity-check PROJECT_ROOT looks right BEFORE cd'ing. If the env var
+# points somewhere wrong (e.g. user typo, stale path), failing here is
+# better than running with cwd=$HOME and writing artifacts in random
+# places. Same hardening pattern as EXP-G (jobs/EXP-G_run.sh).
+if [[ ! -d "$PROJECT_ROOT/data" || ! -d "$PROJECT_ROOT/jobs" || ! -f "$PROJECT_ROOT/scripts/baselines/single_call_baseline.py" ]]; then
+    echo "ERROR: PROJECT_ROOT=$PROJECT_ROOT does not look like the CLINES project root" >&2
+    echo "  (missing data/, jobs/, or scripts/baselines/single_call_baseline.py)" >&2
+    exit 2
+fi
 cd "$PROJECT_ROOT"
 
 # Run. `eval` to expand DATASETS as separate args (it's intentionally one
