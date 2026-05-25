@@ -5,7 +5,7 @@
 - **EXP-ID**: EXP-H
 - **作战表 E#**: E8
 - **日期**: 2026-05-25
-- **Job ID**: 41439516 (gpu_quad, HOLD_ON_FAIL=1)
+- **Job ID**: 41439872 (gpu_quad, HOLD_ON_FAIL=1, --exclude=compute-g-17-168). 前一次 41439516 在 compute-g-17-168 上拿到 L40S GPU 但触发 `CUDA error: uncorrectable ECC error` 硬件故障（VRAM ECC 错误），scancel + 重提排除该节点。
 - **Commit hash**: `5668d67800da538d20c9b7b4734c05c2ed2f8344` (40 字符, launch 时刻; 回填于 launch commit 之后)
 - **Branch**: `exp/EXP-H_dl_baseline`
 - **Owner**: zongxin (sub-agent)
