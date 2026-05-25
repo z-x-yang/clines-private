@@ -1,0 +1,48 @@
+{
+  "model_tag": "gpt4o",
+  "iou_threshold": 0.5,
+  "total_pred_entities": 13454,
+  "total_fp": 7171,
+  "tp_per_dataset": {
+    "4CE": 2725,
+    "coral_pdac": 1880,
+    "coral_breastca": 1678
+  },
+  "fp_counts_per_dataset": {
+    "4CE": {
+      "wrong_value_or_date": 1367,
+      "wrong_code": 163,
+      "span_boundary_error": 262,
+      "fabricated_entity": 882,
+      "wrong_assertion": 209
+    },
+    "coral_pdac": {
+      "span_boundary_error": 287,
+      "wrong_value_or_date": 1113,
+      "wrong_code": 221,
+      "wrong_assertion": 228,
+      "fabricated_entity": 535
+    },
+    "coral_breastca": {
+      "span_boundary_error": 262,
+      "wrong_code": 181,
+      "wrong_value_or_date": 713,
+      "fabricated_entity": 548,
+      "wrong_assertion": 200
+    }
+  },
+  "fp_counts_total": {
+    "wrong_value_or_date": 3193,
+    "wrong_code": 565,
+    "span_boundary_error": 811,
+    "fabricated_entity": 1965,
+    "wrong_assertion": 637
+  },
+  "fp_percent_total": {
+    "wrong_value_or_date": 44.53,
+    "wrong_code": 7.88,
+    "span_boundary_error": 11.31,
+    "fabricated_entity": 27.4,
+    "wrong_assertion": 8.88
+  }
+}

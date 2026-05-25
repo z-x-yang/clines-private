@@ -55,7 +55,7 @@ GPT-4o 案例集：`reports/gpt4o_case_studies.md`。
 | EXP-B | E2 | Bootstrap 95% CI + permutation test（Figure 3A-D） | P0 | PENDING | 0（复用 with_positions + reviewed_updated2，纯统计） | TBD | experiments/EXP-B_bootstrap_ci.md |
 | EXP-C | E3 | Document-level resample stability | P1 | PENDING | 0（同上） | TBD | experiments/EXP-C_stability.md |
 | EXP-D | E4 | Cost / latency / GPU-h / API \$ 全表 | P0 | PENDING | 0（slurm-\*.out + evaluation\_results\_0904 反推） | TBD | experiments/EXP-D_cost.md |
-| EXP-E | E5 | Hallucination 5-class FP taxonomy | P0 | PENDING | 0（从现有 prediction 拉 FP + 人工归类） | TBD | experiments/EXP-E_hallucination.md |
+| EXP-E | E5 | Hallucination 5-class FP taxonomy | P0 | INCONCLUSIVE-pending-judge | ~500 GPT-4.1 calls TBD（需 main session 用 OPENAIKEY 跑 step 2-4） | Rule-based: 7,171 FP across 49 paired notes; fabricated 27% / boundary 11% / wrong_code 8% / wrong_assertion 9% / wrong_value_or_date 45%（judge 待跑） | experiments/EXP-E_hallucination_taxonomy.md |
 | EXP-F | E6 | Baseline 补强：o3-mini single-prompt + GPT-4o CoT single-call | P0 | PENDING | **新跑**（小规模） | TBD | experiments/EXP-F_baseline_extra.md |
 | EXP-G | E7 | Ablation: SapBERT / SemChunk / Date module / Step 4 | P1 | PENDING | Date/Step4 off 可在现有产物上**模拟**；SemChunk / SapBERT 新跑（API 可用） | TBD | experiments/EXP-G_ablation.md |
 | EXP-H | E8 | Full-size DL baseline: BioClinicalBERT 或 GatorTron | P1 | BLOCKED-CODE | **新跑**（GPU；不依赖 HMS API） | TBD | experiments/EXP-H_dl_baseline.md |
@@ -66,6 +66,7 @@ GPT-4o 案例集：`reports/gpt4o_case_studies.md`。
 - `PENDING` — 数据/工具/环境齐，可以立即开跑
 - `RUNNING` — 正在跑
 - `PASS` / `FAIL` / `INCONCLUSIVE` — 跑完，结论已回填
+- `INCONCLUSIVE-pending-judge` — 部分跑完（rule-based 已落盘），LLM-as-judge step 留给 main session 跑（需要 `OPENAIKEY`）
 - `BLOCKED-API` — 等 HMS API key 恢复
 - `BLOCKED-DATA` — 等外部数据（Mo 的 cross-annotation）
 - `BLOCKED-CODE` — 等代码/环境/工具就绪（如 EXP-H 需先核实 ClinicalNER 项目是否迁到 O2）
@@ -85,3 +86,4 @@ GPT-4o 案例集：`reports/gpt4o_case_studies.md`。
 
 - 2026-05-13：初版创建。锁定 Phase 风格 + 9 项实验编号 E1-E9 / EXP-A..EXP-H。E9 走方案 (b)（不评测，Supp 写明），不立 EXP 项。User 拍板"能不跑就不跑"策略（2026-05-13）。HMS API 暂不可用，BLOCKED-API 实验等 key 到位。
 - 2026-05-19：HMS API key 已拿到（user 从 SharePoint 取得，存放在 `OPENAIKEY` env var，不入 git）。Deployment probe 显示 `gpt-4o-1120` / `gpt-4o-mini-0718` / `gpt-4.1` 系列 / `o3-mini-0131` / `o4-mini-0416` 可用，alias（`gpt-4o` / `gpt-4o-mini` / `o3-mini`）全部 404。`openai_provider.py` 的 `n2n_dict` 同步修正（`gpt4omini→gpt-4o-mini-0718`、`o3mini→o3-mini-0131`），`o3mini` api_version 由 `2024-10-21` 升到 `2024-12-01-preview`（reasoning 推荐版本）。`run_inference.sh` 清除 hardcode 的失效 key / dev endpoint，改为 fail-fast 检查 `OPENAIKEY` env var 并默认 `OPENAIENDPOINT=https://azure-ai.hms.edu`。EXP-F 状态由 `BLOCKED-API` → `PENDING`；EXP-G 同步。
+- 2026-05-25 (EXP-E sub-agent)：rule-based FP 5-class taxonomy 跑完（49 paired notes / 7,171 FP），`experiments/EXP-E_hallucination_taxonomy.md` 字段 1-7 + 字段 8-12 已填（rule-based 部分）。`scripts/hallucination/{extract_fp,judge_fp,sample_judge_validation,case_study_extract}.py` + `README.md` 落盘；`llm_interface/providers/openai_provider.py` 加入 `gpt4.1 → gpt-4.1`；`.gitignore` 加 `runs/EXP-*/` 允许特定 .json / .md 提交。GPT-4.1 LLM-as-judge step 留给 main session 跑（sub-agent shell 无 `OPENAIKEY`）。状态：`INCONCLUSIVE-pending-judge`。增加状态枚举 `INCONCLUSIVE-pending-judge`。

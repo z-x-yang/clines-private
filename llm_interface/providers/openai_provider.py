@@ -11,6 +11,7 @@ def wrap_openai_chat(model_name):
         "gpt4o": "gpt-4o-1120",
         "gpt4omini": "gpt-4o-mini-0718",
         "o3mini": "o3-mini-0131",
+        "gpt4.1": "gpt-4.1",
     }
 
     if model_name not in n2n_dict:

@@ -51,3 +51,13 @@ papers/BMJ_AI_Submission/Major Revision/*
 !papers/BMJ_AI_Submission/Major Revision/cross-annotation/
 papers/BMJ_AI_Submission/Major Revision/cross-annotation/*
 !papers/BMJ_AI_Submission/Major Revision/cross-annotation/*.txt
+
+# runs/ contains per-experiment artifacts. PHI-bearing CSVs are blocked by
+# the global *.csv rule above. Allow numerical summary JSON files and the
+# (manually-redacted) case study .md files into git for reproducibility.
+runs/*
+!runs/EXP-*/
+runs/EXP-*/*
+!runs/EXP-*/category_counts.json
+!runs/EXP-*/judge_category_counts.json
+!runs/EXP-*/case_study_examples.md
