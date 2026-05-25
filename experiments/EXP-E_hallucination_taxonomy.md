@@ -12,7 +12,7 @@ R4 C3 / R5 S2.
 - **作战表 E#**: E5
 - **日期**: 2026-05-25
 - **Job ID**: hostname=$(hostname) — no SLURM (local CPU + Azure API calls)
-- **Commit hash**: `<COMMIT_HASH>` (filled at launch commit)
+- **Commit hash**: `19ff88e67705daba88e5a564a2235fc0716358b0` (filled at launch commit)
 - **Branch**: `exp/EXP-E_hallucination_taxonomy`
 - **Owner**: zongxin (sub-agent dispatched)
 
