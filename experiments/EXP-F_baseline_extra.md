@@ -3,8 +3,8 @@
 ## 1. 元数据
 
 - **日期**: 2026-05-25
-- **SLURM Job IDs**: 待 sbatch 时填入(每个 (model, dataset) 一个 job)
-- **Launch commit hash**: `<COMMIT_HASH>` (实验跑前在 launch commit 处取 `git rev-parse HEAD`)
+- **SLURM Job IDs**: 待 sbatch 时填入(每个 (model, dataset) 一个 job;由 launcher 落到 `runs/EXP-F/job_dispatch.log`)
+- **Launch commit hash**: `80ecf305273f7aa9336749dda7e591856cdb7cfa` (sub-agent infrastructure commit;sbatch 跑的代码就是这个 hash 的 worktree state,branch HEAD 之后只会加元数据 commit / 回填字段 8-13)
 - **Branch**: `exp/EXP-F_baseline_extra`
 - **Base branch**: `i2b2` @ commit `8735bbb` (`docs(revision): add response plan + revision artifacts for BMJ R1`)
 
