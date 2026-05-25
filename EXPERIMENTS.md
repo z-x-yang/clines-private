@@ -54,7 +54,7 @@ GPT-4o 案例集：`reports/gpt4o_case_studies.md`。
 | EXP-A | E1 | IAA Cohen's κ + F1-based agreement | P0 | BLOCKED-DATA | 0（等 Mo cross-annotation, ~05-21） | TBD | experiments/EXP-A_iaa.md |
 | EXP-B | E2 | Bootstrap 95% CI + permutation test（Figure 3A-D） | P0 | PENDING | 0（复用 with_positions + reviewed_updated2，纯统计） | TBD | experiments/EXP-B_bootstrap_ci.md |
 | EXP-C | E3 | Document-level resample stability | P1 | PENDING | 0（同上） | TBD | experiments/EXP-C_stability.md |
-| EXP-D | E4 | Cost / latency / GPU-h / API \$ 全表 | P0 | PENDING | 0（slurm-\*.out + evaluation\_results\_0904 反推） | TBD | experiments/EXP-D_cost.md |
+| EXP-D | E4 | Cost / latency / GPU-h / API \$ 全表 | P0 | PASS | 0（4 份 slurm-\*.out 反推 + Llama-FP8/DeepSeek-32B fact-check） | o3-mini 全 sweep $76.70 / 89 notes ($0.86/note); Llama-405B-FP8 30.7 GPU-h on 8×H100; entity+info stages 占成本 ~60%（date 仅 ~26%，gated） | [experiments/EXP-D_cost_table.md](experiments/EXP-D_cost_table.md) |
 | EXP-E | E5 | Hallucination 5-class FP taxonomy | P0 | PENDING | 0（从现有 prediction 拉 FP + 人工归类） | TBD | experiments/EXP-E_hallucination.md |
 | EXP-F | E6 | Baseline 补强：o3-mini single-prompt + GPT-4o CoT single-call | P0 | PENDING | **新跑**（小规模） | TBD | experiments/EXP-F_baseline_extra.md |
 | EXP-G | E7 | Ablation: SapBERT / SemChunk / Date module / Step 4 | P1 | PENDING | Date/Step4 off 可在现有产物上**模拟**；SemChunk / SapBERT 新跑（API 可用） | TBD | experiments/EXP-G_ablation.md |

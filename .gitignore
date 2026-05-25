@@ -38,6 +38,16 @@ umls_dictionary.txt
 .DS_Store
 */.DS_Store
 
+# runs/ holds per-EXP artifacts (ckpt, tb, raw outputs) — not in git.
+# Selected aggregated metric / methodology files inside runs/<EXP-ID>/ are
+# allow-listed below so the .md reproducibility contract has the small CSV /
+# md artefacts it points at.
+runs/*
+!runs/EXP-D/
+runs/EXP-D/*
+!runs/EXP-D/*.csv
+!runs/EXP-D/*.md
+
 # papers/ is mostly large binaries (LaTeX build artifacts, PDFs, docx, zipped
 # annotation data with potential PHI). Only allow specific text artifacts in
 # the BMJ Revision response folder to enter git.
