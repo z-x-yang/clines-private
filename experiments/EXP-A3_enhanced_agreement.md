@@ -6,7 +6,7 @@
 - **作战表 E#**: E1 (second-opinion methodology layer on top of EXP-A2; covers R5 A2 "more honest agreement methodology" request)
 - **日期**: 2026-05-26
 - **Job ID**: local (no SLURM; pure-CPU stats; runtime ~5 s)
-- **Commit hash**: `<COMMIT_HASH>` (40-char launch hash, backfilled per experiments-rules.md §8.1 step 4)
+- **Commit hash**: `3505599fe33883b119fc2de12c19aed77284d787` (40-char launch hash, backfilled per experiments-rules.md §8.1 step 4)
 - **Branch**: `exp/EXP-A3_enhanced_agreement`
 - **Owner**: zongxin (sub-agent: Claude Code as L3 judge — explicitly NOT GPT-4.1, to avoid self-audit bias)
 - **Baseline of**: `exp/EXP-A2_iaa_improved` @ `33dcb197a8b3483db82d5108c0394f4543ad8bf0`
