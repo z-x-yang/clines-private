@@ -309,20 +309,18 @@ class PipelineCoordinator:
                     tmp['end_date_inferred'] = date_item['inferred'][1]
 
                 aggregated_result.append(tmp)
-            except IndexError as e:
-                self.logger.error(
-                    f"Index error during result aggregation for key {key}, item {i}: {e}", exc_info=True)
-                # Append a partial record or skip, depending on desired error handling
-                # For now, appending what we have, which might be just the initial tmp fields
-                aggregated_result.append(tmp)  # tmp might be partially filled
-            except json.JSONDecodeError as e:
-                self.logger.error(
-                    f"JSON decode error for key {key}, item {i}: {e} - Data: {clean_item.get('CODE', '') if 'clean_item' in locals() else 'N/A'}", exc_info=True)
-                aggregated_result.append(tmp)  # Append partial data
             except Exception as e:
+                # Fail-fast (§2): this loop processes internal pipeline data, so
+                # any error is an invariant violation, not a recoverable input.
+                # The old handlers appended a partial `tmp` here — that silently
+                # dropped fields (it's how the missing-CODE KeyError masked lost
+                # assertion/value/date for unlinkable entities). The caller wraps
+                # result_aggregation per-note, so re-raising fails one note
+                # visibly (no output + error in its report) and continues the
+                # run, instead of emitting a degraded record.
                 self.logger.error(
-                    f"Unexpected error during result aggregation for key {key}, item {i}: {e}", exc_info=True)
-                aggregated_result.append(tmp)  # Append partial data
+                    f"Result aggregation failed for key {key}, item {i}: {e}", exc_info=True)
+                raise
 
         self.output_schema(aggregated_result, key)
 
