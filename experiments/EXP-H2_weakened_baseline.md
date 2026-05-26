@@ -6,7 +6,7 @@
 - **作战表 E#**: E8 (same as EXP-H, this is a follow-up calibration run)
 - **日期**: 2026-05-26
 - **Job ID**: TBD (will be filled after sbatch)
-- **Commit hash**: `<LAUNCH_HASH>` (40 chars, launch 时刻; backfilled after launch commit)
+- **Commit hash**: `19165c98dac23835a23a5b727fbe205b14ae948a` (40 chars, launch 时刻)
 - **Branch**: `exp/EXP-H2_weakened_baseline`
 - **Owner**: zongxin (EXP-H2 sub-agent)
 
