@@ -186,51 +186,58 @@ EXP-F baseline eval 的列是 `mention / code / assertion_status / value / unit`
 (**无 date**)。两边都有的可比列 = **code / assertion / value / unit**。mention 只在
 baseline 侧、date 只在主结果侧,不参与 ΔF1。
 
-**⚠ 主结果参照系待你确认**: `outputs/evaluation_results_0904/` 下有 **3 个
-gpt4_eval 时间戳,数值显著分歧**,不是同 config 的重跑:
+**主结果参照系已锁定 = `gpt4_eval_20250904_160641`**(2026-05-26 由 paper Figure 3
+反推确认)。证据链:
+- paper **Figure 3**(panels A-D = code / assertion / begin_date / value)是主结果图。
+  revision 的绘图代码 `scripts/bootstrap/plot_figure3.py` 读
+  `runs/EXP-BC/metrics_with_ci.json`,其 point estimate 与 **160641 逐项精确吻合**
+  (4CE code F1 = 0.87366…)。
+- 三个 gpt4_eval 时间戳分歧的根因是**匹配逻辑不同**,不是重跑噪声:160641 用
+  `eval_predictions.py` 的 **position-overlap matching**(与本 EXP-F baseline eval
+  **完全同款**),150537 是更老/更严的匹配(4CE value gold 仅 88 entity vs 160641 的
+  945)。**只有 160641 与 baseline 在同一个 gold 匹配域上** → 唯一 apples-to-apples 的
+  参照。用 150537 比会是"严匹配主结果 vs 宽匹配 baseline",不可比。
+- 同域校验:4CE value gold = TP+FN,CLINES(160641)=657+288=945,o3mini baseline=
+  468+475=943,gpt4o baseline≈同量级 → 同一 gold 集,确认可比。
 
-| timestamp | 4CE code F1 | coral_pdac code F1 | 4CE code TP | 备注 |
-|---|---|---|---|---|
-| 150537 | 0.7591 | 0.7122 | 849 | 最低,本节用作**保守下界** |
-| 154356 | 0.8966 | 0.8467 | 1118 | 高 |
-| 160641 | 0.8737 | 0.8482 | 4360 | 高,但 TP 量级差 4×(gold 匹配域不同?) |
+**残留 caveat(低风险)**: agent 未能 100% 确认 **2025 原始投稿** 的 figure3.pdf 是否
+也用 160641(原图早于 revision 的 bootstrap 重绘)。但 rebuttal 随 revision 一起出,
+revision 的 Figure 3 = 160641,故内部一致性要求用 160641。若你手上原始投稿图源用了别的,
+告诉我即可换。
 
-我**不擅自认定**哪个是 paper 的 canonical 主结果(选错会误报架构优势量级)。下表用
-**最保守的 150537** 做对比 —— 即使对最弱的主结果候选,baseline 也明显落后;换成
-154356/160641 则差距更大。**最终 rebuttal 里报的 ΔF1 数值取决于你确认用哪个时间戳。**
+**ΔF1 = CLINES_main(160641) − single-call baseline**(可比列;CLINES **每一列都赢**):
 
-**ΔF1 = CLINES_main(150537) − single-call baseline**(可比列):
-
-| Dataset | Col | CLINES(150537) | o3-mini sp | Δ vs o3mini | gpt-4o cot | Δ vs gpt4o |
+| Dataset | Col | CLINES(160641) | o3-mini sp | Δ vs o3mini | gpt-4o cot | Δ vs gpt4o |
 |---|---|---|---|---|---|---|
-| 4CE | **code** | 0.7591 | 0.5005 | **+0.259** | 0.3976 | **+0.362** |
-| 4CE | assertion | 0.8282 | 0.6498 | +0.178 | 0.5179 | +0.310 |
-| 4CE | value | 0.6032 | 0.6587 | −0.056 | 0.6760 | −0.073 |
-| 4CE | unit | 0.6338 | 0.4419 | +0.192 | 0.6082 | +0.026 |
-| CORAL-P | **code** | 0.7122 | 0.4311 | **+0.281** | 0.3407 | **+0.372** |
-| CORAL-P | assertion | 0.8202 | 0.6441 | +0.176 | 0.5338 | +0.286 |
-| CORAL-P | value | 0.8349 | 0.7496 | +0.085 | 0.7813 | +0.054 |
-| CORAL-P | unit | 0.7972 | 0.5562 | +0.241 | 0.7285 | +0.069 |
-| CORAL-B | **code** | 0.6513 | 0.3633 | **+0.288** | 0.2745 | **+0.377** |
-| CORAL-B | assertion | 0.7470 | 0.6044 | +0.143 | 0.4502 | +0.297 |
-| CORAL-B | value | 0.6930 | 0.6700 | +0.023 | 0.5730 | +0.120 |
-| CORAL-B | unit | 0.7448 | 0.6462 | +0.099 | 0.5836 | +0.161 |
+| 4CE | **code** | 0.8737 | 0.5005 | **+0.373** | 0.3976 | **+0.476** |
+| 4CE | assertion | 0.8845 | 0.6498 | +0.235 | 0.5179 | +0.367 |
+| 4CE | value | 0.8146 | 0.6587 | +0.156 | 0.6760 | +0.139 |
+| 4CE | unit | 0.7708 | 0.4419 | +0.329 | 0.6082 | +0.163 |
+| CORAL-P | **code** | 0.8482 | 0.4311 | **+0.417** | 0.3407 | **+0.508** |
+| CORAL-P | assertion | 0.8732 | 0.6441 | +0.229 | 0.5338 | +0.339 |
+| CORAL-P | value | 0.9049 | 0.7496 | +0.155 | 0.7813 | +0.124 |
+| CORAL-P | unit | 0.8949 | 0.5562 | +0.339 | 0.7285 | +0.166 |
+| CORAL-B | **code** | 0.8139 | 0.3633 | **+0.451** | 0.2745 | **+0.539** |
+| CORAL-B | assertion | 0.8399 | 0.6044 | +0.236 | 0.4502 | +0.390 |
+| CORAL-B | value | 0.8006 | 0.6700 | +0.131 | 0.5730 | +0.228 |
+| CORAL-B | unit | 0.7525 | 0.6462 | +0.106 | 0.5836 | +0.169 |
 
 ## 10. 分析
 
-**核心发现:架构优势集中在 code(UMLS linking),不在 value/unit。** 这恰好是回应
-R5 A1 最有力的形态 —— CLINES 的 4-step + SapBERT retrieval 的增益落在**依赖实体链接的
-指标**上,而不是"任何 LLM 单 prompt 都能做"的字段。
+**核心发现(对锁定的 canonical 160641):CLINES 4-step 在每一个可比列都赢,code 列差距最大。**
+这正面回应 R5 A1 —— 架构增益最强处恰是**依赖实体链接的 code**,但即便 value/unit 也全胜。
 
-1. **code F1 是分水岭**: 对每个数据集,CLINES 主结果(即便用最保守的 150537)都比
-   两个 baseline 高 **+0.26 ~ +0.38**。换 154356/160641 差距扩大到 +0.35~+0.50。
-   single-prompt 让 LLM"自己报 CUI"必然弱 —— 它没有 SapBERT 的 dense retrieval over
-   UMLS,只能凭参数化记忆猜 code,precision 尚可但 recall 崩(o3mini code recall
-   0.31~0.42,gpt4o 0.20~0.29 vs CLINES 0.67~0.77)。**这是架构论点的硬证据。**
+1. **code F1 是分水岭(最大 gap)**: 对每个数据集,CLINES(160641)比两个 baseline 高
+   **+0.37 ~ +0.54**(o3mini +0.37/+0.42/+0.45;gpt4o +0.48/+0.51/+0.54)。single-prompt
+   让 LLM"自己报 CUI"必然弱 —— 它没有 SapBERT 的 dense retrieval over UMLS,只能凭
+   参数化记忆猜 code,precision 尚可但 recall 崩(o3mini code recall 0.31~0.42,gpt4o
+   0.20~0.29 vs CLINES 0.77~0.83)。**这是架构论点最硬的证据。**
 
-2. **value/unit 差距小甚至反超**: 4CE value 上两个 baseline 都**略高于** CLINES
-   主结果(o3mini +0.056, gpt4o +0.073)。说明单 prompt 抽数值/单位本就够用 ——
-   架构在这里不带来增益,诚实写进 Discussion 反而增强可信度(不是 oversell 全面碾压)。
+2. **value/unit 也一致赢(对 160641)**: value Δ +0.12~+0.16,unit Δ +0.11~+0.34。
+   注意:这与早期对 150537 的对比结论(当时 4CE value baseline 略反超)**相反** ——
+   根因是 150537 用更严的旧匹配、value gold 仅 88 entity,不可比;锁定同域 canonical
+   160641(value gold 945)后,架构在数值/单位抽取上同样占优。**结论:不存在"架构在
+   value/unit 无增益"的诚实边界**,这是早期参照系错误造成的伪 nuance,已纠正。
 
 3. **reasoning model(o3-mini)没能逼近 CLINES**: o3-mini 在 code F1 上(0.36~0.50)
    仍远低于 CLINES,且**烧了 4× completion tokens、1.56× wall time、总成本最高**
@@ -247,15 +254,15 @@ R5 A1 最有力的形态 —— CLINES 的 4-step + SapBERT retrieval 的增益�
 
 ## 11. 结论
 
-**PASS**(待你确认主结果参照系后定稿数值)。两个 single-call baseline(o3-mini reasoning
-单 prompt + gpt-4o CoT 单 call)在 **code F1 上一致地、显著地低于 CLINES 4-step**
-(每数据集 +0.26~+0.38,对最保守的主结果候选),且更强/更贵的 reasoning model 也补不上
-缺口 —— **直接支撑 R5 A1:性能增益来自 4-step + retrieval 架构,不是 base model 或
-prompt engineering**,无需 reframe Abstract 主张。诚实边界:value/unit 上架构无增益
-(单 prompt 够用),应写进 Discussion。
+**PASS**。参照系已锁定为 paper Figure 3 的 canonical 主结果 `gpt4_eval_20250904_160641`
+(§9 反推确认,与 baseline 同款 position-overlap 匹配 → apples-to-apples)。两个 single-call
+baseline(o3-mini reasoning 单 prompt + gpt-4o CoT 单 call)在**所有可比列都显著低于 CLINES
+4-step**,**code F1 差距最大(+0.37~+0.54)**;且更强/更贵的 reasoning model(o3-mini,成本
+最高 \$9.63、4× completion tokens)也补不上缺口 —— **直接支撑 R5 A1:性能增益来自 4-step +
+retrieval 架构,不是 base model 或 prompt engineering**,无需 reframe Abstract 主张。
 
-**唯一 open item**: §9 的 3 个 gpt4_eval 时间戳需你确认 canonical 那个,以锁定 rebuttal
-里报的确切 ΔF1(方向与 PASS 结论不受影响)。
+**残留低风险 caveat**: 2025 原始投稿 figure3.pdf 是否与 revision 重绘版同用 160641 未 100%
+核实(见 §9);但 rebuttal 随 revision 出,内部一致用 160641。若原始投稿图源不同,告知即换。
 
 ## 12. 下一步
 
@@ -277,11 +284,12 @@ prompt engineering**,无需 reframe Abstract 主张。诚实边界:value/unit �
   - `runs/EXP-F/{o3mini_sp,gpt4o_cot}/eval/results.json` + `*_metrics.csv` + `*_error_cases.csv`
 - **Eval harness fix**: `scripts/baselines/run_eval.sh` 的自引用 symlink bug 已在源头修复
   (`rm -rf all/` + `-path "$flat_dir/*" -prune`),否则 4CE 会被静默漏掉(见 §8 顶注)。
-- **CLINES 主结果参照**(§9 对比用): `outputs/evaluation_results_0904/gpt4_eval_20250904_{150537,154356,160641}_metrics.csv`(3 个时间戳数值分歧,canonical 待确认)。
+- **CLINES 主结果参照(§9 对比用,canonical 已锁定)**: `outputs/evaluation_results_0904/gpt4_eval_20250904_160641_metrics.csv` —— 经 paper Figure 3 绘图链反推确认(`scripts/bootstrap/plot_figure3.py` → `runs/EXP-BC/metrics_with_ci.json` point estimate 与 160641 精确吻合;且与 baseline 同款 position-overlap 匹配)。150537/154356 是不同匹配域,不可比,弃用。
 - **SLURM logs**: `logs/slurm/EXP-F_baseline_<jobid>.{out,err}`
 - **Snapshot**: 未实现(per EXPERIMENTS.md banner — 本轮 revision 不引入新基建)。复现强度依赖:(a) 本 .md 字段 6 inline prompt + config copy(b) `exp/EXP-F_baseline_extra` git branch(push to remote)
 
 ## 更新日志
 
 - 2026-05-25:实验骨架创建(字段 1-7 + 13 框架)。代码 + sbatch 模板就位,所有 offline smoke 测试通过(11/11)。Codex adversarial review 已跑(详见 commit message);根据 review feedback 修复了 8 个 substantive issue:(1) 加入 date 字段到 prompt 真正实现 4-step collapse;(2) chunk parse failure 改为 fail-fast raise(不再 silent partial output);(3) 移除 parser 隐式 fallback(`{"entities":[...]}` wrapper / code fence / bare bracket);(4) 空 prediction 用 schema-complete empty DataFrame;(5) chunking 加 CLINES 同款 post-merge(`<200/<300` 规则);(6) span localization 加 used-span tracking 处理 repeated mentions;(7) per-chunk token usage 正确累计;(8) launcher 自动从脚本位置推导 PROJECT_ROOT 避免 worktree/main-repo 路径漂移。批量提交待 user 在 shell 设 `OPENAIKEY` 后 `bash jobs/EXP-F_launch_all.sh`。
-- 2026-05-26:**所有 6 个 (model,dataset) job COMPLETED,eval 完成,回填字段 8-11**(PASS,待确认主结果参照系)。期间救援两件事:(a) sglang env 的 scipy/numpy ABI 冲突 → 固定 `scipy==1.11.4`;(b) `run_eval.sh` 自引用 symlink bug 导致 o3mini_sp 的 4CE 被静默漏掉 → 源头修复(`rm -rf all/` + `-path prune`)并重跑得到完整 4CE 指标。核心结论:两个 single-call baseline 在 **code F1 上比 CLINES 4-step 低 +0.26~+0.38**(对最保守主结果候选),reasoning model(o3-mini)也补不上且成本最高(\$9.63,4× completion tokens)→ 支撑 R5 A1 架构论点。`run_eval.sh` harness 改动待 codex review 后 commit。
+- 2026-05-26:**所有 6 个 (model,dataset) job COMPLETED,eval 完成,回填字段 8-11**(PASS,待确认主结果参照系)。期间救援两件事:(a) sglang env 的 scipy/numpy ABI 冲突 → 固定 `scipy==1.11.4`;(b) `run_eval.sh` 自引用 symlink bug 导致 o3mini_sp 的 4CE 被静默漏掉 → 源头修复(`rm -rf all/` + `-path prune`)并重跑得到完整 4CE 指标。`run_eval.sh` harness 改动经 codex review(LGTM)后随 commit `119f8be` 落盘。
+- 2026-05-26(续):**主结果参照系锁定 = `gpt4_eval_20250904_160641`**。经 paper Figure 3 绘图链反推(`plot_figure3.py` → `runs/EXP-BC/metrics_with_ci.json` 与 160641 精确吻合,且与 baseline 同款 position-overlap 匹配 / 同 gold 域)。§9/§10/§11 全部改用 160641 重算:CLINES **在所有可比列都赢**,**code F1 高出 +0.37~+0.54**。早期对 150537 的 "value/unit 无增益" 判断是参照系错误造成的伪 nuance,已纠正(150537 是更严的旧匹配域,不可比)。结论不变且更强:支撑 R5 A1。
