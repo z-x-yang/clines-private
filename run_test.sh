@@ -6,8 +6,12 @@ SCHEMA="default"
 MODEL_NAME="gpt4o"
 MAX_RETRIES=1
 
-OPENAIKEY="***REVOKED_OLD_AZURE_KEY***"
-OPENAIENDPOINT="https://azure-ai-dev.hms.edu"
+# OPENAIKEY / OPENAIENDPOINT must be set in the environment (or a sourced .env file
+# that is .gitignored). Old hard-coded values were removed when the legacy
+# https://azure-ai-dev.hms.edu endpoint was deprecated. Current endpoint:
+#   https://azure-ai.hms.edu  (key obtained from https://hu.sharepoint.com/sites/azureai)
+: "${OPENAIKEY:?OPENAIKEY env var is required (HMS Azure OpenAI API key)}"
+: "${OPENAIENDPOINT:=https://azure-ai.hms.edu}"
 
 # Add timestamp variable at the beginning
 TIMESTAMP=$(date +"%Y%m%d_%H%M")
