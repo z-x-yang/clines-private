@@ -372,14 +372,29 @@ class NERProcessor:
         old_tags = [match.group(1) for match in valid_matches]
         new_tags = [str(i + 1) for i in range(len(valid_matches))]
 
+        # Clean chunk text once for reuse (remove NER tags)
+        clean_chunk = re.sub(r'<[^>]+>', '', string)
+        chunk_length = len(clean_chunk)
+
         # Calculate positions of entities in the original EHR text using robust matching
         entity_positions = []
         
-        # Create normalized mapping for the original text
+        # Create normalized mapping for the original text. When we're working on a chunk of a larger
+        # note, restrict the search space to avoid scanning the entire document for every entity.
         normalized_note, pos_mapping = self._create_normalized_mapping(original_ehr_text)
-        
-        # Extract clean chunk text for context-based matching
-        chunk_string = re.sub(r'<[^>]+>', '', string)
+        if chunk_offset or len(original_ehr_text) > chunk_length * 1.2:
+            window_padding = 400  # generous buffer around the chunk
+            window_start = max(0, chunk_offset - window_padding)
+            window_end = min(len(original_ehr_text), chunk_offset + chunk_length + window_padding)
+            normalized_note_window, pos_mapping_window = self._create_normalized_mapping(
+                original_ehr_text[window_start:window_end]
+            )
+            # Offset mapping back to absolute positions in the full note
+            pos_mapping = {k: v + window_start for k, v in pos_mapping_window.items()}
+            normalized_note = normalized_note_window
+            self.logger.debug(
+                f"Using restricted search window {window_start}-{window_end} for entity alignment"
+            )
         
         # Sequential tracking to avoid duplicate matches
         current_search_position = 0
@@ -395,8 +410,6 @@ class NERProcessor:
             entity_start_in_original = match.start(2)  # Start of entity content (excluding tags)
             
             # Remove all tags to get clean chunk and calculate relative position
-            clean_chunk = re.sub(r'<[^>]+>', '', string)
-            
             # Calculate how much text was removed before this entity due to tag removal
             text_before_entity = string[:entity_start_in_original]
             tags_before = re.findall(r'<[^>]+>', text_before_entity)
@@ -571,10 +584,10 @@ class NERProcessor:
 
         changes_made = any(old != new for old, new in zip(old_tags, new_tags))
         if changes_made:
-            self.logger.info("Tag corrections made in parse_ner_result_text:")
+            self.logger.debug("Tag corrections made in parse_ner_result_text:")
             for old, new in zip(old_tags, new_tags):
                 if old != new:
-                    self.logger.info(f"  Tag {old} -> {new}")
+                    self.logger.debug(f"  Tag {old} -> {new}")
 
         return entities, new_tags, updated_string, entity_positions
 

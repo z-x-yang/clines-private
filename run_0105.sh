@@ -1,0 +1,105 @@
+#!/usr/bin/env bash
+# Run main.py and launch a local CPU retrieval service inside this script.
+
+set -euo pipefail
+
+# Schema / model settings
+SCHEMA="default"          # or "i2b2"
+MODEL_NAME="azure:gpt4omini"
+MAX_RETRIES=5
+NUM_WORKERS=10             # main.py caps at 5
+CHUNK_SIZE=1024
+
+# Marker / paths
+TIMESTAMP=$(date +"%Y%m%d_%H%M")
+MARKER="DAS_Human_Label_1228"
+NOTES_DIR="/PHShome/zy098/Zongxin_yang/Works/DAS-Agent/data/DAS_human_label_251228/notes"
+# Notes ordering: "asc" or "desc"
+NOTES_ORDER="desc"
+LOG_FILE="./logs/${MARKER}_${TIMESTAMP}.log"
+ERROR_LOG_FILE="./logs/${MARKER}_errors_${TIMESTAMP}.log"
+REPORT_FILE="./logs/${MARKER}_report_${TIMESTAMP}.json"
+OUTPUT_DIR="./outputs/${MARKER}"
+START_IDX=0
+
+# Local retrieval server (CPU) settings
+SRV_HOST="127.0.0.1"
+SRV_PORT="50000"
+SRV_AUTHKEY="retriever"
+MODEL_PATH="cambridgeltl/SapBERT-from-PubMedBERT-fulltext"
+DICT_ALL="./umls_dictionary.txt"
+DICT_BODYLOC="./umls_body_loc_dictionary.txt"
+EMBED_BATCH=256
+SRV_LOG="./logs/retrieval_server_${TIMESTAMP}.log"
+
+mkdir -p ./logs
+
+# Kill any existing process on the retriever port to avoid stale servers
+if command -v lsof >/dev/null 2>&1; then
+  EXISTING_PID=$(lsof -ti tcp:${SRV_PORT} || true)
+  if [ -n "${EXISTING_PID}" ]; then
+    echo "Killing existing process on port ${SRV_PORT}: ${EXISTING_PID}"
+    kill ${EXISTING_PID} 2>/dev/null || true
+    sleep 1
+  fi
+fi
+
+# Start retrieval server in background
+python -m llm_interface.retrieval.retrieval_server \
+  --host "${SRV_HOST}" \
+  --port "${SRV_PORT}" \
+  --authkey "${SRV_AUTHKEY}" \
+  --model_path "${MODEL_PATH}" \
+  --dictionary_all "${DICT_ALL}" \
+  --dictionary_bodyloc "${DICT_BODYLOC}" \
+  --embed_batch_size "${EMBED_BATCH}" \
+  --cpu \
+  > "${SRV_LOG}" 2>&1 &
+
+SRV_PID=$!
+echo "Started CPU retrieval server PID=${SRV_PID} on ${SRV_HOST}:${SRV_PORT}"
+trap 'kill ${SRV_PID} 2>/dev/null || true' EXIT
+
+# Wait for server to accept connections (max 120s)
+MAX_WAIT=120
+WAITED=0
+until python - <<'PY' "${SRV_HOST}" "${SRV_PORT}"
+import socket, sys
+host = sys.argv[1]; port = int(sys.argv[2])
+s = socket.socket()
+s.settimeout(1.0)
+try:
+    s.connect((host, port))
+    s.close()
+    sys.exit(0)
+except Exception:
+    sys.exit(1)
+PY
+do
+  WAITED=$((WAITED+1))
+  if [ ${WAITED} -ge ${MAX_WAIT} ]; then
+    echo "Retriever server did not become ready within ${MAX_WAIT}s; see ${SRV_LOG}"
+    exit 1
+  fi
+  sleep 1
+done
+echo "Retriever server is ready after ${WAITED}s"
+
+# Run main workflow pointing to the local server
+RETRIEVER_SERVER="${SRV_HOST}:${SRV_PORT}" RETRIEVER_AUTHKEY="${SRV_AUTHKEY}" \
+CUDA_VISIBLE_DEVICES=0 python main.py \
+  --notes_dir "${NOTES_DIR}" \
+  --error_log_file "${ERROR_LOG_FILE}" \
+  --start_index "${START_IDX}" \
+  --model_name "${MODEL_NAME}" \
+  --max_retries "${MAX_RETRIES}" \
+  --schema "${SCHEMA}" \
+  --marker "${MARKER}" \
+  --output_dir "${OUTPUT_DIR}" \
+  --chunk_size "${CHUNK_SIZE}" \
+  --num_workers "${NUM_WORKERS}" \
+  --run_report_file "${REPORT_FILE}" \
+  --notes_order "${NOTES_ORDER}" \
+  --retriever_server "${SRV_HOST}:${SRV_PORT}" \
+  --retriever_authkey "${SRV_AUTHKEY}" \
+  2>&1 | tee "${LOG_FILE}"
