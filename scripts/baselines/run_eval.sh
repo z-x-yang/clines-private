@@ -31,9 +31,17 @@ for agent in ${AGENTS//,/ }; do
         continue
     fi
     flat_dir="$agent_root/all"
+    # Start from a clean flat dir. If we don't, a prior run's symlinks in
+    # all/ are themselves at depth 2 under agent_root, so the find below
+    # re-matches them and ln -sfn overwrites each to point at itself
+    # (self-referencing). That silently dropped whichever dataset find
+    # traversed before "all/" (alphabetically 4CE) from the eval.
+    rm -rf "$flat_dir"
     mkdir -p "$flat_dir"
-    # Symlink (idempotent) every per-dataset CSV into the flat dir
+    # Symlink every per-dataset CSV into the flat dir. -path prune on the
+    # flat dir is belt-and-suspenders in case it gets recreated mid-loop.
     find "$agent_root" -mindepth 2 -maxdepth 2 \
+        -path "$flat_dir/*" -prune -o \
         -name "*_with_positions.csv" -print0 \
         | while IFS= read -r -d '' f; do
             ln -sfn "$f" "$flat_dir/$(basename "$f")"
