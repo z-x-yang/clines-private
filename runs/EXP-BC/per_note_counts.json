@@ -1,0 +1,7466 @@
+{
+  "gpt4o": {
+    "4CE": {
+      "BCH_1": {
+        "code": {
+          "tp": 150,
+          "fp": 12,
+          "fn": 47
+        },
+        "assertion_status": {
+          "tp": 149,
+          "fp": 13,
+          "fn": 47
+        },
+        "begin_date": {
+          "tp": 12,
+          "fp": 15,
+          "fn": 16
+        },
+        "end_date": {
+          "tp": 12,
+          "fp": 15,
+          "fn": 16
+        },
+        "value": {
+          "tp": 18,
+          "fp": 0,
+          "fn": 22
+        },
+        "unit": {
+          "tp": 20,
+          "fp": 1,
+          "fn": 33
+        }
+      },
+      "BCH_5": {
+        "code": {
+          "tp": 146,
+          "fp": 17,
+          "fn": 42
+        },
+        "assertion_status": {
+          "tp": 142,
+          "fp": 21,
+          "fn": 42
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 1
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 1
+        },
+        "value": {
+          "tp": 36,
+          "fp": 0,
+          "fn": 8
+        },
+        "unit": {
+          "tp": 38,
+          "fp": 1,
+          "fn": 8
+        }
+      },
+      "BCH_6": {
+        "code": {
+          "tp": 108,
+          "fp": 6,
+          "fn": 23
+        },
+        "assertion_status": {
+          "tp": 111,
+          "fp": 3,
+          "fn": 23
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "value": {
+          "tp": 23,
+          "fp": 0,
+          "fn": 1
+        },
+        "unit": {
+          "tp": 22,
+          "fp": 1,
+          "fn": 5
+        }
+      },
+      "KUMC_1": {
+        "code": {
+          "tp": 116,
+          "fp": 3,
+          "fn": 17
+        },
+        "assertion_status": {
+          "tp": 119,
+          "fp": 0,
+          "fn": 17
+        },
+        "begin_date": {
+          "tp": 47,
+          "fp": 0,
+          "fn": 67
+        },
+        "end_date": {
+          "tp": 47,
+          "fp": 0,
+          "fn": 50
+        },
+        "value": {
+          "tp": 29,
+          "fp": 0,
+          "fn": 10
+        },
+        "unit": {
+          "tp": 29,
+          "fp": 0,
+          "fn": 11
+        }
+      },
+      "KUMC_2": {
+        "code": {
+          "tp": 262,
+          "fp": 10,
+          "fn": 68
+        },
+        "assertion_status": {
+          "tp": 245,
+          "fp": 27,
+          "fn": 68
+        },
+        "begin_date": {
+          "tp": 95,
+          "fp": 2,
+          "fn": 127
+        },
+        "end_date": {
+          "tp": 94,
+          "fp": 3,
+          "fn": 118
+        },
+        "value": {
+          "tp": 5,
+          "fp": 4,
+          "fn": 36
+        },
+        "unit": {
+          "tp": 7,
+          "fp": 1,
+          "fn": 42
+        }
+      },
+      "KUMC_5": {
+        "code": {
+          "tp": 284,
+          "fp": 50,
+          "fn": 119
+        },
+        "assertion_status": {
+          "tp": 274,
+          "fp": 60,
+          "fn": 118
+        },
+        "begin_date": {
+          "tp": 140,
+          "fp": 2,
+          "fn": 228
+        },
+        "end_date": {
+          "tp": 121,
+          "fp": 0,
+          "fn": 215
+        },
+        "value": {
+          "tp": 14,
+          "fp": 0,
+          "fn": 26
+        },
+        "unit": {
+          "tp": 22,
+          "fp": 0,
+          "fn": 25
+        }
+      },
+      "KUMC_6": {
+        "code": {
+          "tp": 280,
+          "fp": 34,
+          "fn": 84
+        },
+        "assertion_status": {
+          "tp": 299,
+          "fp": 14,
+          "fn": 84
+        },
+        "begin_date": {
+          "tp": 60,
+          "fp": 4,
+          "fn": 159
+        },
+        "end_date": {
+          "tp": 50,
+          "fp": 2,
+          "fn": 130
+        },
+        "value": {
+          "tp": 48,
+          "fp": 0,
+          "fn": 9
+        },
+        "unit": {
+          "tp": 56,
+          "fp": 0,
+          "fn": 12
+        }
+      },
+      "KUMC_7": {
+        "code": {
+          "tp": 115,
+          "fp": 19,
+          "fn": 27
+        },
+        "assertion_status": {
+          "tp": 116,
+          "fp": 18,
+          "fn": 27
+        },
+        "begin_date": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 4
+        },
+        "end_date": {
+          "tp": 7,
+          "fp": 0,
+          "fn": 2
+        },
+        "value": {
+          "tp": 29,
+          "fp": 0,
+          "fn": 1
+        },
+        "unit": {
+          "tp": 30,
+          "fp": 0,
+          "fn": 2
+        }
+      },
+      "UPMC_Note1": {
+        "code": {
+          "tp": 147,
+          "fp": 11,
+          "fn": 30
+        },
+        "assertion_status": {
+          "tp": 155,
+          "fp": 3,
+          "fn": 30
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 1
+        },
+        "value": {
+          "tp": 60,
+          "fp": 0,
+          "fn": 16
+        },
+        "unit": {
+          "tp": 49,
+          "fp": 1,
+          "fn": 16
+        }
+      },
+      "UPMC_Note3": {
+        "code": {
+          "tp": 194,
+          "fp": 30,
+          "fn": 75
+        },
+        "assertion_status": {
+          "tp": 222,
+          "fp": 2,
+          "fn": 75
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "value": {
+          "tp": 51,
+          "fp": 2,
+          "fn": 17
+        },
+        "unit": {
+          "tp": 56,
+          "fp": 1,
+          "fn": 19
+        }
+      },
+      "UPMC_Note4": {
+        "code": {
+          "tp": 115,
+          "fp": 4,
+          "fn": 17
+        },
+        "assertion_status": {
+          "tp": 118,
+          "fp": 1,
+          "fn": 17
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 6
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 6
+        },
+        "value": {
+          "tp": 37,
+          "fp": 0,
+          "fn": 15
+        },
+        "unit": {
+          "tp": 35,
+          "fp": 1,
+          "fn": 18
+        }
+      },
+      "UPMC_Note7": {
+        "code": {
+          "tp": 173,
+          "fp": 29,
+          "fn": 10
+        },
+        "assertion_status": {
+          "tp": 185,
+          "fp": 17,
+          "fn": 9
+        },
+        "begin_date": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 1
+        },
+        "end_date": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        },
+        "value": {
+          "tp": 41,
+          "fp": 0,
+          "fn": 23
+        },
+        "unit": {
+          "tp": 36,
+          "fp": 0,
+          "fn": 31
+        }
+      },
+      "d30982c684512d4f0b6fd79836539d9ac": {
+        "code": {
+          "tp": 271,
+          "fp": 21,
+          "fn": 66
+        },
+        "assertion_status": {
+          "tp": 282,
+          "fp": 10,
+          "fn": 66
+        },
+        "begin_date": {
+          "tp": 27,
+          "fp": 0,
+          "fn": 35
+        },
+        "end_date": {
+          "tp": 19,
+          "fp": 1,
+          "fn": 27
+        },
+        "value": {
+          "tp": 12,
+          "fp": 0,
+          "fn": 0
+        },
+        "unit": {
+          "tp": 14,
+          "fp": 0,
+          "fn": 1
+        }
+      },
+      "d34f60de6187c4ebefd6d31bcaca64630": {
+        "code": {
+          "tp": 209,
+          "fp": 9,
+          "fn": 18
+        },
+        "assertion_status": {
+          "tp": 176,
+          "fp": 42,
+          "fn": 18
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 5
+        },
+        "value": {
+          "tp": 4,
+          "fp": 0,
+          "fn": 13
+        },
+        "unit": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 10
+        }
+      },
+      "d3f613256b944611d228c7d204b0de699": {
+        "code": {
+          "tp": 149,
+          "fp": 1,
+          "fn": 8
+        },
+        "assertion_status": {
+          "tp": 150,
+          "fp": 0,
+          "fn": 8
+        },
+        "begin_date": {
+          "tp": 4,
+          "fp": 1,
+          "fn": 3
+        },
+        "end_date": {
+          "tp": 3,
+          "fp": 2,
+          "fn": 3
+        },
+        "value": {
+          "tp": 8,
+          "fp": 0,
+          "fn": 3
+        },
+        "unit": {
+          "tp": 8,
+          "fp": 0,
+          "fn": 2
+        }
+      },
+      "d54bcf6fe1fa225b13277b3b115fdcc3d": {
+        "code": {
+          "tp": 261,
+          "fp": 11,
+          "fn": 39
+        },
+        "assertion_status": {
+          "tp": 266,
+          "fp": 6,
+          "fn": 39
+        },
+        "begin_date": {
+          "tp": 20,
+          "fp": 0,
+          "fn": 6
+        },
+        "end_date": {
+          "tp": 19,
+          "fp": 0,
+          "fn": 6
+        },
+        "value": {
+          "tp": 8,
+          "fp": 0,
+          "fn": 3
+        },
+        "unit": {
+          "tp": 5,
+          "fp": 1,
+          "fn": 3
+        }
+      },
+      "dff4a5b3e1c4cd860f8e2b5c95bd14b51": {
+        "code": {
+          "tp": 236,
+          "fp": 23,
+          "fn": 51
+        },
+        "assertion_status": {
+          "tp": 254,
+          "fp": 5,
+          "fn": 51
+        },
+        "begin_date": {
+          "tp": 37,
+          "fp": 0,
+          "fn": 38
+        },
+        "end_date": {
+          "tp": 37,
+          "fp": 0,
+          "fn": 37
+        },
+        "value": {
+          "tp": 28,
+          "fp": 0,
+          "fn": 8
+        },
+        "unit": {
+          "tp": 31,
+          "fp": 2,
+          "fn": 16
+        }
+      },
+      "report03": {
+        "code": {
+          "tp": 227,
+          "fp": 9,
+          "fn": 18
+        },
+        "assertion_status": {
+          "tp": 225,
+          "fp": 11,
+          "fn": 17
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "value": {
+          "tp": 36,
+          "fp": 1,
+          "fn": 5
+        },
+        "unit": {
+          "tp": 43,
+          "fp": 4,
+          "fn": 19
+        }
+      },
+      "report04": {
+        "code": {
+          "tp": 164,
+          "fp": 9,
+          "fn": 34
+        },
+        "assertion_status": {
+          "tp": 162,
+          "fp": 10,
+          "fn": 34
+        },
+        "begin_date": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        },
+        "end_date": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        },
+        "value": {
+          "tp": 30,
+          "fp": 4,
+          "fn": 24
+        },
+        "unit": {
+          "tp": 38,
+          "fp": 0,
+          "fn": 40
+        }
+      },
+      "report06": {
+        "code": {
+          "tp": 550,
+          "fp": 48,
+          "fn": 69
+        },
+        "assertion_status": {
+          "tp": 592,
+          "fp": 6,
+          "fn": 69
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 13
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 13
+        },
+        "value": {
+          "tp": 99,
+          "fp": 0,
+          "fn": 45
+        },
+        "unit": {
+          "tp": 97,
+          "fp": 0,
+          "fn": 70
+        }
+      },
+      "report07": {
+        "code": {
+          "tp": 203,
+          "fp": 10,
+          "fn": 33
+        },
+        "assertion_status": {
+          "tp": 211,
+          "fp": 2,
+          "fn": 33
+        },
+        "begin_date": {
+          "tp": 7,
+          "fp": 0,
+          "fn": 4
+        },
+        "end_date": {
+          "tp": 7,
+          "fp": 0,
+          "fn": 4
+        },
+        "value": {
+          "tp": 41,
+          "fp": 0,
+          "fn": 3
+        },
+        "unit": {
+          "tp": 39,
+          "fp": 0,
+          "fn": 8
+        }
+      }
+    },
+    "coral_breastca": {
+      "21": {
+        "code": {
+          "tp": 229,
+          "fp": 14,
+          "fn": 40
+        },
+        "assertion_status": {
+          "tp": 238,
+          "fp": 5,
+          "fn": 40
+        },
+        "begin_date": {
+          "tp": 88,
+          "fp": 1,
+          "fn": 86
+        },
+        "end_date": {
+          "tp": 86,
+          "fp": 3,
+          "fn": 74
+        },
+        "value": {
+          "tp": 19,
+          "fp": 0,
+          "fn": 12
+        },
+        "unit": {
+          "tp": 17,
+          "fp": 0,
+          "fn": 14
+        }
+      },
+      "22": {
+        "code": {
+          "tp": 188,
+          "fp": 22,
+          "fn": 38
+        },
+        "assertion_status": {
+          "tp": 168,
+          "fp": 42,
+          "fn": 38
+        },
+        "begin_date": {
+          "tp": 53,
+          "fp": 0,
+          "fn": 8
+        },
+        "end_date": {
+          "tp": 57,
+          "fp": 0,
+          "fn": 9
+        },
+        "value": {
+          "tp": 15,
+          "fp": 0,
+          "fn": 6
+        },
+        "unit": {
+          "tp": 14,
+          "fp": 0,
+          "fn": 7
+        }
+      },
+      "23": {
+        "code": {
+          "tp": 306,
+          "fp": 44,
+          "fn": 89
+        },
+        "assertion_status": {
+          "tp": 319,
+          "fp": 31,
+          "fn": 87
+        },
+        "begin_date": {
+          "tp": 53,
+          "fp": 0,
+          "fn": 12
+        },
+        "end_date": {
+          "tp": 46,
+          "fp": 0,
+          "fn": 7
+        },
+        "value": {
+          "tp": 37,
+          "fp": 0,
+          "fn": 9
+        },
+        "unit": {
+          "tp": 39,
+          "fp": 0,
+          "fn": 16
+        }
+      },
+      "24": {
+        "code": {
+          "tp": 159,
+          "fp": 16,
+          "fn": 43
+        },
+        "assertion_status": {
+          "tp": 172,
+          "fp": 3,
+          "fn": 43
+        },
+        "begin_date": {
+          "tp": 70,
+          "fp": 0,
+          "fn": 89
+        },
+        "end_date": {
+          "tp": 70,
+          "fp": 0,
+          "fn": 88
+        },
+        "value": {
+          "tp": 28,
+          "fp": 0,
+          "fn": 11
+        },
+        "unit": {
+          "tp": 21,
+          "fp": 0,
+          "fn": 17
+        }
+      },
+      "25": {
+        "code": {
+          "tp": 88,
+          "fp": 14,
+          "fn": 54
+        },
+        "assertion_status": {
+          "tp": 79,
+          "fp": 22,
+          "fn": 54
+        },
+        "begin_date": {
+          "tp": 16,
+          "fp": 1,
+          "fn": 11
+        },
+        "end_date": {
+          "tp": 16,
+          "fp": 1,
+          "fn": 10
+        },
+        "value": {
+          "tp": 8,
+          "fp": 0,
+          "fn": 7
+        },
+        "unit": {
+          "tp": 10,
+          "fp": 0,
+          "fn": 10
+        }
+      },
+      "28": {
+        "code": {
+          "tp": 224,
+          "fp": 32,
+          "fn": 56
+        },
+        "assertion_status": {
+          "tp": 246,
+          "fp": 10,
+          "fn": 56
+        },
+        "begin_date": {
+          "tp": 80,
+          "fp": 3,
+          "fn": 22
+        },
+        "end_date": {
+          "tp": 75,
+          "fp": 3,
+          "fn": 22
+        },
+        "value": {
+          "tp": 17,
+          "fp": 1,
+          "fn": 15
+        },
+        "unit": {
+          "tp": 24,
+          "fp": 0,
+          "fn": 22
+        }
+      },
+      "31": {
+        "code": {
+          "tp": 178,
+          "fp": 59,
+          "fn": 39
+        },
+        "assertion_status": {
+          "tp": 225,
+          "fp": 12,
+          "fn": 39
+        },
+        "begin_date": {
+          "tp": 70,
+          "fp": 0,
+          "fn": 41
+        },
+        "end_date": {
+          "tp": 69,
+          "fp": 1,
+          "fn": 35
+        },
+        "value": {
+          "tp": 25,
+          "fp": 1,
+          "fn": 1
+        },
+        "unit": {
+          "tp": 32,
+          "fp": 1,
+          "fn": 2
+        }
+      },
+      "32": {
+        "code": {
+          "tp": 299,
+          "fp": 23,
+          "fn": 87
+        },
+        "assertion_status": {
+          "tp": 276,
+          "fp": 46,
+          "fn": 87
+        },
+        "begin_date": {
+          "tp": 66,
+          "fp": 0,
+          "fn": 87
+        },
+        "end_date": {
+          "tp": 66,
+          "fp": 0,
+          "fn": 87
+        },
+        "value": {
+          "tp": 38,
+          "fp": 0,
+          "fn": 15
+        },
+        "unit": {
+          "tp": 44,
+          "fp": 2,
+          "fn": 20
+        }
+      },
+      "34": {
+        "code": {
+          "tp": 295,
+          "fp": 45,
+          "fn": 83
+        },
+        "assertion_status": {
+          "tp": 323,
+          "fp": 17,
+          "fn": 83
+        },
+        "begin_date": {
+          "tp": 100,
+          "fp": 0,
+          "fn": 147
+        },
+        "end_date": {
+          "tp": 100,
+          "fp": 0,
+          "fn": 147
+        },
+        "value": {
+          "tp": 32,
+          "fp": 0,
+          "fn": 7
+        },
+        "unit": {
+          "tp": 23,
+          "fp": 0,
+          "fn": 18
+        }
+      },
+      "35": {
+        "code": {
+          "tp": 109,
+          "fp": 14,
+          "fn": 45
+        },
+        "assertion_status": {
+          "tp": 105,
+          "fp": 18,
+          "fn": 44
+        },
+        "begin_date": {
+          "tp": 11,
+          "fp": 12,
+          "fn": 61
+        },
+        "end_date": {
+          "tp": 11,
+          "fp": 12,
+          "fn": 51
+        },
+        "value": {
+          "tp": 7,
+          "fp": 0,
+          "fn": 4
+        },
+        "unit": {
+          "tp": 12,
+          "fp": 0,
+          "fn": 8
+        }
+      },
+      "36": {
+        "code": {
+          "tp": 181,
+          "fp": 50,
+          "fn": 80
+        },
+        "assertion_status": {
+          "tp": 213,
+          "fp": 18,
+          "fn": 80
+        },
+        "begin_date": {
+          "tp": 118,
+          "fp": 2,
+          "fn": 53
+        },
+        "end_date": {
+          "tp": 115,
+          "fp": 3,
+          "fn": 47
+        },
+        "value": {
+          "tp": 7,
+          "fp": 0,
+          "fn": 27
+        },
+        "unit": {
+          "tp": 12,
+          "fp": 0,
+          "fn": 34
+        }
+      },
+      "37": {
+        "code": {
+          "tp": 165,
+          "fp": 24,
+          "fn": 104
+        },
+        "assertion_status": {
+          "tp": 155,
+          "fp": 34,
+          "fn": 104
+        },
+        "begin_date": {
+          "tp": 80,
+          "fp": 0,
+          "fn": 123
+        },
+        "end_date": {
+          "tp": 80,
+          "fp": 0,
+          "fn": 124
+        },
+        "value": {
+          "tp": 12,
+          "fp": 0,
+          "fn": 10
+        },
+        "unit": {
+          "tp": 16,
+          "fp": 0,
+          "fn": 12
+        }
+      },
+      "38": {
+        "code": {
+          "tp": 209,
+          "fp": 47,
+          "fn": 41
+        },
+        "assertion_status": {
+          "tp": 253,
+          "fp": 3,
+          "fn": 41
+        },
+        "begin_date": {
+          "tp": 91,
+          "fp": 0,
+          "fn": 73
+        },
+        "end_date": {
+          "tp": 91,
+          "fp": 0,
+          "fn": 70
+        },
+        "value": {
+          "tp": 26,
+          "fp": 1,
+          "fn": 8
+        },
+        "unit": {
+          "tp": 37,
+          "fp": 0,
+          "fn": 15
+        }
+      }
+    },
+    "coral_pdac": {
+      "0": {
+        "code": {
+          "tp": 150,
+          "fp": 31,
+          "fn": 30
+        },
+        "assertion_status": {
+          "tp": 158,
+          "fp": 23,
+          "fn": 30
+        },
+        "begin_date": {
+          "tp": 114,
+          "fp": 1,
+          "fn": 24
+        },
+        "end_date": {
+          "tp": 115,
+          "fp": 0,
+          "fn": 25
+        },
+        "value": {
+          "tp": 28,
+          "fp": 1,
+          "fn": 10
+        },
+        "unit": {
+          "tp": 41,
+          "fp": 0,
+          "fn": 14
+        }
+      },
+      "10": {
+        "code": {
+          "tp": 163,
+          "fp": 17,
+          "fn": 42
+        },
+        "assertion_status": {
+          "tp": 171,
+          "fp": 9,
+          "fn": 42
+        },
+        "begin_date": {
+          "tp": 59,
+          "fp": 0,
+          "fn": 101
+        },
+        "end_date": {
+          "tp": 59,
+          "fp": 0,
+          "fn": 89
+        },
+        "value": {
+          "tp": 24,
+          "fp": 0,
+          "fn": 9
+        },
+        "unit": {
+          "tp": 28,
+          "fp": 0,
+          "fn": 12
+        }
+      },
+      "13": {
+        "code": {
+          "tp": 214,
+          "fp": 41,
+          "fn": 33
+        },
+        "assertion_status": {
+          "tp": 248,
+          "fp": 7,
+          "fn": 33
+        },
+        "begin_date": {
+          "tp": 128,
+          "fp": 6,
+          "fn": 106
+        },
+        "end_date": {
+          "tp": 128,
+          "fp": 6,
+          "fn": 77
+        },
+        "value": {
+          "tp": 31,
+          "fp": 0,
+          "fn": 3
+        },
+        "unit": {
+          "tp": 36,
+          "fp": 0,
+          "fn": 6
+        }
+      },
+      "14": {
+        "code": {
+          "tp": 277,
+          "fp": 42,
+          "fn": 94
+        },
+        "assertion_status": {
+          "tp": 306,
+          "fp": 13,
+          "fn": 94
+        },
+        "begin_date": {
+          "tp": 89,
+          "fp": 3,
+          "fn": 60
+        },
+        "end_date": {
+          "tp": 88,
+          "fp": 4,
+          "fn": 60
+        },
+        "value": {
+          "tp": 58,
+          "fp": 2,
+          "fn": 15
+        },
+        "unit": {
+          "tp": 56,
+          "fp": 1,
+          "fn": 19
+        }
+      },
+      "15": {
+        "code": {
+          "tp": 252,
+          "fp": 13,
+          "fn": 42
+        },
+        "assertion_status": {
+          "tp": 250,
+          "fp": 15,
+          "fn": 42
+        },
+        "begin_date": {
+          "tp": 136,
+          "fp": 2,
+          "fn": 124
+        },
+        "end_date": {
+          "tp": 137,
+          "fp": 1,
+          "fn": 115
+        },
+        "value": {
+          "tp": 56,
+          "fp": 0,
+          "fn": 16
+        },
+        "unit": {
+          "tp": 57,
+          "fp": 0,
+          "fn": 16
+        }
+      },
+      "16": {
+        "code": {
+          "tp": 142,
+          "fp": 22,
+          "fn": 29
+        },
+        "assertion_status": {
+          "tp": 152,
+          "fp": 12,
+          "fn": 29
+        },
+        "begin_date": {
+          "tp": 66,
+          "fp": 1,
+          "fn": 94
+        },
+        "end_date": {
+          "tp": 63,
+          "fp": 3,
+          "fn": 91
+        },
+        "value": {
+          "tp": 20,
+          "fp": 0,
+          "fn": 0
+        },
+        "unit": {
+          "tp": 26,
+          "fp": 0,
+          "fn": 5
+        }
+      },
+      "17": {
+        "code": {
+          "tp": 233,
+          "fp": 38,
+          "fn": 28
+        },
+        "assertion_status": {
+          "tp": 221,
+          "fp": 50,
+          "fn": 28
+        },
+        "begin_date": {
+          "tp": 99,
+          "fp": 0,
+          "fn": 18
+        },
+        "end_date": {
+          "tp": 116,
+          "fp": 0,
+          "fn": 15
+        },
+        "value": {
+          "tp": 73,
+          "fp": 4,
+          "fn": 3
+        },
+        "unit": {
+          "tp": 81,
+          "fp": 0,
+          "fn": 2
+        }
+      },
+      "18": {
+        "code": {
+          "tp": 151,
+          "fp": 26,
+          "fn": 24
+        },
+        "assertion_status": {
+          "tp": 168,
+          "fp": 8,
+          "fn": 24
+        },
+        "begin_date": {
+          "tp": 43,
+          "fp": 1,
+          "fn": 24
+        },
+        "end_date": {
+          "tp": 40,
+          "fp": 0,
+          "fn": 23
+        },
+        "value": {
+          "tp": 40,
+          "fp": 0,
+          "fn": 0
+        },
+        "unit": {
+          "tp": 56,
+          "fp": 0,
+          "fn": 2
+        }
+      },
+      "1": {
+        "code": {
+          "tp": 237,
+          "fp": 47,
+          "fn": 58
+        },
+        "assertion_status": {
+          "tp": 272,
+          "fp": 11,
+          "fn": 58
+        },
+        "begin_date": {
+          "tp": 160,
+          "fp": 1,
+          "fn": 54
+        },
+        "end_date": {
+          "tp": 160,
+          "fp": 1,
+          "fn": 54
+        },
+        "value": {
+          "tp": 51,
+          "fp": 0,
+          "fn": 17
+        },
+        "unit": {
+          "tp": 51,
+          "fp": 0,
+          "fn": 19
+        }
+      },
+      "2": {
+        "code": {
+          "tp": 266,
+          "fp": 46,
+          "fn": 61
+        },
+        "assertion_status": {
+          "tp": 271,
+          "fp": 41,
+          "fn": 61
+        },
+        "begin_date": {
+          "tp": 69,
+          "fp": 2,
+          "fn": 195
+        },
+        "end_date": {
+          "tp": 60,
+          "fp": 6,
+          "fn": 189
+        },
+        "value": {
+          "tp": 31,
+          "fp": 0,
+          "fn": 6
+        },
+        "unit": {
+          "tp": 43,
+          "fp": 0,
+          "fn": 13
+        }
+      },
+      "3": {
+        "code": {
+          "tp": 124,
+          "fp": 12,
+          "fn": 51
+        },
+        "assertion_status": {
+          "tp": 115,
+          "fp": 21,
+          "fn": 51
+        },
+        "begin_date": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 6
+        },
+        "end_date": {
+          "tp": 8,
+          "fp": 0,
+          "fn": 2
+        },
+        "value": {
+          "tp": 20,
+          "fp": 0,
+          "fn": 3
+        },
+        "unit": {
+          "tp": 18,
+          "fp": 0,
+          "fn": 5
+        }
+      },
+      "5": {
+        "code": {
+          "tp": 177,
+          "fp": 11,
+          "fn": 30
+        },
+        "assertion_status": {
+          "tp": 176,
+          "fp": 12,
+          "fn": 30
+        },
+        "begin_date": {
+          "tp": 39,
+          "fp": 0,
+          "fn": 21
+        },
+        "end_date": {
+          "tp": 40,
+          "fp": 0,
+          "fn": 21
+        },
+        "value": {
+          "tp": 40,
+          "fp": 0,
+          "fn": 9
+        },
+        "unit": {
+          "tp": 41,
+          "fp": 0,
+          "fn": 8
+        }
+      },
+      "6": {
+        "code": {
+          "tp": 214,
+          "fp": 26,
+          "fn": 29
+        },
+        "assertion_status": {
+          "tp": 214,
+          "fp": 26,
+          "fn": 28
+        },
+        "begin_date": {
+          "tp": 46,
+          "fp": 0,
+          "fn": 31
+        },
+        "end_date": {
+          "tp": 50,
+          "fp": 5,
+          "fn": 40
+        },
+        "value": {
+          "tp": 60,
+          "fp": 1,
+          "fn": 3
+        },
+        "unit": {
+          "tp": 59,
+          "fp": 1,
+          "fn": 4
+        }
+      },
+      "7": {
+        "code": {
+          "tp": 296,
+          "fp": 40,
+          "fn": 73
+        },
+        "assertion_status": {
+          "tp": 324,
+          "fp": 12,
+          "fn": 73
+        },
+        "begin_date": {
+          "tp": 127,
+          "fp": 0,
+          "fn": 62
+        },
+        "end_date": {
+          "tp": 119,
+          "fp": 1,
+          "fn": 57
+        },
+        "value": {
+          "tp": 19,
+          "fp": 0,
+          "fn": 14
+        },
+        "unit": {
+          "tp": 22,
+          "fp": 1,
+          "fn": 17
+        }
+      },
+      "9": {
+        "code": {
+          "tp": 361,
+          "fp": 60,
+          "fn": 70
+        },
+        "assertion_status": {
+          "tp": 379,
+          "fp": 42,
+          "fn": 70
+        },
+        "begin_date": {
+          "tp": 181,
+          "fp": 6,
+          "fn": 183
+        },
+        "end_date": {
+          "tp": 172,
+          "fp": 0,
+          "fn": 158
+        },
+        "value": {
+          "tp": 72,
+          "fp": 0,
+          "fn": 15
+        },
+        "unit": {
+          "tp": 96,
+          "fp": 2,
+          "fn": 20
+        }
+      }
+    }
+  },
+  "deepseek": {
+    "4CE": {
+      "BCH_1": {
+        "code": {
+          "tp": 135,
+          "fp": 72,
+          "fn": 24
+        },
+        "assertion_status": {
+          "tp": 194,
+          "fp": 13,
+          "fn": 24
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 12,
+          "fn": 27
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 12,
+          "fn": 27
+        },
+        "value": {
+          "tp": 40,
+          "fp": 0,
+          "fn": 1
+        },
+        "unit": {
+          "tp": 51,
+          "fp": 0,
+          "fn": 4
+        }
+      },
+      "BCH_5": {
+        "code": {
+          "tp": 113,
+          "fp": 53,
+          "fn": 42
+        },
+        "assertion_status": {
+          "tp": 141,
+          "fp": 25,
+          "fn": 42
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 1,
+          "fn": 0
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 1,
+          "fn": 0
+        },
+        "value": {
+          "tp": 39,
+          "fp": 0,
+          "fn": 5
+        },
+        "unit": {
+          "tp": 41,
+          "fp": 0,
+          "fn": 6
+        }
+      },
+      "BCH_6": {
+        "code": {
+          "tp": 88,
+          "fp": 30,
+          "fn": 20
+        },
+        "assertion_status": {
+          "tp": 97,
+          "fp": 21,
+          "fn": 20
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "value": {
+          "tp": 20,
+          "fp": 0,
+          "fn": 4
+        },
+        "unit": {
+          "tp": 22,
+          "fp": 0,
+          "fn": 7
+        }
+      },
+      "KUMC_1": {
+        "code": {
+          "tp": 98,
+          "fp": 30,
+          "fn": 14
+        },
+        "assertion_status": {
+          "tp": 100,
+          "fp": 28,
+          "fn": 14
+        },
+        "begin_date": {
+          "tp": 91,
+          "fp": 6,
+          "fn": 18
+        },
+        "end_date": {
+          "tp": 71,
+          "fp": 7,
+          "fn": 20
+        },
+        "value": {
+          "tp": 20,
+          "fp": 0,
+          "fn": 19
+        },
+        "unit": {
+          "tp": 21,
+          "fp": 2,
+          "fn": 17
+        }
+      },
+      "KUMC_2": {
+        "code": {
+          "tp": 245,
+          "fp": 49,
+          "fn": 53
+        },
+        "assertion_status": {
+          "tp": 279,
+          "fp": 15,
+          "fn": 53
+        },
+        "begin_date": {
+          "tp": 204,
+          "fp": 4,
+          "fn": 21
+        },
+        "end_date": {
+          "tp": 193,
+          "fp": 4,
+          "fn": 21
+        },
+        "value": {
+          "tp": 41,
+          "fp": 0,
+          "fn": 4
+        },
+        "unit": {
+          "tp": 42,
+          "fp": 2,
+          "fn": 6
+        }
+      },
+      "KUMC_5": {
+        "code": {
+          "tp": 265,
+          "fp": 81,
+          "fn": 101
+        },
+        "assertion_status": {
+          "tp": 279,
+          "fp": 67,
+          "fn": 100
+        },
+        "begin_date": {
+          "tp": 202,
+          "fp": 3,
+          "fn": 169
+        },
+        "end_date": {
+          "tp": 185,
+          "fp": 1,
+          "fn": 154
+        },
+        "value": {
+          "tp": 13,
+          "fp": 0,
+          "fn": 27
+        },
+        "unit": {
+          "tp": 9,
+          "fp": 11,
+          "fn": 27
+        }
+      },
+      "KUMC_6": {
+        "code": {
+          "tp": 207,
+          "fp": 57,
+          "fn": 122
+        },
+        "assertion_status": {
+          "tp": 220,
+          "fp": 44,
+          "fn": 121
+        },
+        "begin_date": {
+          "tp": 63,
+          "fp": 60,
+          "fn": 99
+        },
+        "end_date": {
+          "tp": 55,
+          "fp": 37,
+          "fn": 90
+        },
+        "value": {
+          "tp": 47,
+          "fp": 4,
+          "fn": 7
+        },
+        "unit": {
+          "tp": 44,
+          "fp": 11,
+          "fn": 13
+        }
+      },
+      "KUMC_7": {
+        "code": {
+          "tp": 101,
+          "fp": 54,
+          "fn": 17
+        },
+        "assertion_status": {
+          "tp": 117,
+          "fp": 38,
+          "fn": 17
+        },
+        "begin_date": {
+          "tp": 8,
+          "fp": 0,
+          "fn": 2
+        },
+        "end_date": {
+          "tp": 8,
+          "fp": 0,
+          "fn": 1
+        },
+        "value": {
+          "tp": 24,
+          "fp": 5,
+          "fn": 1
+        },
+        "unit": {
+          "tp": 26,
+          "fp": 4,
+          "fn": 2
+        }
+      },
+      "UPMC_Note1": {
+        "code": {
+          "tp": 70,
+          "fp": 67,
+          "fn": 54
+        },
+        "assertion_status": {
+          "tp": 127,
+          "fp": 10,
+          "fn": 54
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 1
+        },
+        "value": {
+          "tp": 39,
+          "fp": 1,
+          "fn": 38
+        },
+        "unit": {
+          "tp": 45,
+          "fp": 7,
+          "fn": 14
+        }
+      },
+      "UPMC_Note3": {
+        "code": {
+          "tp": 192,
+          "fp": 60,
+          "fn": 58
+        },
+        "assertion_status": {
+          "tp": 228,
+          "fp": 24,
+          "fn": 58
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "value": {
+          "tp": 51,
+          "fp": 3,
+          "fn": 18
+        },
+        "unit": {
+          "tp": 48,
+          "fp": 6,
+          "fn": 22
+        }
+      },
+      "UPMC_Note4": {
+        "code": {
+          "tp": 98,
+          "fp": 22,
+          "fn": 18
+        },
+        "assertion_status": {
+          "tp": 101,
+          "fp": 19,
+          "fn": 18
+        },
+        "begin_date": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0
+        },
+        "end_date": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0
+        },
+        "value": {
+          "tp": 31,
+          "fp": 2,
+          "fn": 19
+        },
+        "unit": {
+          "tp": 29,
+          "fp": 5,
+          "fn": 20
+        }
+      },
+      "UPMC_Note7": {
+        "code": {
+          "tp": 112,
+          "fp": 50,
+          "fn": 49
+        },
+        "assertion_status": {
+          "tp": 150,
+          "fp": 12,
+          "fn": 48
+        },
+        "begin_date": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 1
+        },
+        "end_date": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        },
+        "value": {
+          "tp": 41,
+          "fp": 0,
+          "fn": 23
+        },
+        "unit": {
+          "tp": 42,
+          "fp": 6,
+          "fn": 19
+        }
+      },
+      "d30982c684512d4f0b6fd79836539d9ac": {
+        "code": {
+          "tp": 264,
+          "fp": 63,
+          "fn": 32
+        },
+        "assertion_status": {
+          "tp": 299,
+          "fp": 28,
+          "fn": 32
+        },
+        "begin_date": {
+          "tp": 32,
+          "fp": 2,
+          "fn": 24
+        },
+        "end_date": {
+          "tp": 2,
+          "fp": 20,
+          "fn": 21
+        },
+        "value": {
+          "tp": 7,
+          "fp": 0,
+          "fn": 6
+        },
+        "unit": {
+          "tp": 7,
+          "fp": 1,
+          "fn": 8
+        }
+      },
+      "d34f60de6187c4ebefd6d31bcaca64630": {
+        "code": {
+          "tp": 115,
+          "fp": 51,
+          "fn": 67
+        },
+        "assertion_status": {
+          "tp": 150,
+          "fp": 16,
+          "fn": 67
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 1
+        },
+        "value": {
+          "tp": 12,
+          "fp": 1,
+          "fn": 3
+        },
+        "unit": {
+          "tp": 14,
+          "fp": 1,
+          "fn": 1
+        }
+      },
+      "d3f613256b944611d228c7d204b0de699": {
+        "code": {
+          "tp": 92,
+          "fp": 14,
+          "fn": 55
+        },
+        "assertion_status": {
+          "tp": 102,
+          "fp": 4,
+          "fn": 55
+        },
+        "begin_date": {
+          "tp": 4,
+          "fp": 0,
+          "fn": 4
+        },
+        "end_date": {
+          "tp": 4,
+          "fp": 0,
+          "fn": 4
+        },
+        "value": {
+          "tp": 8,
+          "fp": 1,
+          "fn": 2
+        },
+        "unit": {
+          "tp": 8,
+          "fp": 1,
+          "fn": 1
+        }
+      },
+      "d54bcf6fe1fa225b13277b3b115fdcc3d": {
+        "code": {
+          "tp": 213,
+          "fp": 78,
+          "fn": 21
+        },
+        "assertion_status": {
+          "tp": 224,
+          "fp": 48,
+          "fn": 40
+        },
+        "begin_date": {
+          "tp": 26,
+          "fp": 0,
+          "fn": 4
+        },
+        "end_date": {
+          "tp": 25,
+          "fp": 1,
+          "fn": 3
+        },
+        "value": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 5
+        },
+        "unit": {
+          "tp": 6,
+          "fp": 2,
+          "fn": 1
+        }
+      },
+      "dff4a5b3e1c4cd860f8e2b5c95bd14b51": {
+        "code": {
+          "tp": 216,
+          "fp": 48,
+          "fn": 49
+        },
+        "assertion_status": {
+          "tp": 240,
+          "fp": 24,
+          "fn": 49
+        },
+        "begin_date": {
+          "tp": 39,
+          "fp": 2,
+          "fn": 34
+        },
+        "end_date": {
+          "tp": 36,
+          "fp": 4,
+          "fn": 34
+        },
+        "value": {
+          "tp": 29,
+          "fp": 0,
+          "fn": 7
+        },
+        "unit": {
+          "tp": 34,
+          "fp": 4,
+          "fn": 11
+        }
+      },
+      "report03": {
+        "code": {
+          "tp": 119,
+          "fp": 61,
+          "fn": 73
+        },
+        "assertion_status": {
+          "tp": 165,
+          "fp": 15,
+          "fn": 72
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "value": {
+          "tp": 29,
+          "fp": 1,
+          "fn": 13
+        },
+        "unit": {
+          "tp": 48,
+          "fp": 6,
+          "fn": 13
+        }
+      },
+      "report04": {
+        "code": {
+          "tp": 132,
+          "fp": 31,
+          "fn": 46
+        },
+        "assertion_status": {
+          "tp": 150,
+          "fp": 12,
+          "fn": 46
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 1
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 1
+        },
+        "value": {
+          "tp": 43,
+          "fp": 0,
+          "fn": 15
+        },
+        "unit": {
+          "tp": 57,
+          "fp": 15,
+          "fn": 6
+        }
+      },
+      "report06": {
+        "code": {
+          "tp": 385,
+          "fp": 159,
+          "fn": 125
+        },
+        "assertion_status": {
+          "tp": 461,
+          "fp": 83,
+          "fn": 125
+        },
+        "begin_date": {
+          "tp": 12,
+          "fp": 0,
+          "fn": 1
+        },
+        "end_date": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 2
+        },
+        "value": {
+          "tp": 103,
+          "fp": 4,
+          "fn": 41
+        },
+        "unit": {
+          "tp": 127,
+          "fp": 8,
+          "fn": 36
+        }
+      },
+      "report07": {
+        "code": {
+          "tp": 133,
+          "fp": 25,
+          "fn": 85
+        },
+        "assertion_status": {
+          "tp": 142,
+          "fp": 16,
+          "fn": 85
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 11
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 11
+        },
+        "value": {
+          "tp": 22,
+          "fp": 0,
+          "fn": 22
+        },
+        "unit": {
+          "tp": 23,
+          "fp": 4,
+          "fn": 20
+        }
+      }
+    },
+    "coral_breastca": {
+      "21": {
+        "code": {
+          "tp": 188,
+          "fp": 21,
+          "fn": 75
+        },
+        "assertion_status": {
+          "tp": 170,
+          "fp": 39,
+          "fn": 75
+        },
+        "begin_date": {
+          "tp": 118,
+          "fp": 14,
+          "fn": 43
+        },
+        "end_date": {
+          "tp": 94,
+          "fp": 27,
+          "fn": 42
+        },
+        "value": {
+          "tp": 15,
+          "fp": 0,
+          "fn": 16
+        },
+        "unit": {
+          "tp": 14,
+          "fp": 2,
+          "fn": 15
+        }
+      },
+      "22": {
+        "code": {
+          "tp": 159,
+          "fp": 54,
+          "fn": 39
+        },
+        "assertion_status": {
+          "tp": 140,
+          "fp": 73,
+          "fn": 39
+        },
+        "begin_date": {
+          "tp": 40,
+          "fp": 0,
+          "fn": 21
+        },
+        "end_date": {
+          "tp": 40,
+          "fp": 0,
+          "fn": 27
+        },
+        "value": {
+          "tp": 9,
+          "fp": 0,
+          "fn": 12
+        },
+        "unit": {
+          "tp": 10,
+          "fp": 0,
+          "fn": 11
+        }
+      },
+      "23": {
+        "code": {
+          "tp": 287,
+          "fp": 79,
+          "fn": 81
+        },
+        "assertion_status": {
+          "tp": 303,
+          "fp": 63,
+          "fn": 79
+        },
+        "begin_date": {
+          "tp": 16,
+          "fp": 0,
+          "fn": 49
+        },
+        "end_date": {
+          "tp": 10,
+          "fp": 0,
+          "fn": 43
+        },
+        "value": {
+          "tp": 23,
+          "fp": 1,
+          "fn": 22
+        },
+        "unit": {
+          "tp": 32,
+          "fp": 2,
+          "fn": 21
+        }
+      },
+      "24": {
+        "code": {
+          "tp": 159,
+          "fp": 48,
+          "fn": 17
+        },
+        "assertion_status": {
+          "tp": 172,
+          "fp": 35,
+          "fn": 17
+        },
+        "begin_date": {
+          "tp": 135,
+          "fp": 2,
+          "fn": 21
+        },
+        "end_date": {
+          "tp": 135,
+          "fp": 2,
+          "fn": 20
+        },
+        "value": {
+          "tp": 25,
+          "fp": 0,
+          "fn": 14
+        },
+        "unit": {
+          "tp": 19,
+          "fp": 2,
+          "fn": 17
+        }
+      },
+      "25": {
+        "code": {
+          "tp": 89,
+          "fp": 36,
+          "fn": 34
+        },
+        "assertion_status": {
+          "tp": 79,
+          "fp": 26,
+          "fn": 53
+        },
+        "begin_date": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 22
+        },
+        "end_date": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 21
+        },
+        "value": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 12
+        },
+        "unit": {
+          "tp": 17,
+          "fp": 4,
+          "fn": 6
+        }
+      },
+      "28": {
+        "code": {
+          "tp": 156,
+          "fp": 81,
+          "fn": 75
+        },
+        "assertion_status": {
+          "tp": 200,
+          "fp": 37,
+          "fn": 75
+        },
+        "begin_date": {
+          "tp": 69,
+          "fp": 17,
+          "fn": 19
+        },
+        "end_date": {
+          "tp": 67,
+          "fp": 17,
+          "fn": 18
+        },
+        "value": {
+          "tp": 12,
+          "fp": 3,
+          "fn": 17
+        },
+        "unit": {
+          "tp": 21,
+          "fp": 1,
+          "fn": 23
+        }
+      },
+      "31": {
+        "code": {
+          "tp": 139,
+          "fp": 41,
+          "fn": 88
+        },
+        "assertion_status": {
+          "tp": 170,
+          "fp": 10,
+          "fn": 88
+        },
+        "begin_date": {
+          "tp": 57,
+          "fp": 6,
+          "fn": 48
+        },
+        "end_date": {
+          "tp": 47,
+          "fp": 8,
+          "fn": 50
+        },
+        "value": {
+          "tp": 21,
+          "fp": 1,
+          "fn": 5
+        },
+        "unit": {
+          "tp": 20,
+          "fp": 5,
+          "fn": 10
+        }
+      },
+      "32": {
+        "code": {
+          "tp": 256,
+          "fp": 76,
+          "fn": 93
+        },
+        "assertion_status": {
+          "tp": 256,
+          "fp": 76,
+          "fn": 93
+        },
+        "begin_date": {
+          "tp": 92,
+          "fp": 20,
+          "fn": 45
+        },
+        "end_date": {
+          "tp": 95,
+          "fp": 17,
+          "fn": 45
+        },
+        "value": {
+          "tp": 25,
+          "fp": 1,
+          "fn": 27
+        },
+        "unit": {
+          "tp": 33,
+          "fp": 1,
+          "fn": 30
+        }
+      },
+      "34": {
+        "code": {
+          "tp": 173,
+          "fp": 86,
+          "fn": 171
+        },
+        "assertion_status": {
+          "tp": 207,
+          "fp": 52,
+          "fn": 171
+        },
+        "begin_date": {
+          "tp": 89,
+          "fp": 2,
+          "fn": 158
+        },
+        "end_date": {
+          "tp": 89,
+          "fp": 2,
+          "fn": 158
+        },
+        "value": {
+          "tp": 8,
+          "fp": 0,
+          "fn": 31
+        },
+        "unit": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 35
+        }
+      },
+      "35": {
+        "code": {
+          "tp": 87,
+          "fp": 27,
+          "fn": 56
+        },
+        "assertion_status": {
+          "tp": 85,
+          "fp": 29,
+          "fn": 55
+        },
+        "begin_date": {
+          "tp": 55,
+          "fp": 0,
+          "fn": 29
+        },
+        "end_date": {
+          "tp": 50,
+          "fp": 1,
+          "fn": 23
+        },
+        "value": {
+          "tp": 5,
+          "fp": 0,
+          "fn": 6
+        },
+        "unit": {
+          "tp": 7,
+          "fp": 1,
+          "fn": 12
+        }
+      },
+      "36": {
+        "code": {
+          "tp": 126,
+          "fp": 59,
+          "fn": 122
+        },
+        "assertion_status": {
+          "tp": 162,
+          "fp": 23,
+          "fn": 122
+        },
+        "begin_date": {
+          "tp": 90,
+          "fp": 14,
+          "fn": 67
+        },
+        "end_date": {
+          "tp": 82,
+          "fp": 22,
+          "fn": 59
+        },
+        "value": {
+          "tp": 14,
+          "fp": 0,
+          "fn": 20
+        },
+        "unit": {
+          "tp": 18,
+          "fp": 0,
+          "fn": 27
+        }
+      },
+      "37": {
+        "code": {
+          "tp": 181,
+          "fp": 60,
+          "fn": 50
+        },
+        "assertion_status": {
+          "tp": 182,
+          "fp": 59,
+          "fn": 50
+        },
+        "begin_date": {
+          "tp": 163,
+          "fp": 1,
+          "fn": 41
+        },
+        "end_date": {
+          "tp": 158,
+          "fp": 6,
+          "fn": 42
+        },
+        "value": {
+          "tp": 11,
+          "fp": 0,
+          "fn": 11
+        },
+        "unit": {
+          "tp": 14,
+          "fp": 1,
+          "fn": 14
+        }
+      },
+      "38": {
+        "code": {
+          "tp": 156,
+          "fp": 74,
+          "fn": 55
+        },
+        "assertion_status": {
+          "tp": 209,
+          "fp": 21,
+          "fn": 55
+        },
+        "begin_date": {
+          "tp": 79,
+          "fp": 1,
+          "fn": 77
+        },
+        "end_date": {
+          "tp": 72,
+          "fp": 6,
+          "fn": 77
+        },
+        "value": {
+          "tp": 23,
+          "fp": 0,
+          "fn": 9
+        },
+        "unit": {
+          "tp": 29,
+          "fp": 2,
+          "fn": 15
+        }
+      }
+    },
+    "coral_pdac": {
+      "0": {
+        "code": {
+          "tp": 141,
+          "fp": 46,
+          "fn": 27
+        },
+        "assertion_status": {
+          "tp": 172,
+          "fp": 14,
+          "fn": 28
+        },
+        "begin_date": {
+          "tp": 123,
+          "fp": 1,
+          "fn": 17
+        },
+        "end_date": {
+          "tp": 122,
+          "fp": 2,
+          "fn": 18
+        },
+        "value": {
+          "tp": 29,
+          "fp": 4,
+          "fn": 6
+        },
+        "unit": {
+          "tp": 42,
+          "fp": 4,
+          "fn": 9
+        }
+      },
+      "10": {
+        "code": {
+          "tp": 123,
+          "fp": 42,
+          "fn": 60
+        },
+        "assertion_status": {
+          "tp": 122,
+          "fp": 43,
+          "fn": 60
+        },
+        "begin_date": {
+          "tp": 108,
+          "fp": 13,
+          "fn": 30
+        },
+        "end_date": {
+          "tp": 102,
+          "fp": 16,
+          "fn": 30
+        },
+        "value": {
+          "tp": 24,
+          "fp": 0,
+          "fn": 8
+        },
+        "unit": {
+          "tp": 26,
+          "fp": 0,
+          "fn": 13
+        }
+      },
+      "13": {
+        "code": {
+          "tp": 155,
+          "fp": 60,
+          "fn": 84
+        },
+        "assertion_status": {
+          "tp": 188,
+          "fp": 27,
+          "fn": 84
+        },
+        "begin_date": {
+          "tp": 82,
+          "fp": 39,
+          "fn": 123
+        },
+        "end_date": {
+          "tp": 88,
+          "fp": 27,
+          "fn": 98
+        },
+        "value": {
+          "tp": 27,
+          "fp": 0,
+          "fn": 8
+        },
+        "unit": {
+          "tp": 13,
+          "fp": 0,
+          "fn": 30
+        }
+      },
+      "14": {
+        "code": {
+          "tp": 258,
+          "fp": 113,
+          "fn": 52
+        },
+        "assertion_status": {
+          "tp": 313,
+          "fp": 58,
+          "fn": 52
+        },
+        "begin_date": {
+          "tp": 75,
+          "fp": 11,
+          "fn": 68
+        },
+        "end_date": {
+          "tp": 68,
+          "fp": 18,
+          "fn": 68
+        },
+        "value": {
+          "tp": 50,
+          "fp": 5,
+          "fn": 20
+        },
+        "unit": {
+          "tp": 53,
+          "fp": 4,
+          "fn": 19
+        }
+      },
+      "15": {
+        "code": {
+          "tp": 173,
+          "fp": 79,
+          "fn": 73
+        },
+        "assertion_status": {
+          "tp": 230,
+          "fp": 22,
+          "fn": 73
+        },
+        "begin_date": {
+          "tp": 182,
+          "fp": 13,
+          "fn": 84
+        },
+        "end_date": {
+          "tp": 173,
+          "fp": 11,
+          "fn": 86
+        },
+        "value": {
+          "tp": 54,
+          "fp": 0,
+          "fn": 17
+        },
+        "unit": {
+          "tp": 52,
+          "fp": 1,
+          "fn": 19
+        }
+      },
+      "16": {
+        "code": {
+          "tp": 104,
+          "fp": 55,
+          "fn": 42
+        },
+        "assertion_status": {
+          "tp": 148,
+          "fp": 11,
+          "fn": 42
+        },
+        "begin_date": {
+          "tp": 126,
+          "fp": 3,
+          "fn": 36
+        },
+        "end_date": {
+          "tp": 123,
+          "fp": 5,
+          "fn": 34
+        },
+        "value": {
+          "tp": 19,
+          "fp": 0,
+          "fn": 1
+        },
+        "unit": {
+          "tp": 24,
+          "fp": 4,
+          "fn": 3
+        }
+      },
+      "17": {
+        "code": {
+          "tp": 197,
+          "fp": 78,
+          "fn": 33
+        },
+        "assertion_status": {
+          "tp": 215,
+          "fp": 60,
+          "fn": 33
+        },
+        "begin_date": {
+          "tp": 83,
+          "fp": 0,
+          "fn": 42
+        },
+        "end_date": {
+          "tp": 95,
+          "fp": 0,
+          "fn": 43
+        },
+        "value": {
+          "tp": 62,
+          "fp": 3,
+          "fn": 15
+        },
+        "unit": {
+          "tp": 61,
+          "fp": 4,
+          "fn": 16
+        }
+      },
+      "18": {
+        "code": {
+          "tp": 105,
+          "fp": 64,
+          "fn": 32
+        },
+        "assertion_status": {
+          "tp": 151,
+          "fp": 13,
+          "fn": 35
+        },
+        "begin_date": {
+          "tp": 41,
+          "fp": 0,
+          "fn": 23
+        },
+        "end_date": {
+          "tp": 34,
+          "fp": 2,
+          "fn": 24
+        },
+        "value": {
+          "tp": 34,
+          "fp": 5,
+          "fn": 2
+        },
+        "unit": {
+          "tp": 48,
+          "fp": 6,
+          "fn": 7
+        }
+      },
+      "1": {
+        "code": {
+          "tp": 180,
+          "fp": 82,
+          "fn": 88
+        },
+        "assertion_status": {
+          "tp": 231,
+          "fp": 30,
+          "fn": 88
+        },
+        "begin_date": {
+          "tp": 115,
+          "fp": 29,
+          "fn": 68
+        },
+        "end_date": {
+          "tp": 113,
+          "fp": 14,
+          "fn": 86
+        },
+        "value": {
+          "tp": 42,
+          "fp": 0,
+          "fn": 31
+        },
+        "unit": {
+          "tp": 40,
+          "fp": 2,
+          "fn": 36
+        }
+      },
+      "2": {
+        "code": {
+          "tp": 208,
+          "fp": 70,
+          "fn": 103
+        },
+        "assertion_status": {
+          "tp": 230,
+          "fp": 48,
+          "fn": 103
+        },
+        "begin_date": {
+          "tp": 91,
+          "fp": 5,
+          "fn": 166
+        },
+        "end_date": {
+          "tp": 88,
+          "fp": 3,
+          "fn": 163
+        },
+        "value": {
+          "tp": 31,
+          "fp": 0,
+          "fn": 6
+        },
+        "unit": {
+          "tp": 38,
+          "fp": 7,
+          "fn": 11
+        }
+      },
+      "3": {
+        "code": {
+          "tp": 91,
+          "fp": 33,
+          "fn": 65
+        },
+        "assertion_status": {
+          "tp": 110,
+          "fp": 14,
+          "fn": 65
+        },
+        "begin_date": {
+          "tp": 9,
+          "fp": 0,
+          "fn": 3
+        },
+        "end_date": {
+          "tp": 8,
+          "fp": 0,
+          "fn": 3
+        },
+        "value": {
+          "tp": 18,
+          "fp": 0,
+          "fn": 5
+        },
+        "unit": {
+          "tp": 16,
+          "fp": 0,
+          "fn": 7
+        }
+      },
+      "5": {
+        "code": {
+          "tp": 164,
+          "fp": 27,
+          "fn": 25
+        },
+        "assertion_status": {
+          "tp": 182,
+          "fp": 9,
+          "fn": 25
+        },
+        "begin_date": {
+          "tp": 45,
+          "fp": 1,
+          "fn": 3
+        },
+        "end_date": {
+          "tp": 46,
+          "fp": 1,
+          "fn": 3
+        },
+        "value": {
+          "tp": 37,
+          "fp": 0,
+          "fn": 12
+        },
+        "unit": {
+          "tp": 37,
+          "fp": 2,
+          "fn": 10
+        }
+      },
+      "6": {
+        "code": {
+          "tp": 167,
+          "fp": 67,
+          "fn": 41
+        },
+        "assertion_status": {
+          "tp": 185,
+          "fp": 48,
+          "fn": 41
+        },
+        "begin_date": {
+          "tp": 34,
+          "fp": 1,
+          "fn": 44
+        },
+        "end_date": {
+          "tp": 41,
+          "fp": 3,
+          "fn": 54
+        },
+        "value": {
+          "tp": 39,
+          "fp": 0,
+          "fn": 11
+        },
+        "unit": {
+          "tp": 36,
+          "fp": 1,
+          "fn": 13
+        }
+      },
+      "7": {
+        "code": {
+          "tp": 192,
+          "fp": 70,
+          "fn": 146
+        },
+        "assertion_status": {
+          "tp": 220,
+          "fp": 42,
+          "fn": 146
+        },
+        "begin_date": {
+          "tp": 70,
+          "fp": 1,
+          "fn": 117
+        },
+        "end_date": {
+          "tp": 64,
+          "fp": 0,
+          "fn": 113
+        },
+        "value": {
+          "tp": 24,
+          "fp": 0,
+          "fn": 9
+        },
+        "unit": {
+          "tp": 30,
+          "fp": 3,
+          "fn": 7
+        }
+      },
+      "9": {
+        "code": {
+          "tp": 242,
+          "fp": 143,
+          "fn": 114
+        },
+        "assertion_status": {
+          "tp": 316,
+          "fp": 69,
+          "fn": 114
+        },
+        "begin_date": {
+          "tp": 215,
+          "fp": 33,
+          "fn": 106
+        },
+        "end_date": {
+          "tp": 218,
+          "fp": 16,
+          "fn": 88
+        },
+        "value": {
+          "tp": 74,
+          "fp": 1,
+          "fn": 12
+        },
+        "unit": {
+          "tp": 78,
+          "fp": 19,
+          "fn": 22
+        }
+      }
+    }
+  },
+  "llama": {
+    "4CE": {
+      "BCH_1": {
+        "code": {
+          "tp": 141,
+          "fp": 29,
+          "fn": 37
+        },
+        "assertion_status": {
+          "tp": 147,
+          "fp": 23,
+          "fn": 37
+        },
+        "begin_date": {
+          "tp": 24,
+          "fp": 31,
+          "fn": 0
+        },
+        "end_date": {
+          "tp": 1,
+          "fp": 54,
+          "fn": 0
+        },
+        "value": {
+          "tp": 20,
+          "fp": 0,
+          "fn": 20
+        },
+        "unit": {
+          "tp": 23,
+          "fp": 0,
+          "fn": 31
+        }
+      },
+      "BCH_5": {
+        "code": {
+          "tp": 152,
+          "fp": 30,
+          "fn": 22
+        },
+        "assertion_status": {
+          "tp": 152,
+          "fp": 30,
+          "fn": 22
+        },
+        "begin_date": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        },
+        "end_date": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        },
+        "value": {
+          "tp": 37,
+          "fp": 0,
+          "fn": 7
+        },
+        "unit": {
+          "tp": 39,
+          "fp": 0,
+          "fn": 8
+        }
+      },
+      "BCH_6": {
+        "code": {
+          "tp": 76,
+          "fp": 29,
+          "fn": 32
+        },
+        "assertion_status": {
+          "tp": 93,
+          "fp": 12,
+          "fn": 32
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "value": {
+          "tp": 20,
+          "fp": 0,
+          "fn": 4
+        },
+        "unit": {
+          "tp": 19,
+          "fp": 2,
+          "fn": 8
+        }
+      },
+      "KUMC_1": {
+        "code": {
+          "tp": 56,
+          "fp": 45,
+          "fn": 23
+        },
+        "assertion_status": {
+          "tp": 75,
+          "fp": 26,
+          "fn": 23
+        },
+        "begin_date": {
+          "tp": 43,
+          "fp": 17,
+          "fn": 54
+        },
+        "end_date": {
+          "tp": 10,
+          "fp": 42,
+          "fn": 45
+        },
+        "value": {
+          "tp": 24,
+          "fp": 0,
+          "fn": 5
+        },
+        "unit": {
+          "tp": 25,
+          "fp": 0,
+          "fn": 4
+        }
+      },
+      "KUMC_2": {
+        "code": {
+          "tp": 209,
+          "fp": 32,
+          "fn": 98
+        },
+        "assertion_status": {
+          "tp": 231,
+          "fp": 10,
+          "fn": 98
+        },
+        "begin_date": {
+          "tp": 132,
+          "fp": 2,
+          "fn": 93
+        },
+        "end_date": {
+          "tp": 117,
+          "fp": 2,
+          "fn": 100
+        },
+        "value": {
+          "tp": 5,
+          "fp": 0,
+          "fn": 40
+        },
+        "unit": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 44
+        }
+      },
+      "KUMC_5": {
+        "code": {
+          "tp": 313,
+          "fp": 60,
+          "fn": 57
+        },
+        "assertion_status": {
+          "tp": 338,
+          "fp": 34,
+          "fn": 57
+        },
+        "begin_date": {
+          "tp": 316,
+          "fp": 3,
+          "fn": 47
+        },
+        "end_date": {
+          "tp": 284,
+          "fp": 2,
+          "fn": 46
+        },
+        "value": {
+          "tp": 21,
+          "fp": 0,
+          "fn": 19
+        },
+        "unit": {
+          "tp": 23,
+          "fp": 0,
+          "fn": 24
+        }
+      },
+      "KUMC_6": {
+        "code": {
+          "tp": 234,
+          "fp": 42,
+          "fn": 104
+        },
+        "assertion_status": {
+          "tp": 264,
+          "fp": 12,
+          "fn": 103
+        },
+        "begin_date": {
+          "tp": 121,
+          "fp": 6,
+          "fn": 63
+        },
+        "end_date": {
+          "tp": 102,
+          "fp": 5,
+          "fn": 52
+        },
+        "value": {
+          "tp": 51,
+          "fp": 0,
+          "fn": 6
+        },
+        "unit": {
+          "tp": 53,
+          "fp": 2,
+          "fn": 12
+        }
+      },
+      "KUMC_7": {
+        "code": {
+          "tp": 101,
+          "fp": 33,
+          "fn": 22
+        },
+        "assertion_status": {
+          "tp": 125,
+          "fp": 9,
+          "fn": 22
+        },
+        "begin_date": {
+          "tp": 9,
+          "fp": 0,
+          "fn": 1
+        },
+        "end_date": {
+          "tp": 9,
+          "fp": 0,
+          "fn": 0
+        },
+        "value": {
+          "tp": 22,
+          "fp": 3,
+          "fn": 5
+        },
+        "unit": {
+          "tp": 25,
+          "fp": 5,
+          "fn": 2
+        }
+      },
+      "UPMC_Note1": {
+        "code": {
+          "tp": 126,
+          "fp": 22,
+          "fn": 37
+        },
+        "assertion_status": {
+          "tp": 142,
+          "fp": 6,
+          "fn": 37
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 1
+        },
+        "value": {
+          "tp": 47,
+          "fp": 0,
+          "fn": 28
+        },
+        "unit": {
+          "tp": 54,
+          "fp": 3,
+          "fn": 6
+        }
+      },
+      "UPMC_Note3": {
+        "code": {
+          "tp": 157,
+          "fp": 49,
+          "fn": 90
+        },
+        "assertion_status": {
+          "tp": 193,
+          "fp": 13,
+          "fn": 90
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "value": {
+          "tp": 44,
+          "fp": 0,
+          "fn": 27
+        },
+        "unit": {
+          "tp": 47,
+          "fp": 1,
+          "fn": 29
+        }
+      },
+      "UPMC_Note4": {
+        "code": {
+          "tp": 88,
+          "fp": 14,
+          "fn": 34
+        },
+        "assertion_status": {
+          "tp": 93,
+          "fp": 9,
+          "fn": 34
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 6
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 6
+        },
+        "value": {
+          "tp": 32,
+          "fp": 1,
+          "fn": 20
+        },
+        "unit": {
+          "tp": 28,
+          "fp": 1,
+          "fn": 25
+        }
+      },
+      "UPMC_Note7": {
+        "code": {
+          "tp": 125,
+          "fp": 21,
+          "fn": 63
+        },
+        "assertion_status": {
+          "tp": 129,
+          "fp": 17,
+          "fn": 62
+        },
+        "begin_date": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 1
+        },
+        "end_date": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        },
+        "value": {
+          "tp": 42,
+          "fp": 1,
+          "fn": 21
+        },
+        "unit": {
+          "tp": 49,
+          "fp": 2,
+          "fn": 16
+        }
+      },
+      "d30982c684512d4f0b6fd79836539d9ac": {
+        "code": {
+          "tp": 226,
+          "fp": 36,
+          "fn": 93
+        },
+        "assertion_status": {
+          "tp": 252,
+          "fp": 10,
+          "fn": 93
+        },
+        "begin_date": {
+          "tp": 37,
+          "fp": 0,
+          "fn": 19
+        },
+        "end_date": {
+          "tp": 22,
+          "fp": 1,
+          "fn": 18
+        },
+        "value": {
+          "tp": 10,
+          "fp": 0,
+          "fn": 3
+        },
+        "unit": {
+          "tp": 12,
+          "fp": 0,
+          "fn": 4
+        }
+      },
+      "d34f60de6187c4ebefd6d31bcaca64630": {
+        "code": {
+          "tp": 164,
+          "fp": 34,
+          "fn": 24
+        },
+        "assertion_status": {
+          "tp": 170,
+          "fp": 28,
+          "fn": 24
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 2
+        },
+        "value": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 14
+        },
+        "unit": {
+          "tp": 5,
+          "fp": 0,
+          "fn": 11
+        }
+      },
+      "d3f613256b944611d228c7d204b0de699": {
+        "code": {
+          "tp": 81,
+          "fp": 26,
+          "fn": 49
+        },
+        "assertion_status": {
+          "tp": 97,
+          "fp": 10,
+          "fn": 49
+        },
+        "begin_date": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 7
+        },
+        "end_date": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 7
+        },
+        "value": {
+          "tp": 8,
+          "fp": 0,
+          "fn": 3
+        },
+        "unit": {
+          "tp": 8,
+          "fp": 0,
+          "fn": 2
+        }
+      },
+      "d54bcf6fe1fa225b13277b3b115fdcc3d": {
+        "code": {
+          "tp": 171,
+          "fp": 65,
+          "fn": 58
+        },
+        "assertion_status": {
+          "tp": 225,
+          "fp": 11,
+          "fn": 58
+        },
+        "begin_date": {
+          "tp": 18,
+          "fp": 0,
+          "fn": 5
+        },
+        "end_date": {
+          "tp": 17,
+          "fp": 0,
+          "fn": 5
+        },
+        "value": {
+          "tp": 7,
+          "fp": 0,
+          "fn": 4
+        },
+        "unit": {
+          "tp": 6,
+          "fp": 1,
+          "fn": 2
+        }
+      },
+      "dff4a5b3e1c4cd860f8e2b5c95bd14b51": {
+        "code": {
+          "tp": 201,
+          "fp": 37,
+          "fn": 52
+        },
+        "assertion_status": {
+          "tp": 223,
+          "fp": 15,
+          "fn": 52
+        },
+        "begin_date": {
+          "tp": 27,
+          "fp": 8,
+          "fn": 29
+        },
+        "end_date": {
+          "tp": 27,
+          "fp": 8,
+          "fn": 28
+        },
+        "value": {
+          "tp": 26,
+          "fp": 0,
+          "fn": 11
+        },
+        "unit": {
+          "tp": 22,
+          "fp": 2,
+          "fn": 26
+        }
+      },
+      "report03": {
+        "code": {
+          "tp": 150,
+          "fp": 50,
+          "fn": 51
+        },
+        "assertion_status": {
+          "tp": 192,
+          "fp": 8,
+          "fn": 50
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "value": {
+          "tp": 28,
+          "fp": 3,
+          "fn": 11
+        },
+        "unit": {
+          "tp": 38,
+          "fp": 2,
+          "fn": 26
+        }
+      },
+      "report04": {
+        "code": {
+          "tp": 157,
+          "fp": 30,
+          "fn": 14
+        },
+        "assertion_status": {
+          "tp": 178,
+          "fp": 8,
+          "fn": 14
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 1
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 1
+        },
+        "value": {
+          "tp": 40,
+          "fp": 0,
+          "fn": 18
+        },
+        "unit": {
+          "tp": 67,
+          "fp": 0,
+          "fn": 11
+        }
+      },
+      "report06": {
+        "code": {
+          "tp": 406,
+          "fp": 109,
+          "fn": 123
+        },
+        "assertion_status": {
+          "tp": 476,
+          "fp": 39,
+          "fn": 123
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 13
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 12
+        },
+        "value": {
+          "tp": 81,
+          "fp": 1,
+          "fn": 61
+        },
+        "unit": {
+          "tp": 94,
+          "fp": 2,
+          "fn": 71
+        }
+      },
+      "report07": {
+        "code": {
+          "tp": 160,
+          "fp": 32,
+          "fn": 50
+        },
+        "assertion_status": {
+          "tp": 167,
+          "fp": 25,
+          "fn": 50
+        },
+        "begin_date": {
+          "tp": 4,
+          "fp": 0,
+          "fn": 7
+        },
+        "end_date": {
+          "tp": 4,
+          "fp": 0,
+          "fn": 7
+        },
+        "value": {
+          "tp": 27,
+          "fp": 0,
+          "fn": 17
+        },
+        "unit": {
+          "tp": 22,
+          "fp": 4,
+          "fn": 21
+        }
+      }
+    },
+    "coral_breastca": {
+      "21": {
+        "code": {
+          "tp": 150,
+          "fp": 43,
+          "fn": 87
+        },
+        "assertion_status": {
+          "tp": 146,
+          "fp": 47,
+          "fn": 87
+        },
+        "begin_date": {
+          "tp": 62,
+          "fp": 11,
+          "fn": 100
+        },
+        "end_date": {
+          "tp": 56,
+          "fp": 17,
+          "fn": 88
+        },
+        "value": {
+          "tp": 11,
+          "fp": 0,
+          "fn": 21
+        },
+        "unit": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 26
+        }
+      },
+      "22": {
+        "code": {
+          "tp": 109,
+          "fp": 59,
+          "fn": 74
+        },
+        "assertion_status": {
+          "tp": 126,
+          "fp": 42,
+          "fn": 74
+        },
+        "begin_date": {
+          "tp": 38,
+          "fp": 1,
+          "fn": 22
+        },
+        "end_date": {
+          "tp": 43,
+          "fp": 1,
+          "fn": 22
+        },
+        "value": {
+          "tp": 9,
+          "fp": 0,
+          "fn": 12
+        },
+        "unit": {
+          "tp": 4,
+          "fp": 0,
+          "fn": 17
+        }
+      },
+      "23": {
+        "code": {
+          "tp": 201,
+          "fp": 100,
+          "fn": 118
+        },
+        "assertion_status": {
+          "tp": 272,
+          "fp": 27,
+          "fn": 118
+        },
+        "begin_date": {
+          "tp": 28,
+          "fp": 0,
+          "fn": 34
+        },
+        "end_date": {
+          "tp": 21,
+          "fp": 0,
+          "fn": 31
+        },
+        "value": {
+          "tp": 21,
+          "fp": 0,
+          "fn": 18
+        },
+        "unit": {
+          "tp": 19,
+          "fp": 2,
+          "fn": 28
+        }
+      },
+      "24": {
+        "code": {
+          "tp": 108,
+          "fp": 32,
+          "fn": 104
+        },
+        "assertion_status": {
+          "tp": 118,
+          "fp": 22,
+          "fn": 103
+        },
+        "begin_date": {
+          "tp": 74,
+          "fp": 2,
+          "fn": 86
+        },
+        "end_date": {
+          "tp": 72,
+          "fp": 4,
+          "fn": 85
+        },
+        "value": {
+          "tp": 12,
+          "fp": 0,
+          "fn": 31
+        },
+        "unit": {
+          "tp": 12,
+          "fp": 0,
+          "fn": 26
+        }
+      },
+      "25": {
+        "code": {
+          "tp": 66,
+          "fp": 11,
+          "fn": 70
+        },
+        "assertion_status": {
+          "tp": 46,
+          "fp": 30,
+          "fn": 70
+        },
+        "begin_date": {
+          "tp": 17,
+          "fp": 1,
+          "fn": 10
+        },
+        "end_date": {
+          "tp": 16,
+          "fp": 1,
+          "fn": 10
+        },
+        "value": {
+          "tp": 8,
+          "fp": 0,
+          "fn": 7
+        },
+        "unit": {
+          "tp": 10,
+          "fp": 0,
+          "fn": 10
+        }
+      },
+      "28": {
+        "code": {
+          "tp": 206,
+          "fp": 57,
+          "fn": 34
+        },
+        "assertion_status": {
+          "tp": 246,
+          "fp": 17,
+          "fn": 34
+        },
+        "begin_date": {
+          "tp": 77,
+          "fp": 2,
+          "fn": 22
+        },
+        "end_date": {
+          "tp": 73,
+          "fp": 2,
+          "fn": 22
+        },
+        "value": {
+          "tp": 15,
+          "fp": 0,
+          "fn": 17
+        },
+        "unit": {
+          "tp": 16,
+          "fp": 1,
+          "fn": 28
+        }
+      },
+      "31": {
+        "code": {
+          "tp": 145,
+          "fp": 33,
+          "fn": 85
+        },
+        "assertion_status": {
+          "tp": 168,
+          "fp": 10,
+          "fn": 85
+        },
+        "begin_date": {
+          "tp": 77,
+          "fp": 0,
+          "fn": 34
+        },
+        "end_date": {
+          "tp": 75,
+          "fp": 2,
+          "fn": 25
+        },
+        "value": {
+          "tp": 20,
+          "fp": 1,
+          "fn": 6
+        },
+        "unit": {
+          "tp": 22,
+          "fp": 2,
+          "fn": 11
+        }
+      },
+      "32": {
+        "code": {
+          "tp": 240,
+          "fp": 93,
+          "fn": 84
+        },
+        "assertion_status": {
+          "tp": 254,
+          "fp": 79,
+          "fn": 84
+        },
+        "begin_date": {
+          "tp": 105,
+          "fp": 11,
+          "fn": 39
+        },
+        "end_date": {
+          "tp": 105,
+          "fp": 10,
+          "fn": 40
+        },
+        "value": {
+          "tp": 23,
+          "fp": 0,
+          "fn": 29
+        },
+        "unit": {
+          "tp": 20,
+          "fp": 1,
+          "fn": 43
+        }
+      },
+      "34": {
+        "code": {
+          "tp": 238,
+          "fp": 86,
+          "fn": 85
+        },
+        "assertion_status": {
+          "tp": 287,
+          "fp": 37,
+          "fn": 85
+        },
+        "begin_date": {
+          "tp": 208,
+          "fp": 0,
+          "fn": 31
+        },
+        "end_date": {
+          "tp": 208,
+          "fp": 0,
+          "fn": 31
+        },
+        "value": {
+          "tp": 23,
+          "fp": 1,
+          "fn": 15
+        },
+        "unit": {
+          "tp": 25,
+          "fp": 1,
+          "fn": 15
+        }
+      },
+      "35": {
+        "code": {
+          "tp": 95,
+          "fp": 30,
+          "fn": 42
+        },
+        "assertion_status": {
+          "tp": 99,
+          "fp": 26,
+          "fn": 41
+        },
+        "begin_date": {
+          "tp": 28,
+          "fp": 1,
+          "fn": 55
+        },
+        "end_date": {
+          "tp": 27,
+          "fp": 1,
+          "fn": 46
+        },
+        "value": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 9
+        },
+        "unit": {
+          "tp": 7,
+          "fp": 0,
+          "fn": 13
+        }
+      },
+      "36": {
+        "code": {
+          "tp": 175,
+          "fp": 46,
+          "fn": 67
+        },
+        "assertion_status": {
+          "tp": 195,
+          "fp": 26,
+          "fn": 67
+        },
+        "begin_date": {
+          "tp": 100,
+          "fp": 5,
+          "fn": 59
+        },
+        "end_date": {
+          "tp": 94,
+          "fp": 5,
+          "fn": 58
+        },
+        "value": {
+          "tp": 13,
+          "fp": 0,
+          "fn": 21
+        },
+        "unit": {
+          "tp": 16,
+          "fp": 2,
+          "fn": 24
+        }
+      },
+      "37": {
+        "code": {
+          "tp": 148,
+          "fp": 38,
+          "fn": 99
+        },
+        "assertion_status": {
+          "tp": 153,
+          "fp": 33,
+          "fn": 99
+        },
+        "begin_date": {
+          "tp": 66,
+          "fp": 7,
+          "fn": 127
+        },
+        "end_date": {
+          "tp": 66,
+          "fp": 6,
+          "fn": 128
+        },
+        "value": {
+          "tp": 13,
+          "fp": 0,
+          "fn": 9
+        },
+        "unit": {
+          "tp": 12,
+          "fp": 2,
+          "fn": 15
+        }
+      },
+      "38": {
+        "code": {
+          "tp": 138,
+          "fp": 67,
+          "fn": 79
+        },
+        "assertion_status": {
+          "tp": 184,
+          "fp": 21,
+          "fn": 79
+        },
+        "begin_date": {
+          "tp": 107,
+          "fp": 2,
+          "fn": 55
+        },
+        "end_date": {
+          "tp": 103,
+          "fp": 2,
+          "fn": 55
+        },
+        "value": {
+          "tp": 10,
+          "fp": 0,
+          "fn": 26
+        },
+        "unit": {
+          "tp": 14,
+          "fp": 0,
+          "fn": 39
+        }
+      }
+    },
+    "coral_pdac": {
+      "0": {
+        "code": {
+          "tp": 149,
+          "fp": 35,
+          "fn": 25
+        },
+        "assertion_status": {
+          "tp": 175,
+          "fp": 9,
+          "fn": 25
+        },
+        "begin_date": {
+          "tp": 76,
+          "fp": 1,
+          "fn": 58
+        },
+        "end_date": {
+          "tp": 76,
+          "fp": 1,
+          "fn": 59
+        },
+        "value": {
+          "tp": 18,
+          "fp": 0,
+          "fn": 21
+        },
+        "unit": {
+          "tp": 32,
+          "fp": 0,
+          "fn": 23
+        }
+      },
+      "10": {
+        "code": {
+          "tp": 136,
+          "fp": 36,
+          "fn": 45
+        },
+        "assertion_status": {
+          "tp": 146,
+          "fp": 26,
+          "fn": 45
+        },
+        "begin_date": {
+          "tp": 96,
+          "fp": 2,
+          "fn": 58
+        },
+        "end_date": {
+          "tp": 97,
+          "fp": 2,
+          "fn": 47
+        },
+        "value": {
+          "tp": 23,
+          "fp": 0,
+          "fn": 11
+        },
+        "unit": {
+          "tp": 17,
+          "fp": 0,
+          "fn": 24
+        }
+      },
+      "13": {
+        "code": {
+          "tp": 193,
+          "fp": 36,
+          "fn": 45
+        },
+        "assertion_status": {
+          "tp": 210,
+          "fp": 19,
+          "fn": 45
+        },
+        "begin_date": {
+          "tp": 168,
+          "fp": 30,
+          "fn": 35
+        },
+        "end_date": {
+          "tp": 132,
+          "fp": 29,
+          "fn": 43
+        },
+        "value": {
+          "tp": 31,
+          "fp": 0,
+          "fn": 3
+        },
+        "unit": {
+          "tp": 26,
+          "fp": 0,
+          "fn": 17
+        }
+      },
+      "14": {
+        "code": {
+          "tp": 255,
+          "fp": 49,
+          "fn": 95
+        },
+        "assertion_status": {
+          "tp": 281,
+          "fp": 23,
+          "fn": 95
+        },
+        "begin_date": {
+          "tp": 132,
+          "fp": 1,
+          "fn": 17
+        },
+        "end_date": {
+          "tp": 116,
+          "fp": 17,
+          "fn": 17
+        },
+        "value": {
+          "tp": 48,
+          "fp": 2,
+          "fn": 21
+        },
+        "unit": {
+          "tp": 40,
+          "fp": 1,
+          "fn": 31
+        }
+      },
+      "15": {
+        "code": {
+          "tp": 175,
+          "fp": 61,
+          "fn": 73
+        },
+        "assertion_status": {
+          "tp": 219,
+          "fp": 17,
+          "fn": 73
+        },
+        "begin_date": {
+          "tp": 137,
+          "fp": 39,
+          "fn": 79
+        },
+        "end_date": {
+          "tp": 140,
+          "fp": 30,
+          "fn": 82
+        },
+        "value": {
+          "tp": 40,
+          "fp": 1,
+          "fn": 30
+        },
+        "unit": {
+          "tp": 38,
+          "fp": 1,
+          "fn": 33
+        }
+      },
+      "16": {
+        "code": {
+          "tp": 130,
+          "fp": 41,
+          "fn": 20
+        },
+        "assertion_status": {
+          "tp": 165,
+          "fp": 6,
+          "fn": 20
+        },
+        "begin_date": {
+          "tp": 107,
+          "fp": 3,
+          "fn": 49
+        },
+        "end_date": {
+          "tp": 107,
+          "fp": 2,
+          "fn": 47
+        },
+        "value": {
+          "tp": 17,
+          "fp": 0,
+          "fn": 3
+        },
+        "unit": {
+          "tp": 8,
+          "fp": 1,
+          "fn": 22
+        }
+      },
+      "17": {
+        "code": {
+          "tp": 216,
+          "fp": 32,
+          "fn": 27
+        },
+        "assertion_status": {
+          "tp": 212,
+          "fp": 36,
+          "fn": 27
+        },
+        "begin_date": {
+          "tp": 92,
+          "fp": 0,
+          "fn": 25
+        },
+        "end_date": {
+          "tp": 93,
+          "fp": 0,
+          "fn": 32
+        },
+        "value": {
+          "tp": 61,
+          "fp": 1,
+          "fn": 6
+        },
+        "unit": {
+          "tp": 61,
+          "fp": 0,
+          "fn": 8
+        }
+      },
+      "18": {
+        "code": {
+          "tp": 116,
+          "fp": 44,
+          "fn": 36
+        },
+        "assertion_status": {
+          "tp": 152,
+          "fp": 7,
+          "fn": 36
+        },
+        "begin_date": {
+          "tp": 26,
+          "fp": 1,
+          "fn": 36
+        },
+        "end_date": {
+          "tp": 22,
+          "fp": 0,
+          "fn": 36
+        },
+        "value": {
+          "tp": 39,
+          "fp": 0,
+          "fn": 1
+        },
+        "unit": {
+          "tp": 53,
+          "fp": 1,
+          "fn": 4
+        }
+      },
+      "1": {
+        "code": {
+          "tp": 154,
+          "fp": 55,
+          "fn": 104
+        },
+        "assertion_status": {
+          "tp": 195,
+          "fp": 13,
+          "fn": 104
+        },
+        "begin_date": {
+          "tp": 102,
+          "fp": 3,
+          "fn": 94
+        },
+        "end_date": {
+          "tp": 107,
+          "fp": 4,
+          "fn": 94
+        },
+        "value": {
+          "tp": 46,
+          "fp": 0,
+          "fn": 10
+        },
+        "unit": {
+          "tp": 47,
+          "fp": 1,
+          "fn": 7
+        }
+      },
+      "2": {
+        "code": {
+          "tp": 247,
+          "fp": 52,
+          "fn": 70
+        },
+        "assertion_status": {
+          "tp": 260,
+          "fp": 39,
+          "fn": 70
+        },
+        "begin_date": {
+          "tp": 93,
+          "fp": 8,
+          "fn": 164
+        },
+        "end_date": {
+          "tp": 87,
+          "fp": 6,
+          "fn": 163
+        },
+        "value": {
+          "tp": 28,
+          "fp": 0,
+          "fn": 9
+        },
+        "unit": {
+          "tp": 20,
+          "fp": 0,
+          "fn": 36
+        }
+      },
+      "3": {
+        "code": {
+          "tp": 142,
+          "fp": 26,
+          "fn": 14
+        },
+        "assertion_status": {
+          "tp": 157,
+          "fp": 11,
+          "fn": 14
+        },
+        "begin_date": {
+          "tp": 7,
+          "fp": 0,
+          "fn": 4
+        },
+        "end_date": {
+          "tp": 9,
+          "fp": 0,
+          "fn": 1
+        },
+        "value": {
+          "tp": 16,
+          "fp": 0,
+          "fn": 7
+        },
+        "unit": {
+          "tp": 15,
+          "fp": 0,
+          "fn": 8
+        }
+      },
+      "6": {
+        "code": {
+          "tp": 159,
+          "fp": 35,
+          "fn": 60
+        },
+        "assertion_status": {
+          "tp": 176,
+          "fp": 18,
+          "fn": 59
+        },
+        "begin_date": {
+          "tp": 55,
+          "fp": 13,
+          "fn": 10
+        },
+        "end_date": {
+          "tp": 58,
+          "fp": 22,
+          "fn": 16
+        },
+        "value": {
+          "tp": 40,
+          "fp": 0,
+          "fn": 10
+        },
+        "unit": {
+          "tp": 40,
+          "fp": 0,
+          "fn": 10
+        }
+      },
+      "7": {
+        "code": {
+          "tp": 243,
+          "fp": 73,
+          "fn": 65
+        },
+        "assertion_status": {
+          "tp": 287,
+          "fp": 29,
+          "fn": 65
+        },
+        "begin_date": {
+          "tp": 149,
+          "fp": 4,
+          "fn": 18
+        },
+        "end_date": {
+          "tp": 145,
+          "fp": 0,
+          "fn": 14
+        },
+        "value": {
+          "tp": 28,
+          "fp": 2,
+          "fn": 3
+        },
+        "unit": {
+          "tp": 28,
+          "fp": 0,
+          "fn": 12
+        }
+      },
+      "9": {
+        "code": {
+          "tp": 281,
+          "fp": 140,
+          "fn": 65
+        },
+        "assertion_status": {
+          "tp": 375,
+          "fp": 46,
+          "fn": 65
+        },
+        "begin_date": {
+          "tp": 252,
+          "fp": 31,
+          "fn": 58
+        },
+        "end_date": {
+          "tp": 238,
+          "fp": 12,
+          "fn": 66
+        },
+        "value": {
+          "tp": 63,
+          "fp": 1,
+          "fn": 24
+        },
+        "unit": {
+          "tp": 56,
+          "fp": 7,
+          "fn": 55
+        }
+      }
+    }
+  },
+  "o3mini": {
+    "4CE": {
+      "BCH_1": {
+        "code": {
+          "tp": 131,
+          "fp": 32,
+          "fn": 46
+        },
+        "assertion_status": {
+          "tp": 136,
+          "fp": 27,
+          "fn": 46
+        },
+        "begin_date": {
+          "tp": 33,
+          "fp": 21,
+          "fn": 1
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 54,
+          "fn": 1
+        },
+        "value": {
+          "tp": 10,
+          "fp": 0,
+          "fn": 30
+        },
+        "unit": {
+          "tp": 10,
+          "fp": 0,
+          "fn": 44
+        }
+      },
+      "BCH_5": {
+        "code": {
+          "tp": 77,
+          "fp": 53,
+          "fn": 76
+        },
+        "assertion_status": {
+          "tp": 105,
+          "fp": 25,
+          "fn": 76
+        },
+        "begin_date": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        },
+        "end_date": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        },
+        "value": {
+          "tp": 29,
+          "fp": 0,
+          "fn": 15
+        },
+        "unit": {
+          "tp": 30,
+          "fp": 0,
+          "fn": 17
+        }
+      },
+      "BCH_6": {
+        "code": {
+          "tp": 64,
+          "fp": 34,
+          "fn": 44
+        },
+        "assertion_status": {
+          "tp": 83,
+          "fp": 15,
+          "fn": 44
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "value": {
+          "tp": 17,
+          "fp": 0,
+          "fn": 8
+        },
+        "unit": {
+          "tp": 17,
+          "fp": 0,
+          "fn": 13
+        }
+      },
+      "KUMC_1": {
+        "code": {
+          "tp": 60,
+          "fp": 31,
+          "fn": 50
+        },
+        "assertion_status": {
+          "tp": 77,
+          "fp": 14,
+          "fn": 50
+        },
+        "begin_date": {
+          "tp": 37,
+          "fp": 7,
+          "fn": 70
+        },
+        "end_date": {
+          "tp": 24,
+          "fp": 6,
+          "fn": 67
+        },
+        "value": {
+          "tp": 16,
+          "fp": 1,
+          "fn": 22
+        },
+        "unit": {
+          "tp": 23,
+          "fp": 2,
+          "fn": 15
+        }
+      },
+      "KUMC_2": {
+        "code": {
+          "tp": 193,
+          "fp": 54,
+          "fn": 92
+        },
+        "assertion_status": {
+          "tp": 217,
+          "fp": 30,
+          "fn": 92
+        },
+        "begin_date": {
+          "tp": 164,
+          "fp": 4,
+          "fn": 59
+        },
+        "end_date": {
+          "tp": 153,
+          "fp": 3,
+          "fn": 62
+        },
+        "value": {
+          "tp": 38,
+          "fp": 1,
+          "fn": 6
+        },
+        "unit": {
+          "tp": 31,
+          "fp": 9,
+          "fn": 10
+        }
+      },
+      "KUMC_5": {
+        "code": {
+          "tp": 204,
+          "fp": 69,
+          "fn": 178
+        },
+        "assertion_status": {
+          "tp": 233,
+          "fp": 40,
+          "fn": 177
+        },
+        "begin_date": {
+          "tp": 219,
+          "fp": 1,
+          "fn": 157
+        },
+        "end_date": {
+          "tp": 205,
+          "fp": 2,
+          "fn": 137
+        },
+        "value": {
+          "tp": 16,
+          "fp": 0,
+          "fn": 24
+        },
+        "unit": {
+          "tp": 11,
+          "fp": 14,
+          "fn": 22
+        }
+      },
+      "KUMC_6": {
+        "code": {
+          "tp": 216,
+          "fp": 78,
+          "fn": 97
+        },
+        "assertion_status": {
+          "tp": 253,
+          "fp": 40,
+          "fn": 97
+        },
+        "begin_date": {
+          "tp": 120,
+          "fp": 17,
+          "fn": 83
+        },
+        "end_date": {
+          "tp": 86,
+          "fp": 29,
+          "fn": 69
+        },
+        "value": {
+          "tp": 45,
+          "fp": 0,
+          "fn": 13
+        },
+        "unit": {
+          "tp": 40,
+          "fp": 14,
+          "fn": 14
+        }
+      },
+      "KUMC_7": {
+        "code": {
+          "tp": 83,
+          "fp": 46,
+          "fn": 44
+        },
+        "assertion_status": {
+          "tp": 97,
+          "fp": 32,
+          "fn": 44
+        },
+        "begin_date": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 4
+        },
+        "end_date": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 3
+        },
+        "value": {
+          "tp": 18,
+          "fp": 2,
+          "fn": 10
+        },
+        "unit": {
+          "tp": 25,
+          "fp": 4,
+          "fn": 3
+        }
+      },
+      "UPMC_Note1": {
+        "code": {
+          "tp": 92,
+          "fp": 35,
+          "fn": 63
+        },
+        "assertion_status": {
+          "tp": 123,
+          "fp": 4,
+          "fn": 63
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 1
+        },
+        "value": {
+          "tp": 45,
+          "fp": 1,
+          "fn": 29
+        },
+        "unit": {
+          "tp": 44,
+          "fp": 12,
+          "fn": 7
+        }
+      },
+      "UPMC_Note3": {
+        "code": {
+          "tp": 144,
+          "fp": 48,
+          "fn": 105
+        },
+        "assertion_status": {
+          "tp": 154,
+          "fp": 38,
+          "fn": 105
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "value": {
+          "tp": 40,
+          "fp": 2,
+          "fn": 29
+        },
+        "unit": {
+          "tp": 38,
+          "fp": 6,
+          "fn": 32
+        }
+      },
+      "UPMC_Note4": {
+        "code": {
+          "tp": 69,
+          "fp": 21,
+          "fn": 46
+        },
+        "assertion_status": {
+          "tp": 71,
+          "fp": 19,
+          "fn": 46
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 6
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 6
+        },
+        "value": {
+          "tp": 36,
+          "fp": 0,
+          "fn": 16
+        },
+        "unit": {
+          "tp": 32,
+          "fp": 1,
+          "fn": 21
+        }
+      },
+      "UPMC_Note7": {
+        "code": {
+          "tp": 111,
+          "fp": 42,
+          "fn": 52
+        },
+        "assertion_status": {
+          "tp": 141,
+          "fp": 12,
+          "fn": 51
+        },
+        "begin_date": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 1
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 1,
+          "fn": 0
+        },
+        "value": {
+          "tp": 40,
+          "fp": 1,
+          "fn": 23
+        },
+        "unit": {
+          "tp": 41,
+          "fp": 2,
+          "fn": 24
+        }
+      },
+      "d30982c684512d4f0b6fd79836539d9ac": {
+        "code": {
+          "tp": 198,
+          "fp": 35,
+          "fn": 124
+        },
+        "assertion_status": {
+          "tp": 213,
+          "fp": 20,
+          "fn": 124
+        },
+        "begin_date": {
+          "tp": 32,
+          "fp": 0,
+          "fn": 26
+        },
+        "end_date": {
+          "tp": 1,
+          "fp": 18,
+          "fn": 24
+        },
+        "value": {
+          "tp": 7,
+          "fp": 0,
+          "fn": 6
+        },
+        "unit": {
+          "tp": 8,
+          "fp": 0,
+          "fn": 8
+        }
+      },
+      "d34f60de6187c4ebefd6d31bcaca64630": {
+        "code": {
+          "tp": 129,
+          "fp": 42,
+          "fn": 61
+        },
+        "assertion_status": {
+          "tp": 135,
+          "fp": 36,
+          "fn": 61
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 2
+        },
+        "value": {
+          "tp": 12,
+          "fp": 1,
+          "fn": 3
+        },
+        "unit": {
+          "tp": 10,
+          "fp": 5,
+          "fn": 1
+        }
+      },
+      "d3f613256b944611d228c7d204b0de699": {
+        "code": {
+          "tp": 66,
+          "fp": 20,
+          "fn": 75
+        },
+        "assertion_status": {
+          "tp": 77,
+          "fp": 9,
+          "fn": 75
+        },
+        "begin_date": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 6
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 2,
+          "fn": 6
+        },
+        "value": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 9
+        },
+        "unit": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 8
+        }
+      },
+      "d54bcf6fe1fa225b13277b3b115fdcc3d": {
+        "code": {
+          "tp": 148,
+          "fp": 36,
+          "fn": 125
+        },
+        "assertion_status": {
+          "tp": 159,
+          "fp": 25,
+          "fn": 125
+        },
+        "begin_date": {
+          "tp": 16,
+          "fp": 0,
+          "fn": 7
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 16,
+          "fn": 6
+        },
+        "value": {
+          "tp": 7,
+          "fp": 0,
+          "fn": 4
+        },
+        "unit": {
+          "tp": 7,
+          "fp": 1,
+          "fn": 1
+        }
+      },
+      "dff4a5b3e1c4cd860f8e2b5c95bd14b51": {
+        "code": {
+          "tp": 148,
+          "fp": 54,
+          "fn": 104
+        },
+        "assertion_status": {
+          "tp": 181,
+          "fp": 21,
+          "fn": 104
+        },
+        "begin_date": {
+          "tp": 24,
+          "fp": 3,
+          "fn": 48
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 27,
+          "fn": 47
+        },
+        "value": {
+          "tp": 16,
+          "fp": 0,
+          "fn": 21
+        },
+        "unit": {
+          "tp": 15,
+          "fp": 1,
+          "fn": 34
+        }
+      },
+      "report03": {
+        "code": {
+          "tp": 127,
+          "fp": 48,
+          "fn": 79
+        },
+        "assertion_status": {
+          "tp": 167,
+          "fp": 8,
+          "fn": 78
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "value": {
+          "tp": 19,
+          "fp": 0,
+          "fn": 23
+        },
+        "unit": {
+          "tp": 26,
+          "fp": 8,
+          "fn": 32
+        }
+      },
+      "report04": {
+        "code": {
+          "tp": 129,
+          "fp": 33,
+          "fn": 47
+        },
+        "assertion_status": {
+          "tp": 153,
+          "fp": 9,
+          "fn": 46
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 1
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 1
+        },
+        "value": {
+          "tp": 26,
+          "fp": 0,
+          "fn": 32
+        },
+        "unit": {
+          "tp": 27,
+          "fp": 6,
+          "fn": 45
+        }
+      },
+      "report06": {
+        "code": {
+          "tp": 293,
+          "fp": 138,
+          "fn": 243
+        },
+        "assertion_status": {
+          "tp": 388,
+          "fp": 43,
+          "fn": 243
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 13
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 13
+        },
+        "value": {
+          "tp": 71,
+          "fp": 4,
+          "fn": 69
+        },
+        "unit": {
+          "tp": 80,
+          "fp": 6,
+          "fn": 80
+        }
+      },
+      "report07": {
+        "code": {
+          "tp": 122,
+          "fp": 26,
+          "fn": 99
+        },
+        "assertion_status": {
+          "tp": 125,
+          "fp": 23,
+          "fn": 99
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 11
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 11
+        },
+        "value": {
+          "tp": 20,
+          "fp": 0,
+          "fn": 25
+        },
+        "unit": {
+          "tp": 12,
+          "fp": 1,
+          "fn": 35
+        }
+      }
+    },
+    "coral_breastca": {
+      "21": {
+        "code": {
+          "tp": 113,
+          "fp": 53,
+          "fn": 124
+        },
+        "assertion_status": {
+          "tp": 126,
+          "fp": 40,
+          "fn": 124
+        },
+        "begin_date": {
+          "tp": 69,
+          "fp": 13,
+          "fn": 93
+        },
+        "end_date": {
+          "tp": 27,
+          "fp": 47,
+          "fn": 90
+        },
+        "value": {
+          "tp": 9,
+          "fp": 1,
+          "fn": 23
+        },
+        "unit": {
+          "tp": 14,
+          "fp": 2,
+          "fn": 17
+        }
+      },
+      "22": {
+        "code": {
+          "tp": 116,
+          "fp": 45,
+          "fn": 89
+        },
+        "assertion_status": {
+          "tp": 116,
+          "fp": 45,
+          "fn": 89
+        },
+        "begin_date": {
+          "tp": 43,
+          "fp": 0,
+          "fn": 21
+        },
+        "end_date": {
+          "tp": 44,
+          "fp": 2,
+          "fn": 23
+        },
+        "value": {
+          "tp": 11,
+          "fp": 1,
+          "fn": 10
+        },
+        "unit": {
+          "tp": 16,
+          "fp": 0,
+          "fn": 6
+        }
+      },
+      "23": {
+        "code": {
+          "tp": 181,
+          "fp": 98,
+          "fn": 147
+        },
+        "assertion_status": {
+          "tp": 235,
+          "fp": 44,
+          "fn": 145
+        },
+        "begin_date": {
+          "tp": 48,
+          "fp": 5,
+          "fn": 12
+        },
+        "end_date": {
+          "tp": 45,
+          "fp": 1,
+          "fn": 6
+        },
+        "value": {
+          "tp": 23,
+          "fp": 0,
+          "fn": 14
+        },
+        "unit": {
+          "tp": 37,
+          "fp": 1,
+          "fn": 8
+        }
+      },
+      "24": {
+        "code": {
+          "tp": 95,
+          "fp": 44,
+          "fn": 100
+        },
+        "assertion_status": {
+          "tp": 113,
+          "fp": 26,
+          "fn": 99
+        },
+        "begin_date": {
+          "tp": 65,
+          "fp": 2,
+          "fn": 93
+        },
+        "end_date": {
+          "tp": 63,
+          "fp": 4,
+          "fn": 93
+        },
+        "value": {
+          "tp": 15,
+          "fp": 4,
+          "fn": 23
+        },
+        "unit": {
+          "tp": 18,
+          "fp": 0,
+          "fn": 20
+        }
+      },
+      "25": {
+        "code": {
+          "tp": 63,
+          "fp": 23,
+          "fn": 61
+        },
+        "assertion_status": {
+          "tp": 69,
+          "fp": 17,
+          "fn": 60
+        },
+        "begin_date": {
+          "tp": 14,
+          "fp": 1,
+          "fn": 13
+        },
+        "end_date": {
+          "tp": 14,
+          "fp": 1,
+          "fn": 12
+        },
+        "value": {
+          "tp": 9,
+          "fp": 0,
+          "fn": 6
+        },
+        "unit": {
+          "tp": 14,
+          "fp": 0,
+          "fn": 6
+        }
+      },
+      "28": {
+        "code": {
+          "tp": 142,
+          "fp": 60,
+          "fn": 92
+        },
+        "assertion_status": {
+          "tp": 193,
+          "fp": 9,
+          "fn": 92
+        },
+        "begin_date": {
+          "tp": 63,
+          "fp": 2,
+          "fn": 35
+        },
+        "end_date": {
+          "tp": 61,
+          "fp": 3,
+          "fn": 32
+        },
+        "value": {
+          "tp": 17,
+          "fp": 0,
+          "fn": 15
+        },
+        "unit": {
+          "tp": 28,
+          "fp": 0,
+          "fn": 17
+        }
+      },
+      "31": {
+        "code": {
+          "tp": 103,
+          "fp": 70,
+          "fn": 95
+        },
+        "assertion_status": {
+          "tp": 156,
+          "fp": 17,
+          "fn": 95
+        },
+        "begin_date": {
+          "tp": 60,
+          "fp": 15,
+          "fn": 37
+        },
+        "end_date": {
+          "tp": 60,
+          "fp": 6,
+          "fn": 39
+        },
+        "value": {
+          "tp": 9,
+          "fp": 1,
+          "fn": 17
+        },
+        "unit": {
+          "tp": 17,
+          "fp": 1,
+          "fn": 17
+        }
+      },
+      "32": {
+        "code": {
+          "tp": 219,
+          "fp": 104,
+          "fn": 102
+        },
+        "assertion_status": {
+          "tp": 247,
+          "fp": 76,
+          "fn": 102
+        },
+        "begin_date": {
+          "tp": 66,
+          "fp": 30,
+          "fn": 58
+        },
+        "end_date": {
+          "tp": 67,
+          "fp": 29,
+          "fn": 58
+        },
+        "value": {
+          "tp": 39,
+          "fp": 0,
+          "fn": 13
+        },
+        "unit": {
+          "tp": 46,
+          "fp": 0,
+          "fn": 18
+        }
+      },
+      "34": {
+        "code": {
+          "tp": 216,
+          "fp": 86,
+          "fn": 117
+        },
+        "assertion_status": {
+          "tp": 252,
+          "fp": 50,
+          "fn": 117
+        },
+        "begin_date": {
+          "tp": 157,
+          "fp": 19,
+          "fn": 72
+        },
+        "end_date": {
+          "tp": 157,
+          "fp": 19,
+          "fn": 72
+        },
+        "value": {
+          "tp": 20,
+          "fp": 1,
+          "fn": 18
+        },
+        "unit": {
+          "tp": 25,
+          "fp": 2,
+          "fn": 14
+        }
+      },
+      "35": {
+        "code": {
+          "tp": 74,
+          "fp": 38,
+          "fn": 55
+        },
+        "assertion_status": {
+          "tp": 92,
+          "fp": 20,
+          "fn": 54
+        },
+        "begin_date": {
+          "tp": 40,
+          "fp": 3,
+          "fn": 40
+        },
+        "end_date": {
+          "tp": 38,
+          "fp": 3,
+          "fn": 33
+        },
+        "value": {
+          "tp": 5,
+          "fp": 0,
+          "fn": 6
+        },
+        "unit": {
+          "tp": 12,
+          "fp": 0,
+          "fn": 8
+        }
+      },
+      "36": {
+        "code": {
+          "tp": 130,
+          "fp": 72,
+          "fn": 111
+        },
+        "assertion_status": {
+          "tp": 183,
+          "fp": 19,
+          "fn": 111
+        },
+        "begin_date": {
+          "tp": 72,
+          "fp": 42,
+          "fn": 54
+        },
+        "end_date": {
+          "tp": 62,
+          "fp": 50,
+          "fn": 48
+        },
+        "value": {
+          "tp": 17,
+          "fp": 0,
+          "fn": 17
+        },
+        "unit": {
+          "tp": 21,
+          "fp": 2,
+          "fn": 22
+        }
+      },
+      "37": {
+        "code": {
+          "tp": 106,
+          "fp": 62,
+          "fn": 124
+        },
+        "assertion_status": {
+          "tp": 130,
+          "fp": 38,
+          "fn": 124
+        },
+        "begin_date": {
+          "tp": 82,
+          "fp": 1,
+          "fn": 121
+        },
+        "end_date": {
+          "tp": 82,
+          "fp": 1,
+          "fn": 121
+        },
+        "value": {
+          "tp": 12,
+          "fp": 0,
+          "fn": 10
+        },
+        "unit": {
+          "tp": 16,
+          "fp": 2,
+          "fn": 10
+        }
+      },
+      "38": {
+        "code": {
+          "tp": 107,
+          "fp": 84,
+          "fn": 93
+        },
+        "assertion_status": {
+          "tp": 165,
+          "fp": 26,
+          "fn": 93
+        },
+        "begin_date": {
+          "tp": 57,
+          "fp": 2,
+          "fn": 103
+        },
+        "end_date": {
+          "tp": 50,
+          "fp": 8,
+          "fn": 102
+        },
+        "value": {
+          "tp": 15,
+          "fp": 0,
+          "fn": 21
+        },
+        "unit": {
+          "tp": 21,
+          "fp": 0,
+          "fn": 32
+        }
+      }
+    },
+    "coral_pdac": {
+      "0": {
+        "code": {
+          "tp": 127,
+          "fp": 39,
+          "fn": 47
+        },
+        "assertion_status": {
+          "tp": 152,
+          "fp": 14,
+          "fn": 47
+        },
+        "begin_date": {
+          "tp": 39,
+          "fp": 70,
+          "fn": 32
+        },
+        "end_date": {
+          "tp": 38,
+          "fp": 71,
+          "fn": 33
+        },
+        "value": {
+          "tp": 14,
+          "fp": 0,
+          "fn": 25
+        },
+        "unit": {
+          "tp": 21,
+          "fp": 0,
+          "fn": 34
+        }
+      },
+      "10": {
+        "code": {
+          "tp": 100,
+          "fp": 28,
+          "fn": 97
+        },
+        "assertion_status": {
+          "tp": 99,
+          "fp": 29,
+          "fn": 97
+        },
+        "begin_date": {
+          "tp": 71,
+          "fp": 19,
+          "fn": 63
+        },
+        "end_date": {
+          "tp": 71,
+          "fp": 18,
+          "fn": 60
+        },
+        "value": {
+          "tp": 20,
+          "fp": 2,
+          "fn": 10
+        },
+        "unit": {
+          "tp": 22,
+          "fp": 4,
+          "fn": 13
+        }
+      },
+      "13": {
+        "code": {
+          "tp": 129,
+          "fp": 59,
+          "fn": 94
+        },
+        "assertion_status": {
+          "tp": 169,
+          "fp": 19,
+          "fn": 94
+        },
+        "begin_date": {
+          "tp": 67,
+          "fp": 49,
+          "fn": 122
+        },
+        "end_date": {
+          "tp": 60,
+          "fp": 51,
+          "fn": 97
+        },
+        "value": {
+          "tp": 27,
+          "fp": 0,
+          "fn": 8
+        },
+        "unit": {
+          "tp": 18,
+          "fp": 0,
+          "fn": 25
+        }
+      },
+      "14": {
+        "code": {
+          "tp": 181,
+          "fp": 93,
+          "fn": 131
+        },
+        "assertion_status": {
+          "tp": 245,
+          "fp": 29,
+          "fn": 131
+        },
+        "begin_date": {
+          "tp": 100,
+          "fp": 6,
+          "fn": 52
+        },
+        "end_date": {
+          "tp": 91,
+          "fp": 15,
+          "fn": 52
+        },
+        "value": {
+          "tp": 50,
+          "fp": 1,
+          "fn": 20
+        },
+        "unit": {
+          "tp": 50,
+          "fp": 3,
+          "fn": 19
+        }
+      },
+      "15": {
+        "code": {
+          "tp": 149,
+          "fp": 60,
+          "fn": 105
+        },
+        "assertion_status": {
+          "tp": 175,
+          "fp": 34,
+          "fn": 105
+        },
+        "begin_date": {
+          "tp": 104,
+          "fp": 29,
+          "fn": 134
+        },
+        "end_date": {
+          "tp": 106,
+          "fp": 28,
+          "fn": 124
+        },
+        "value": {
+          "tp": 43,
+          "fp": 1,
+          "fn": 27
+        },
+        "unit": {
+          "tp": 50,
+          "fp": 0,
+          "fn": 22
+        }
+      },
+      "16": {
+        "code": {
+          "tp": 105,
+          "fp": 31,
+          "fn": 59
+        },
+        "assertion_status": {
+          "tp": 130,
+          "fp": 6,
+          "fn": 59
+        },
+        "begin_date": {
+          "tp": 107,
+          "fp": 4,
+          "fn": 52
+        },
+        "end_date": {
+          "tp": 100,
+          "fp": 9,
+          "fn": 51
+        },
+        "value": {
+          "tp": 18,
+          "fp": 0,
+          "fn": 2
+        },
+        "unit": {
+          "tp": 26,
+          "fp": 1,
+          "fn": 4
+        }
+      },
+      "17": {
+        "code": {
+          "tp": 164,
+          "fp": 53,
+          "fn": 81
+        },
+        "assertion_status": {
+          "tp": 178,
+          "fp": 39,
+          "fn": 81
+        },
+        "begin_date": {
+          "tp": 51,
+          "fp": 2,
+          "fn": 65
+        },
+        "end_date": {
+          "tp": 60,
+          "fp": 10,
+          "fn": 63
+        },
+        "value": {
+          "tp": 27,
+          "fp": 1,
+          "fn": 40
+        },
+        "unit": {
+          "tp": 33,
+          "fp": 0,
+          "fn": 36
+        }
+      },
+      "18": {
+        "code": {
+          "tp": 91,
+          "fp": 56,
+          "fn": 49
+        },
+        "assertion_status": {
+          "tp": 139,
+          "fp": 7,
+          "fn": 49
+        },
+        "begin_date": {
+          "tp": 50,
+          "fp": 2,
+          "fn": 10
+        },
+        "end_date": {
+          "tp": 45,
+          "fp": 3,
+          "fn": 9
+        },
+        "value": {
+          "tp": 18,
+          "fp": 0,
+          "fn": 22
+        },
+        "unit": {
+          "tp": 22,
+          "fp": 1,
+          "fn": 35
+        }
+      },
+      "1": {
+        "code": {
+          "tp": 134,
+          "fp": 71,
+          "fn": 142
+        },
+        "assertion_status": {
+          "tp": 186,
+          "fp": 19,
+          "fn": 141
+        },
+        "begin_date": {
+          "tp": 117,
+          "fp": 5,
+          "fn": 90
+        },
+        "end_date": {
+          "tp": 114,
+          "fp": 12,
+          "fn": 89
+        },
+        "value": {
+          "tp": 46,
+          "fp": 0,
+          "fn": 22
+        },
+        "unit": {
+          "tp": 23,
+          "fp": 3,
+          "fn": 43
+        }
+      },
+      "2": {
+        "code": {
+          "tp": 208,
+          "fp": 54,
+          "fn": 119
+        },
+        "assertion_status": {
+          "tp": 227,
+          "fp": 35,
+          "fn": 119
+        },
+        "begin_date": {
+          "tp": 58,
+          "fp": 12,
+          "fn": 196
+        },
+        "end_date": {
+          "tp": 63,
+          "fp": 4,
+          "fn": 190
+        },
+        "value": {
+          "tp": 34,
+          "fp": 0,
+          "fn": 3
+        },
+        "unit": {
+          "tp": 45,
+          "fp": 4,
+          "fn": 6
+        }
+      },
+      "3": {
+        "code": {
+          "tp": 88,
+          "fp": 40,
+          "fn": 61
+        },
+        "assertion_status": {
+          "tp": 107,
+          "fp": 21,
+          "fn": 61
+        },
+        "begin_date": {
+          "tp": 5,
+          "fp": 3,
+          "fn": 4
+        },
+        "end_date": {
+          "tp": 10,
+          "fp": 1,
+          "fn": 2
+        },
+        "value": {
+          "tp": 13,
+          "fp": 0,
+          "fn": 10
+        },
+        "unit": {
+          "tp": 13,
+          "fp": 0,
+          "fn": 10
+        }
+      },
+      "5": {
+        "code": {
+          "tp": 116,
+          "fp": 47,
+          "fn": 61
+        },
+        "assertion_status": {
+          "tp": 155,
+          "fp": 8,
+          "fn": 61
+        },
+        "begin_date": {
+          "tp": 41,
+          "fp": 1,
+          "fn": 14
+        },
+        "end_date": {
+          "tp": 43,
+          "fp": 0,
+          "fn": 14
+        },
+        "value": {
+          "tp": 19,
+          "fp": 1,
+          "fn": 29
+        },
+        "unit": {
+          "tp": 19,
+          "fp": 1,
+          "fn": 30
+        }
+      },
+      "6": {
+        "code": {
+          "tp": 152,
+          "fp": 34,
+          "fn": 70
+        },
+        "assertion_status": {
+          "tp": 145,
+          "fp": 41,
+          "fn": 69
+        },
+        "begin_date": {
+          "tp": 18,
+          "fp": 12,
+          "fn": 48
+        },
+        "end_date": {
+          "tp": 22,
+          "fp": 22,
+          "fn": 53
+        },
+        "value": {
+          "tp": 38,
+          "fp": 0,
+          "fn": 12
+        },
+        "unit": {
+          "tp": 36,
+          "fp": 1,
+          "fn": 13
+        }
+      },
+      "7": {
+        "code": {
+          "tp": 151,
+          "fp": 75,
+          "fn": 170
+        },
+        "assertion_status": {
+          "tp": 210,
+          "fp": 16,
+          "fn": 170
+        },
+        "begin_date": {
+          "tp": 96,
+          "fp": 0,
+          "fn": 82
+        },
+        "end_date": {
+          "tp": 92,
+          "fp": 0,
+          "fn": 75
+        },
+        "value": {
+          "tp": 21,
+          "fp": 0,
+          "fn": 12
+        },
+        "unit": {
+          "tp": 24,
+          "fp": 2,
+          "fn": 14
+        }
+      },
+      "9": {
+        "code": {
+          "tp": 257,
+          "fp": 96,
+          "fn": 145
+        },
+        "assertion_status": {
+          "tp": 308,
+          "fp": 45,
+          "fn": 145
+        },
+        "begin_date": {
+          "tp": 207,
+          "fp": 19,
+          "fn": 135
+        },
+        "end_date": {
+          "tp": 201,
+          "fp": 10,
+          "fn": 117
+        },
+        "value": {
+          "tp": 70,
+          "fp": 0,
+          "fn": 17
+        },
+        "unit": {
+          "tp": 73,
+          "fp": 20,
+          "fn": 26
+        }
+      }
+    }
+  },
+  "phi4": {
+    "4CE": {
+      "BCH_1": {
+        "code": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "assertion_status": {
+          "tp": 112,
+          "fp": 25,
+          "fn": 111
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 28,
+          "fn": 32
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 28,
+          "fn": 32
+        },
+        "value": {
+          "tp": 22,
+          "fp": 2,
+          "fn": 18
+        },
+        "unit": {
+          "tp": 23,
+          "fp": 8,
+          "fn": 28
+        }
+      },
+      "BCH_5": {
+        "code": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "assertion_status": {
+          "tp": 56,
+          "fp": 17,
+          "fn": 145
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 1
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 1
+        },
+        "value": {
+          "tp": 17,
+          "fp": 0,
+          "fn": 28
+        },
+        "unit": {
+          "tp": 8,
+          "fp": 10,
+          "fn": 30
+        }
+      },
+      "BCH_6": {
+        "code": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "assertion_status": {
+          "tp": 59,
+          "fp": 17,
+          "fn": 83
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "value": {
+          "tp": 16,
+          "fp": 0,
+          "fn": 9
+        },
+        "unit": {
+          "tp": 15,
+          "fp": 0,
+          "fn": 15
+        }
+      },
+      "KUMC_1": {
+        "code": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "assertion_status": {
+          "tp": 26,
+          "fp": 26,
+          "fn": 104
+        },
+        "begin_date": {
+          "tp": 1,
+          "fp": 2,
+          "fn": 113
+        },
+        "end_date": {
+          "tp": 1,
+          "fp": 2,
+          "fn": 96
+        },
+        "value": {
+          "tp": 4,
+          "fp": 0,
+          "fn": 37
+        },
+        "unit": {
+          "tp": 1,
+          "fp": 5,
+          "fn": 36
+        }
+      },
+      "KUMC_2": {
+        "code": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "assertion_status": {
+          "tp": 163,
+          "fp": 39,
+          "fn": 176
+        },
+        "begin_date": {
+          "tp": 17,
+          "fp": 0,
+          "fn": 212
+        },
+        "end_date": {
+          "tp": 17,
+          "fp": 1,
+          "fn": 202
+        },
+        "value": {
+          "tp": 8,
+          "fp": 0,
+          "fn": 37
+        },
+        "unit": {
+          "tp": 7,
+          "fp": 4,
+          "fn": 39
+        }
+      },
+      "KUMC_5": {
+        "code": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "assertion_status": {
+          "tp": 215,
+          "fp": 37,
+          "fn": 259
+        },
+        "begin_date": {
+          "tp": 7,
+          "fp": 1,
+          "fn": 364
+        },
+        "end_date": {
+          "tp": 7,
+          "fp": 1,
+          "fn": 330
+        },
+        "value": {
+          "tp": 0,
+          "fp": 1,
+          "fn": 39
+        },
+        "unit": {
+          "tp": 5,
+          "fp": 1,
+          "fn": 41
+        }
+      },
+      "KUMC_6": {
+        "code": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "assertion_status": {
+          "tp": 177,
+          "fp": 67,
+          "fn": 193
+        },
+        "begin_date": {
+          "tp": 9,
+          "fp": 7,
+          "fn": 206
+        },
+        "end_date": {
+          "tp": 6,
+          "fp": 3,
+          "fn": 174
+        },
+        "value": {
+          "tp": 5,
+          "fp": 0,
+          "fn": 53
+        },
+        "unit": {
+          "tp": 9,
+          "fp": 2,
+          "fn": 61
+        }
+      },
+      "KUMC_7": {
+        "code": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "assertion_status": {
+          "tp": 56,
+          "fp": 33,
+          "fn": 87
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 10
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 9
+        },
+        "value": {
+          "tp": 13,
+          "fp": 1,
+          "fn": 18
+        },
+        "unit": {
+          "tp": 10,
+          "fp": 6,
+          "fn": 20
+        }
+      },
+      "UPMC_Note1": {
+        "code": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "assertion_status": {
+          "tp": 73,
+          "fp": 10,
+          "fn": 121
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 1
+        },
+        "value": {
+          "tp": 10,
+          "fp": 2,
+          "fn": 64
+        },
+        "unit": {
+          "tp": 3,
+          "fp": 6,
+          "fn": 54
+        }
+      },
+      "UPMC_Note3": {
+        "code": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "assertion_status": {
+          "tp": 116,
+          "fp": 41,
+          "fn": 184
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "value": {
+          "tp": 22,
+          "fp": 7,
+          "fn": 47
+        },
+        "unit": {
+          "tp": 22,
+          "fp": 4,
+          "fn": 54
+        }
+      },
+      "UPMC_Note4": {
+        "code": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "assertion_status": {
+          "tp": 45,
+          "fp": 36,
+          "fn": 79
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 3,
+          "fn": 4
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 3,
+          "fn": 4
+        },
+        "value": {
+          "tp": 11,
+          "fp": 1,
+          "fn": 41
+        },
+        "unit": {
+          "tp": 2,
+          "fp": 12,
+          "fn": 42
+        }
+      },
+      "UPMC_Note7": {
+        "code": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "assertion_status": {
+          "tp": 101,
+          "fp": 14,
+          "fn": 128
+        },
+        "begin_date": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 1
+        },
+        "end_date": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        },
+        "value": {
+          "tp": 19,
+          "fp": 2,
+          "fn": 47
+        },
+        "unit": {
+          "tp": 18,
+          "fp": 7,
+          "fn": 47
+        }
+      },
+      "d30982c684512d4f0b6fd79836539d9ac": {
+        "code": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "assertion_status": {
+          "tp": 164,
+          "fp": 38,
+          "fn": 209
+        },
+        "begin_date": {
+          "tp": 10,
+          "fp": 2,
+          "fn": 48
+        },
+        "end_date": {
+          "tp": 7,
+          "fp": 2,
+          "fn": 36
+        },
+        "value": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 10
+        },
+        "unit": {
+          "tp": 2,
+          "fp": 1,
+          "fn": 13
+        }
+      },
+      "d34f60de6187c4ebefd6d31bcaca64630": {
+        "code": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "assertion_status": {
+          "tp": 86,
+          "fp": 44,
+          "fn": 139
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 5
+        },
+        "value": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 16
+        },
+        "unit": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 16
+        }
+      },
+      "d3f613256b944611d228c7d204b0de699": {
+        "code": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "assertion_status": {
+          "tp": 79,
+          "fp": 18,
+          "fn": 94
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 8
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 8
+        },
+        "value": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 11
+        },
+        "unit": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 9
+        }
+      },
+      "d54bcf6fe1fa225b13277b3b115fdcc3d": {
+        "code": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "assertion_status": {
+          "tp": 130,
+          "fp": 50,
+          "fn": 178
+        },
+        "begin_date": {
+          "tp": 7,
+          "fp": 0,
+          "fn": 20
+        },
+        "end_date": {
+          "tp": 7,
+          "fp": 0,
+          "fn": 19
+        },
+        "value": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 9
+        },
+        "unit": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 8
+        }
+      },
+      "dff4a5b3e1c4cd860f8e2b5c95bd14b51": {
+        "code": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "assertion_status": {
+          "tp": 166,
+          "fp": 36,
+          "fn": 176
+        },
+        "begin_date": {
+          "tp": 5,
+          "fp": 5,
+          "fn": 70
+        },
+        "end_date": {
+          "tp": 5,
+          "fp": 5,
+          "fn": 69
+        },
+        "value": {
+          "tp": 8,
+          "fp": 1,
+          "fn": 29
+        },
+        "unit": {
+          "tp": 11,
+          "fp": 1,
+          "fn": 39
+        }
+      },
+      "report03": {
+        "code": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "assertion_status": {
+          "tp": 91,
+          "fp": 21,
+          "fn": 169
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "value": {
+          "tp": 5,
+          "fp": 2,
+          "fn": 36
+        },
+        "unit": {
+          "tp": 8,
+          "fp": 0,
+          "fn": 59
+        }
+      },
+      "report04": {
+        "code": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "assertion_status": {
+          "tp": 82,
+          "fp": 30,
+          "fn": 115
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 1
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 1
+        },
+        "value": {
+          "tp": 16,
+          "fp": 0,
+          "fn": 44
+        },
+        "unit": {
+          "tp": 18,
+          "fp": 0,
+          "fn": 62
+        }
+      },
+      "report06": {
+        "code": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "assertion_status": {
+          "tp": 284,
+          "fp": 105,
+          "fn": 414
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 1,
+          "fn": 11
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 1,
+          "fn": 11
+        },
+        "value": {
+          "tp": 43,
+          "fp": 4,
+          "fn": 108
+        },
+        "unit": {
+          "tp": 53,
+          "fp": 6,
+          "fn": 118
+        }
+      },
+      "report07": {
+        "code": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "assertion_status": {
+          "tp": 79,
+          "fp": 33,
+          "fn": 146
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 9
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 9
+        },
+        "value": {
+          "tp": 8,
+          "fp": 1,
+          "fn": 36
+        },
+        "unit": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 45
+        }
+      }
+    },
+    "coral_breastca": {
+      "21": {
+        "code": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "assertion_status": {
+          "tp": 118,
+          "fp": 56,
+          "fn": 164
+        },
+        "begin_date": {
+          "tp": 19,
+          "fp": 9,
+          "fn": 153
+        },
+        "end_date": {
+          "tp": 15,
+          "fp": 12,
+          "fn": 142
+        },
+        "value": {
+          "tp": 10,
+          "fp": 4,
+          "fn": 22
+        },
+        "unit": {
+          "tp": 6,
+          "fp": 3,
+          "fn": 23
+        }
+      },
+      "23": {
+        "code": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "assertion_status": {
+          "tp": 173,
+          "fp": 79,
+          "fn": 223
+        },
+        "begin_date": {
+          "tp": 9,
+          "fp": 1,
+          "fn": 56
+        },
+        "end_date": {
+          "tp": 9,
+          "fp": 1,
+          "fn": 43
+        },
+        "value": {
+          "tp": 24,
+          "fp": 1,
+          "fn": 22
+        },
+        "unit": {
+          "tp": 19,
+          "fp": 6,
+          "fn": 33
+        }
+      },
+      "24": {
+        "code": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "assertion_status": {
+          "tp": 68,
+          "fp": 37,
+          "fn": 168
+        },
+        "begin_date": {
+          "tp": 8,
+          "fp": 8,
+          "fn": 155
+        },
+        "end_date": {
+          "tp": 8,
+          "fp": 8,
+          "fn": 154
+        },
+        "value": {
+          "tp": 4,
+          "fp": 0,
+          "fn": 39
+        },
+        "unit": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 33
+        }
+      },
+      "34": {
+        "code": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "assertion_status": {
+          "tp": 6,
+          "fp": 11,
+          "fn": 416
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 244
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 244
+        },
+        "value": {
+          "tp": 0,
+          "fp": 1,
+          "fn": 38
+        },
+        "unit": {
+          "tp": 0,
+          "fp": 2,
+          "fn": 39
+        }
+      },
+      "35": {
+        "code": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "assertion_status": {
+          "tp": 75,
+          "fp": 26,
+          "fn": 91
+        },
+        "begin_date": {
+          "tp": 2,
+          "fp": 8,
+          "fn": 78
+        },
+        "end_date": {
+          "tp": 1,
+          "fp": 8,
+          "fn": 67
+        },
+        "value": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 8
+        },
+        "unit": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 14
+        }
+      },
+      "37": {
+        "code": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "assertion_status": {
+          "tp": 118,
+          "fp": 52,
+          "fn": 153
+        },
+        "begin_date": {
+          "tp": 28,
+          "fp": 2,
+          "fn": 175
+        },
+        "end_date": {
+          "tp": 27,
+          "fp": 3,
+          "fn": 176
+        },
+        "value": {
+          "tp": 9,
+          "fp": 0,
+          "fn": 14
+        },
+        "unit": {
+          "tp": 11,
+          "fp": 0,
+          "fn": 20
+        }
+      },
+      "38": {
+        "code": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "assertion_status": {
+          "tp": 124,
+          "fp": 39,
+          "fn": 186
+        },
+        "begin_date": {
+          "tp": 9,
+          "fp": 19,
+          "fn": 141
+        },
+        "end_date": {
+          "tp": 9,
+          "fp": 18,
+          "fn": 138
+        },
+        "value": {
+          "tp": 14,
+          "fp": 0,
+          "fn": 26
+        },
+        "unit": {
+          "tp": 17,
+          "fp": 0,
+          "fn": 41
+        }
+      }
+    },
+    "coral_pdac": {
+      "0": {
+        "code": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "assertion_status": {
+          "tp": 9,
+          "fp": 7,
+          "fn": 201
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 2,
+          "fn": 138
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 2,
+          "fn": 139
+        },
+        "value": {
+          "tp": 0,
+          "fp": 3,
+          "fn": 37
+        },
+        "unit": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 53
+        }
+      },
+      "16": {
+        "code": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "assertion_status": {
+          "tp": 94,
+          "fp": 18,
+          "fn": 102
+        },
+        "begin_date": {
+          "tp": 29,
+          "fp": 8,
+          "fn": 130
+        },
+        "end_date": {
+          "tp": 27,
+          "fp": 7,
+          "fn": 129
+        },
+        "value": {
+          "tp": 9,
+          "fp": 0,
+          "fn": 11
+        },
+        "unit": {
+          "tp": 13,
+          "fp": 0,
+          "fn": 18
+        }
+      },
+      "17": {
+        "code": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "assertion_status": {
+          "tp": 155,
+          "fp": 65,
+          "fn": 109
+        },
+        "begin_date": {
+          "tp": 11,
+          "fp": 3,
+          "fn": 105
+        },
+        "end_date": {
+          "tp": 17,
+          "fp": 3,
+          "fn": 108
+        },
+        "value": {
+          "tp": 45,
+          "fp": 0,
+          "fn": 25
+        },
+        "unit": {
+          "tp": 34,
+          "fp": 3,
+          "fn": 35
+        }
+      },
+      "1": {
+        "code": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "assertion_status": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 397
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 235
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 235
+        },
+        "value": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 85
+        },
+        "unit": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 95
+        }
+      },
+      "2": {
+        "code": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "assertion_status": {
+          "tp": 8,
+          "fp": 12,
+          "fn": 364
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 266
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 255
+        },
+        "value": {
+          "tp": 2,
+          "fp": 1,
+          "fn": 34
+        },
+        "unit": {
+          "tp": 3,
+          "fp": 1,
+          "fn": 53
+        }
+      },
+      "3": {
+        "code": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "assertion_status": {
+          "tp": 5,
+          "fp": 12,
+          "fn": 173
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 12
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 10
+        },
+        "value": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 23
+        },
+        "unit": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 23
+        }
+      },
+      "5": {
+        "code": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "assertion_status": {
+          "tp": 8,
+          "fp": 2,
+          "fn": 211
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 65
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 66
+        },
+        "value": {
+          "tp": 0,
+          "fp": 1,
+          "fn": 48
+        },
+        "unit": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 50
+        }
+      },
+      "6": {
+        "code": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "assertion_status": {
+          "tp": 10,
+          "fp": 2,
+          "fn": 248
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 77
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 95
+        },
+        "value": {
+          "tp": 0,
+          "fp": 2,
+          "fn": 49
+        },
+        "unit": {
+          "tp": 0,
+          "fp": 2,
+          "fn": 49
+        }
+      },
+      "7": {
+        "code": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 0
+        },
+        "assertion_status": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 403
+        },
+        "begin_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 188
+        },
+        "end_date": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 177
+        },
+        "value": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 33
+        },
+        "unit": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 40
+        }
+      }
+    }
+  }
+}

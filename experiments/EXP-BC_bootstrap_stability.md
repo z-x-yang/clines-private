@@ -6,7 +6,7 @@
 - **作战表 E#**：E2 + E3 （Bootstrap CI + Stability）
 - **日期**：2026-05-25
 - **Job ID**：本地（CPU bootstrap，无 SLURM；后续可写为 sbatch）
-- **Commit hash**：`<COMMIT_HASH>` （由 launch commit 回填）
+- **Commit hash**：`d8d2c5c12e67b6bc1b67dec31af4bc1afc864061` （launch commit on exp branch）
 - **Branch**：`exp/EXP-BC_bootstrap_stability`
 - **Owner**：zongxin (Claude EXP-BC sub-agent)
 
