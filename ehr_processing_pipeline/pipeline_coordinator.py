@@ -179,8 +179,15 @@ class PipelineCoordinator:
         self.pipeline_result = {
             'ner_result': [], 'clean_results': [], 'info_results': [],
             'status_results': [], 'date_results': [], 'parsed_ner_result': [],
-            'parsed_ner_context': [], 'relate_results': [], 'parsed_ner_positions': []
+            'parsed_ner_context': [], 'relate_results': [], 'parsed_ner_positions': [],
+            'parsed_ner_tags': []
         }
+        # NER renumbers entity tags 1..N PER CHUNK (see ner_processor), so every
+        # chunk reuses the same low integers. _aggregate_results adds this
+        # running offset to each chunk's tags so the accumulated pipeline_result
+        # lives in one collision-free tag namespace, which is what lets
+        # result_aggregation join its per-step lists by TAG instead of by index.
+        self._tag_offset = 0
         self.admission_date = None
         self.discharge_date = None
 
@@ -214,7 +221,6 @@ class PipelineCoordinator:
 
     def result_aggregation(self, key):
         aggregated_result = []
-        num_items = len(self.pipeline_result.get('clean_results', []))
         clean_results_list = self.pipeline_result.get('clean_results', [])
         status_results_list = self.pipeline_result.get('status_results', [])
         info_results_list = self.pipeline_result.get('info_results', [])
@@ -226,10 +232,38 @@ class PipelineCoordinator:
             'parsed_ner_context', [])
         parsed_ner_positions_list = self.pipeline_result.get(
             'parsed_ner_positions', [])
+        parsed_ner_tags_list = self.pipeline_result.get('parsed_ner_tags', [])
 
-        for i in range(num_items):
+        # Join every per-step list to clean_results by entity TAG, not by list
+        # position. The per-step lists are produced in different orders/lengths
+        # (aux is deduped to unique tags; parsed-NER keeps its own order;
+        # clean_results may repeat a tag), so zipping them by index silently
+        # attached a field to the wrong entity. _aggregate_results globalized
+        # tags into one namespace, so TAG is a unique, stable join key.
+        status_by_tag = {it['tag']: it for it in status_results_list
+                         if isinstance(it, dict) and it.get('tag') is not None}
+        info_by_tag = {it['tag']: it for it in info_results_list
+                       if isinstance(it, dict) and it.get('tag') is not None}
+        date_by_tag = {it['tag']: it for it in date_results_list
+                       if isinstance(it, dict) and it.get('tag') is not None}
+        relate_by_tag = {it['tag']: it for it in relate_results_list
+                         if isinstance(it, dict) and it.get('tag') is not None}
+        mention_by_tag = {}
+        for idx, raw_tag in enumerate(parsed_ner_tags_list):
+            tag = int(raw_tag)
+            if tag not in mention_by_tag:
+                mention_by_tag[tag] = (
+                    parsed_ner_result_list[idx] if idx < len(parsed_ner_result_list) else None,
+                    parsed_ner_context_list[idx] if idx < len(parsed_ner_context_list) else None,
+                    parsed_ner_positions_list[idx] if idx < len(parsed_ner_positions_list) else None,
+                )
+
+        for i, clean_item in enumerate(clean_results_list):
             tmp = {}
             try:
+                tag = int(clean_item['TAG'])
+                mention, context, position = mention_by_tag.get(tag, (None, None, None))
+                has_pos = position is not None and position != (-1, -1)
                 tmp = {
                     'term_index': i + 1,
                     'key': key,
@@ -241,13 +275,12 @@ class PipelineCoordinator:
                     'race': self.pipeline_result.get('race', None),
                     'ethnicity': self.pipeline_result.get('ethnicity', None),
                     'zip_code': self.pipeline_result.get('zip_code', None),
-                    'mention': parsed_ner_result_list[i] if i < len(parsed_ner_result_list) else None,
-                    'context': parsed_ner_context_list[i] if i < len(parsed_ner_context_list) else None,
-                    'mention_start_pos': parsed_ner_positions_list[i][0] if i < len(parsed_ner_positions_list) and parsed_ner_positions_list[i] != (-1, -1) else None,
-                    'mention_end_pos': parsed_ner_positions_list[i][1] if i < len(parsed_ner_positions_list) and parsed_ner_positions_list[i] != (-1, -1) else None,
+                    'mention': mention,
+                    'context': context,
+                    'mention_start_pos': position[0] if has_pos else None,
+                    'mention_end_pos': position[1] if has_pos else None,
                 }
 
-                clean_item = clean_results_list[i]
                 code_raw = clean_item.get('CODE') if isinstance(clean_item, dict) else None
                 if code_raw:
                     mapped_code = json.loads(code_raw)
@@ -259,13 +292,11 @@ class PipelineCoordinator:
                     tmp['code'] = None
                     tmp['type'] = None
 
-                status_item = status_results_list[i] if i < len(
-                    status_results_list) else {}
+                status_item = status_by_tag.get(tag, {})
                 tmp['assertion_status'] = status_item.get(
                     'assertion_status', None)
 
-                info_item = info_results_list[i] if i < len(
-                    info_results_list) else {}
+                info_item = info_by_tag.get(tag, {})
                 tmp['body_location'] = info_item.get('body_location', None)
                 body_code_val = info_item.get('body_code', None)
                 if body_code_val is not None:
@@ -284,8 +315,7 @@ class PipelineCoordinator:
                 tmp['note'] = info_item.get('note', None)
                 tmp['other'] = info_item.get('other', None)
 
-                relate_item = relate_results_list[i] if i < len(
-                    relate_results_list) else {}
+                relate_item = relate_by_tag.get(tag, {})
                 related_data = relate_item.get('related')
                 if isinstance(related_data, dict):
                     tmp['related'] = related_data
@@ -300,8 +330,7 @@ class PipelineCoordinator:
                 else:
                     tmp['related'] = {}
 
-                date_item = date_results_list[i] if i < len(
-                    date_results_list) else {}
+                date_item = date_by_tag.get(tag, {})
                 tmp['begin_date'] = date_item.get('date', [None, None])[0]
                 tmp['end_date'] = date_item.get('date', [None, None])[1]
                 if 'inferred' in date_item:
@@ -379,43 +408,81 @@ class PipelineCoordinator:
                                 for i in filtered_indices]
         filtered_ner_positions = [parsed_ner_positions[i]
                                   for i in filtered_indices] if parsed_ner_positions else []
-        return filtered_ner_results, filtered_ner_context, filtered_ner_positions
+        filtered_ner_tags = [parsed_ner_tags[i] for i in filtered_indices]
+        return filtered_ner_results, filtered_ner_context, filtered_ner_positions, filtered_ner_tags
 
     def _aggregate_results(self, ner_data: NERData, entity_data: EntityData,
                            info_data: InfoData, date_data: DateData) -> None:
-        self.pipeline_result['clean_results'] += entity_data.clean_results
+        tag_offset = self._tag_offset
+        n_chunk_tags = len(ner_data.parsed_tags)
+
+        # Align aux lists to this chunk's (local) clean tags first — the
+        # processors emitted their 'tag' fields in the same local 1..N space.
         info_results, status_results, date_results, relate_results = process_lists_based_on_list1(
             entity_data.clean_results, info_data.info_results,
             info_data.status_results, date_data.date_results, entity_data.relate_results
         )
-        self.pipeline_result['info_results'] += info_results
-        self.pipeline_result['status_results'] += status_results
-        self.pipeline_result['date_results'] += date_results
 
-        offset = len(self.pipeline_result.get('relate_results', []))
+        # Now lift every tag reference for this chunk by the running offset so
+        # the accumulated pipeline_result lives in one collision-free namespace.
+        # All tags become ints here, which also removes the str/int comparison
+        # mismatch that filter_parsed_results / the by-tag join would otherwise
+        # hit. clean['TAG'], aux 'tag', parsed tags and related-target tags are
+        # all shifted by the SAME offset so relations keep resolving.
+        for item in entity_data.clean_results:
+            item['TAG'] = int(item['TAG']) + tag_offset
+        for aux_list in (info_results, status_results, date_results, relate_results):
+            for it in aux_list:
+                if isinstance(it, dict) and it.get('tag') is not None:
+                    it['tag'] = int(it['tag']) + tag_offset
+        ner_data.parsed_tags = [int(t) + tag_offset for t in ner_data.parsed_tags]
+
+        # Globalize related-target tags (LLM relation references, local 1..N)
+        # by the SAME offset as the entities so they keep resolving. A target
+        # outside this chunk's 1..N NER range, or non-numeric, is a hallucinated
+        # reference: fail-fast (§2) instead of silently offsetting it into a
+        # different chunk's namespace, which would fabricate a wrong edge. JSON
+        # string-encoded relations are parsed first so they go through the same
+        # validation rather than keeping un-globalized local tags.
         for result in relate_results:
-            if result.get('related') and isinstance(result['related'], dict):
-                new_related = {}
-                for tag, rel_type in result['related'].items():
-                    try:
-                        new_tag = str(int(tag) + offset)
-                        new_related[new_tag] = rel_type
-                    except ValueError:
-                        self.logger.error(
-                            f"Error converting related tag: {tag} to int with offset {offset}", exc_info=True)
-                        continue
-                result['related'] = new_related
-        if 'relate_results' not in self.pipeline_result:
-            self.pipeline_result['relate_results'] = []
-        self.pipeline_result['relate_results'] += relate_results
+            related = result.get('related')
+            if not related:
+                continue
+            if isinstance(related, str):
+                related = json.loads(related if related.strip() else '{}')
+            if not isinstance(related, dict):
+                raise TypeError(
+                    f"Unexpected 'related' type {type(related)} on source tag {result.get('tag')}")
+            new_related = {}
+            for tgt_tag, rel_type in related.items():
+                local_tgt = int(tgt_tag)
+                if not (1 <= local_tgt <= n_chunk_tags):
+                    raise ValueError(
+                        f"Related-target tag {local_tgt} outside chunk NER range "
+                        f"1..{n_chunk_tags} (source tag {result.get('tag')})")
+                new_related[str(local_tgt + tag_offset)] = rel_type
+            result['related'] = new_related
 
-        filtered_ner_results, filtered_ner_context, filtered_ner_positions = self.filter_parsed_results(
+        filtered_ner_results, filtered_ner_context, filtered_ner_positions, filtered_ner_tags = self.filter_parsed_results(
             ner_data.parsed_results, ner_data.parsed_context,
             ner_data.parsed_tags, entity_data.clean_results, ner_data.parsed_positions
         )
+
+        # Commit atomically: only touch self.pipeline_result after ALL of the
+        # above (globalization, relation validation, filtering) has succeeded.
+        # _process_chunk_with_retry re-runs this whole method on failure, so a
+        # raise above must leave pipeline_result untouched — otherwise the retry
+        # would duplicate this chunk's partial appends.
+        self.pipeline_result['clean_results'] += entity_data.clean_results
+        self.pipeline_result['info_results'] += info_results
+        self.pipeline_result['status_results'] += status_results
+        self.pipeline_result['date_results'] += date_results
+        self.pipeline_result['relate_results'] += relate_results
         self.pipeline_result['parsed_ner_result'] += filtered_ner_results
         self.pipeline_result['parsed_ner_context'] += filtered_ner_context
         self.pipeline_result['parsed_ner_positions'] += filtered_ner_positions
+        self.pipeline_result['parsed_ner_tags'] += filtered_ner_tags
+        self._tag_offset += n_chunk_tags
 
     def call_single(self, ehr: str, prev_ehr: str | None = None, chunk_offset: int = 0, original_ehr: str = None) -> None:
         self.logger.info("=== Starting Single EHR Processing ===")
