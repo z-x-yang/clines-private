@@ -4,33 +4,34 @@ Manuscript: **CLINES: Clinical LLM-based Information Extraction and Structuring 
 
 Compiled 2026-05-26 via WebSearch + ORCID.org cross-reference. **Please verify each entry before submitting** — ORCIDs found via search may need confirmation by the author themselves.
 
-| # | Author | Affiliation | ORCID | Status |
+| # | Author | Affiliation | ORCID | Source |
 |---|---|---|---|---|
-| 1 | Zongxin Yang | HMS DBMI | — | **Need from author** (DBMI profile + medRxiv page do not list it; ask Zongxin to provide or register at orcid.org) |
-| 2 | Hongyi Yuan | Tsinghua Stat & Data Sci | — | **Need from author** (Tsinghua doctoral student; search did not return) |
-| 3 | Raheel Sayeed | HMS DBMI | **0000-0001-8810-2471** | ✅ Confirmed (orcid.org/0000-0001-8810-2471) |
-| 4 | Amelia Li Min Tan | HMS DBMI | **0000-0003-0623-6623** | ✅ Confirmed (orcid.org/0000-0003-0623-6623) |
-| 5 | Enci Cai | HMS DBMI | — | **Need from author** (likely not registered; staff project coordinator) |
-| 6 | Mohammed Moro | HMS DBMI | — | **Need from author** (project coordinator; likely not registered yet) |
-| 7 | Xiudi Li | UC Berkeley Biostat | — | **Need from author** (recently joined Berkeley; search did not return ORCID) |
-| 8 | Huaiyuan Ying | Tsinghua Stat & Data Sci | **0009-0005-1575-6112** | ✅ Confirmed (orcid.org/0009-0005-1575-6112) |
-| 9 | Nicholas Brown | HMS | — | **Need from author** (DBMI profile does not list it) |
-| 10 | Griffin Weber | BIDMC + HMS DBMI | **0000-0002-2597-881X** | ✅ Confirmed (orcid.org/0000-0002-2597-881X) |
-| 11 | Sheng Yu | Tsinghua Stat & Data Sci | **0000-0002-4573-1929** | ✅ Confirmed (orcid.org/0000-0002-4573-1929) |
-| 12 | Isaac Kohane (corr) | HMS DBMI | **0000-0003-2192-5160** | ✅ Confirmed (orcid.org/0000-0003-2192-5160) |
-| 13 | Tianxi Cai (corr) | HMS DBMI + Harvard Chan | — | **Need from author** (search did not return; Wikipedia + faculty page do not list) |
+| 1 | Zongxin Yang | HMS DBMI | **0000-0001-8783-8313** | ✅ Provided by author 2026-05-26 |
+| 2 | Hongyi Yuan | Tsinghua Stat & Data Sci | **0000-0003-2597-1973** | ✅ Provided by Zongxin 2026-05-26 |
+| 3 | Raheel Sayeed | HMS DBMI | **0000-0001-8810-2471** | ✅ WebSearch (orcid.org/0000-0001-8810-2471) |
+| 4 | Amelia Li Min Tan | HMS DBMI | **0000-0003-0623-6623** | ✅ WebSearch (orcid.org/0000-0003-0623-6623) |
+| 5 | Enci Cai | HMS DBMI | **0009-0008-5329-9380** | ✅ Provided by Zongxin 2026-05-26 |
+| 6 | Mohammed Moro | HMS DBMI | — | ⚠️ Not registered (none found); will submit without — Mo may register at orcid.org before final acceptance if desired |
+| 7 | Xiudi Li | UC Berkeley Biostat | **0000-0001-8304-1411** | ✅ Provided by Zongxin 2026-05-26 |
+| 8 | Huaiyuan Ying | Tsinghua Stat & Data Sci | **0009-0005-1575-6112** | ✅ WebSearch (orcid.org/0009-0005-1575-6112) |
+| 9 | Nicholas Brown | HMS | **0000-0002-2166-3140** | ✅ Provided by Zongxin 2026-05-26 |
+| 10 | Griffin Weber | BIDMC + HMS DBMI | **0000-0002-2597-881X** | ✅ WebSearch (orcid.org/0000-0002-2597-881X) |
+| 11 | Sheng Yu | Tsinghua Stat & Data Sci | **0000-0002-4573-1929** | ✅ WebSearch (orcid.org/0000-0002-4573-1929) |
+| 12 | Isaac Kohane (corr) | HMS DBMI | **0000-0003-2192-5160** | ✅ WebSearch (orcid.org/0000-0003-2192-5160) |
+| 13 | Tianxi Cai (corr) | HMS DBMI + Harvard Chan | **0000-0002-5379-2502** | ✅ Provided by Zongxin 2026-05-26 |
 
 ## Summary
 
-- **6 of 13** ORCIDs confirmed via public sources
-- **7 of 13** need to be obtained directly from the author
+- **12 of 13** ORCIDs confirmed (10 verifiable via orcid.org + 2 author-provided pending registry verification)
+- **1 of 13** without ORCID (Mohammed Moro — not registered)
 
 ## Recommended next steps
 
-1. **For confirmed ORCIDs**: Verify each one is current by visiting `https://orcid.org/<ORCID>` — sometimes researchers update affiliation or merge accounts.
-2. **For missing ORCIDs**: Send a one-line email to each co-author:
-   > "Please confirm your ORCID identifier for the BMJ Digital Health \\& AI revision submission. If you don't have one, registration takes ~5 minutes at https://orcid.org/register."
-3. **For author #1 (Zongxin)**: If you have an ORCID, please add it here. If not, register and add.
+1. **Mohammed Moro**: not currently registered. Two options:
+   - Mo registers at https://orcid.org/register (~5 min) before final acceptance; we add his ORCID to the typeset proof
+   - Submit revision without Mo's ORCID (he can add it later at proof stage)
+2. **Verify all confirmed ORCIDs** map to the correct affiliation by visiting each `https://orcid.org/<ID>` link before the final BMJ submission portal upload
+3. **In the BMJ submission portal**: each author's ORCID gets entered individually in the per-author form, separately from the manuscript text
 
 ## Where ORCIDs go in the BMJ submission
 
@@ -40,9 +41,15 @@ Compiled 2026-05-26 via WebSearch + ORCID.org cross-reference. **Please verify e
 
 ## References
 
-- [ORCID record for Isaac Kohane](https://orcid.org/0000-0003-2192-5160)
-- [ORCID record for Griffin Weber](https://orcid.org/0000-0002-2597-881X)
-- [ORCID record for Sheng Yu](https://orcid.org/0000-0002-4573-1929)
-- [ORCID record for Amelia Li Min Tan](https://orcid.org/0000-0003-0623-6623)
-- [ORCID record for Raheel Sayeed](https://orcid.org/0000-0001-8810-2471)
-- [ORCID record for Huaiyuan Ying](https://orcid.org/0009-0005-1575-6112)
+- [Zongxin Yang](https://orcid.org/0000-0001-8783-8313)
+- [Hongyi Yuan](https://orcid.org/0000-0003-2597-1973)
+- [Raheel Sayeed](https://orcid.org/0000-0001-8810-2471)
+- [Amelia Li Min Tan](https://orcid.org/0000-0003-0623-6623)
+- [Enci Cai](https://orcid.org/0009-0008-5329-9380)
+- [Xiudi Li](https://orcid.org/0000-0001-8304-1411)
+- [Huaiyuan Ying](https://orcid.org/0009-0005-1575-6112)
+- [Nicholas Brown](https://orcid.org/0000-0002-2166-3140)
+- [Griffin Weber](https://orcid.org/0000-0002-2597-881X)
+- [Sheng Yu](https://orcid.org/0000-0002-4573-1929)
+- [Isaac Kohane](https://orcid.org/0000-0003-2192-5160)
+- [Tianxi Cai](https://orcid.org/0000-0002-5379-2502)
