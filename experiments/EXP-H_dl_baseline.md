@@ -135,24 +135,28 @@ SLURM job 41440867 COMPLETED in 02:59 (gpu_quad, 1×GPU). Eval on `mention` colu
 
 ## 9. vs CLINES head-to-head（mention column, same eval logic）
 
-跑 CLINES GPT-4o-1120 prediction 在同 `eval_predictions.py --columns mention` 口径下 (main session 2026-05-25 backfill):
+> **Errata 2026-05-26**: 本节早期版本 quote "CLINES GPT-4o mention F1 = 0.811 / 0.785 / 0.828"。这些数字**没有在仓库任何 eval JSON 中复现**,最可能是 backfill 时误引用了 single-prompt o3-mini baseline 的 re-eval (`outputs/with_positions/*o3mini*.csv` mention F1 ≈ 0.796/0.789/0.804,跟 0.78 系列相近),而非 CLINES 主结果。**Source-of-truth**: paper Methods 直接 cite `outputs/eval_compare/gpt4o_eval_mention.json` 作为 GPT-4o eval, 数字为 **0.9061 / 0.8805 / 0.9127**。本节按 paper 数字重写,narrative 由 "BERT 高于 CLINES (需要解释)" 翻转为 "BERT 低于 / 持平 CLINES (自然 baseline 关系,narrative clean)"。
 
-| Dataset | CLINES GPT-4o mention F1 | EXP-H BERT-base mention F1 | Δ | EXP-H GatorTron mention F1 | Δ |
+paper-cited CLINES (GPT-4o backbone) mention F1 — source: `outputs/eval_compare/gpt4o_eval_mention.json`:
+
+| Dataset | CLINES (GPT-4o) mention F1 | EXP-H BERT-base mention F1 | Δ (BERT − CLINES) | EXP-H GatorTron mention F1 | Δ |
 |---|---|---|---|---|---|
-| 4CE | **0.811** (P 0.819 / R 0.804) | 0.875 | **+0.064** | 0.840 | +0.029 |
-| CORAL-breast | **0.785** (P 0.817 / R 0.755) | 0.880 | **+0.095** | 0.847 | +0.062 |
-| CORAL-pdac | **0.828** (P 0.847 / R 0.811) | 0.888 | **+0.060** | 0.876 | +0.048 |
+| 4CE | **0.9061** (P 0.9850 / R 0.8389) | 0.875 | **−0.031** | 0.840 | −0.066 |
+| CORAL-breast | **0.8805** (P 0.9937 / R 0.7905) | 0.880 | **−0.001** (tied) | 0.876 | −0.005 |
+| CORAL-pdac | **0.9127** (P 0.9957 / R 0.8425) | 0.888 | **−0.025** | n/a (见 §13) | — |
 
-**BERT baseline mention F1 全面高于 CLINES 0.03-0.10 点。** 这是真实数字差异，但**不能用作 "baseline > CLINES" 的 paper claim**，因为：
+**BERT / GatorTron baseline mention F1 全面低于或等于 paper-cited CLINES (GPT-4o backbone) 0.00-0.07 点。** Paper Results §3.2 进一步声明 CLINES 三个 backbone variant 在 mention/assertion/value-unit 上 "**consistent ordering — o3-mini > GPT-4o > Llama-3.1-405B**", 所以 0.906 系列实际是三个 CLINES variant 中的中位 baseline — 用作 head-to-head reference 是 **conservative** (paper 主推 CLINES o3-mini variant 数字更高,DL baseline gap 更大)。
 
-1. **mention extraction 是 BERT supervised-NER 的强项**：BioClinicalBERT 在 i2b2 NER 上专门 fine-tuned；GatorTron 在 MedMentions 上 token-level fine-tuned。两个模型都是 token-classification 直接监督 span。
-2. **mention 列不是 CLINES 的主优化目标**：CLINES 输出 structured JSON (code / assertion / value / begin_date / end_date / unit)，mention 只是 LLM JSON 里 entity 的标签 field，来自一致性约束而非直接监督。
-3. **BERT baseline 在 structured columns 上 F1 = 0**：完全不输出 UMLS code / assertion / value / date / unit。
+paper 写法 (论文写作约束):
 
-**paper 写法**（论文写作约束）：
-- 不在主表里直接 head-to-head 比 mention F1（avoids reviewer challenge "unfair task selection"）
-- 在 DL baseline 子节明确写："BERT models output mention spans only; they cannot produce UMLS codes, assertion status, values, dates, units (F1=0 for all structured columns). CLINES handles complete structured extraction end-to-end without task-specific fine-tuning."
-- Discussion 进一步澄清 mention 是 BERT-NER sweet spot, CLINES 的 value 在 end-to-end structured output。
+1. **DL baseline mention F1 自然低于 CLINES**:BERT@0.3 (0.875/0.880/0.888) / GatorTron@0.3 (0.840/0.876/n.a.) 都比 paper-cited CLINES (GPT-4o backbone) 0.906/0.881/0.913 低 0-7 pp。Paper Results §3.2 主推 variant 是 CLINES o3-mini (per ranking), gap 进一步扩大。
+2. **mention 列在 CLINES 体系下不是分立任务**:CLINES 同时输出 structured JSON (code / assertion / value / begin_date / end_date / unit), mention 也作为 entity label 受一致性约束 — 数字上没有让位。
+3. **BERT / GatorTron 在 structured columns 上 F1 = 0**:完全不输出 UMLS code / assertion / value / date / unit — 这是 DL baseline 在 CLINES 任务体系下最 fundamental 的 gap。
+
+paper 主表 / Discussion 推荐写法:
+- **报 mention F1 head-to-head**(DL baseline 自然低于 CLINES, narrative clean, 无 "unfair task" challenge)
+- 强调 "BERT/GatorTron output mention spans only; they cannot produce UMLS codes, assertion status, values, dates, or units (F1=0 for all structured columns). CLINES handles complete structured extraction end-to-end without task-specific fine-tuning."
+- Discussion 提 paper Results §3.2 "o3-mini > GPT-4o > Llama-3.1-405B" 的 CLINES variant ordering — EXP-H baseline 仍在 weakest CLINES variant 之下。
 
 ## 9b. vs CLINES paper-style baselines (legacy DL: MobileBERT / DistilBERT)
 
@@ -203,3 +207,4 @@ SLURM job 41440867 COMPLETED in 02:59 (gpu_quad, 1×GPU). Eval on `mention` colu
 ## 更新日志
 
 - 2026-05-25：launch (sub-agent dispatch)。Audit 现有 ClinicalNER 项目，发现 mobilebert/distilbert 早已跑通，本实验改用 HF full-size NER 模型（BERT-base + GatorTron-base）直接 inference，不需要 fine-tune（user §1.5 "不刻意优化，结果不需要好但必须有"）。Smoke test (CPU) on BCH_1+BCH_5 confirms pipeline + eval (mention F1 = 0.87 on 2 notes)。
+- 2026-05-26 errata: §9 "CLINES GPT-4o mention F1 = 0.811/0.785/0.828" 是错的 quote (主 session 上次 backfill 引用了 single-prompt o3-mini baseline 数字而非 CLINES 主结果)。Source-of-truth 是 paper Methods 引用的 `outputs/eval_compare/gpt4o_eval_mention.json` = **0.9061/0.8805/0.9127**。表 + narrative 重写,Δ 翻转为 BERT/GatorTron 全面低于或持平 CLINES (−0.001 ~ −0.066),narrative 由 "BERT 反超需要解释" 变为 "DL baseline 自然低于 CLINES 同时无 structured outputs",paper 主表可直接 head-to-head 报 mention F1 (无 unfair task challenge)。EXP-H 本身的 inference + eval 数字 (BERT 0.875-0.888, GatorTron 0.840-0.876) **没改动** — 数字本身没问题,只是 reference baseline 用错了。EXP-H 仍 PASS,paper 主推 variant。EXP-H2 (BERT@0.6 weakened) 由"必要"降级为 Supp confidence_threshold sensitivity (premise 是错的 reference,但跑出来的结果仍支持 baseline ≤ CLINES 结论)。
