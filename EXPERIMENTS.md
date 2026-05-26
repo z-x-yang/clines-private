@@ -52,8 +52,8 @@ GPT-4o 案例集：`reports/gpt4o_case_studies.md`。
 | EXP-ID | E# | 名称 | 优先级 | 状态 | 新跑量 | 一句话结论 | 详情 |
 |---|---|---|---|---|---|---|---|
 | EXP-A | E1 | IAA Cohen's κ + F1-based agreement | P0 | BLOCKED-DATA | 0（等 Mo cross-annotation, ~05-21） | TBD | experiments/EXP-A_iaa.md |
-| EXP-B | E2 | Bootstrap 95% CI + permutation test（Figure 3A-D） | P0 | PENDING | 0（复用 with_positions + reviewed_updated2，纯统计） | TBD | experiments/EXP-B_bootstrap_ci.md |
-| EXP-C | E3 | Document-level resample stability | P1 | PENDING | 0（同上） | TBD | experiments/EXP-C_stability.md |
+| EXP-B | E2 | Bootstrap 95% CI + paired bootstrap test（Figure 3A-D） | P0 | PASS | 0（复用 with_positions + reviewed_updated2，纯统计） | 合并到 EXP-BC：所有 Figure 3A-D bar 拿到 95% CI（典型 boot_std 0.01-0.05；小样本 phi4 子集 0.05-0.10）；GPT-4o vs Phi/o3mini paired ΔF1 全 cell 显著 (p_FDR<0.001)，vs DeepSeek/Llama 部分 cell 显著（code/value/unit 稳定显著，date 列接近 tie） | [experiments/EXP-BC_bootstrap_stability.md](experiments/EXP-BC_bootstrap_stability.md) |
+| EXP-C | E3 | Document-level resample stability | P1 | PASS | 0（同上） | 合并到 EXP-BC：document-level bootstrap stability table + Figure 3E per-bin n + 95% CI ribbon 完成 | [experiments/EXP-BC_bootstrap_stability.md](experiments/EXP-BC_bootstrap_stability.md) |
 | EXP-D | E4 | Cost / latency / GPU-h / API \$ 全表 | P0 | PENDING | 0（slurm-\*.out + evaluation\_results\_0904 反推） | TBD | experiments/EXP-D_cost.md |
 | EXP-E | E5 | Hallucination 5-class FP taxonomy | P0 | PENDING | 0（从现有 prediction 拉 FP + 人工归类） | TBD | experiments/EXP-E_hallucination.md |
 | EXP-F | E6 | Baseline 补强：o3-mini single-prompt + GPT-4o CoT single-call | P0 | PENDING | **新跑**（小规模） | TBD | experiments/EXP-F_baseline_extra.md |
@@ -85,3 +85,4 @@ GPT-4o 案例集：`reports/gpt4o_case_studies.md`。
 
 - 2026-05-13：初版创建。锁定 Phase 风格 + 9 项实验编号 E1-E9 / EXP-A..EXP-H。E9 走方案 (b)（不评测，Supp 写明），不立 EXP 项。User 拍板"能不跑就不跑"策略（2026-05-13）。HMS API 暂不可用，BLOCKED-API 实验等 key 到位。
 - 2026-05-19：HMS API key 已拿到（user 从 SharePoint 取得，存放在 `OPENAIKEY` env var，不入 git）。Deployment probe 显示 `gpt-4o-1120` / `gpt-4o-mini-0718` / `gpt-4.1` 系列 / `o3-mini-0131` / `o4-mini-0416` 可用，alias（`gpt-4o` / `gpt-4o-mini` / `o3-mini`）全部 404。`openai_provider.py` 的 `n2n_dict` 同步修正（`gpt4omini→gpt-4o-mini-0718`、`o3mini→o3-mini-0131`），`o3mini` api_version 由 `2024-10-21` 升到 `2024-12-01-preview`（reasoning 推荐版本）。`run_inference.sh` 清除 hardcode 的失效 key / dev endpoint，改为 fail-fast 检查 `OPENAIKEY` env var 并默认 `OPENAIENDPOINT=https://azure-ai.hms.edu`。EXP-F 状态由 `BLOCKED-API` → `PENDING`；EXP-G 同步。
+- 2026-05-25：EXP-B + EXP-C 合并为 **EXP-BC**（同一份 document-level bootstrap pipeline 同时给 per-bar 95% CI、stability spread、Figure 3E per-bin n、paired bootstrap pairwise ΔF1 + BH-FDR adjusted p-value）。pipeline 落在 `scripts/bootstrap/`，artifacts 在 `runs/EXP-BC/`，详见 [experiments/EXP-BC_bootstrap_stability.md](experiments/EXP-BC_bootstrap_stability.md)。**关键修正**：原 RESPONSE_PLAN 写的是"permutation test"，本实验改为 paired bootstrap（更 informative：同时给 ΔF1 CI + p-value，且 paired 用同一组 resample indices 真正配对），Methods 写作沿用 paired bootstrap 表述。Phi-4 code F1 ≈ 0 是真实结果（输出不含 `C\d+\|\|term` 格式），不是 eval bug。MIMIC 不在 Figure 3（`reviewed_updated2/` 无 MIMIC gold），只有 3 dataset (4CE / coral_breastca / coral_pdac)。

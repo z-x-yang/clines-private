@@ -38,6 +38,13 @@ umls_dictionary.txt
 .DS_Store
 */.DS_Store
 
+# Per experiments-rules.md §5 / §6: all per-experiment artifacts live under
+# runs/<EXP-ID>/ and are NOT version-controlled (size + potential PHI in
+# intermediate predictions). Numerical metrics are summarised inline in the
+# experiments/<EXP-ID>_*.md files instead.
+runs/
+logs/slurm/
+
 # papers/ is mostly large binaries (LaTeX build artifacts, PDFs, docx, zipped
 # annotation data with potential PHI). Only allow specific text artifacts in
 # the BMJ Revision response folder to enter git.
