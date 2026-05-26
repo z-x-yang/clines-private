@@ -81,11 +81,6 @@ def _pick_examples(
     """
     if judge_col in df.columns:
         sub = df[df[judge_col] == category].copy()
-        if "judge_confidence" in sub.columns:
-            sub["_sortk"] = (
-                -sub["judge_confidence"].fillna(0.0).astype(float),
-                # (negative confidence so highest first)
-            )
     else:
         sub = df[df["category_rule"] == category].copy()
 

@@ -1,0 +1,103 @@
+{
+  "model_tag": "gpt4.1",
+  "n_judged": 500,
+  "judge_category_counts": {
+    "wrong_code": 140,
+    "wrong_value_or_date": 97,
+    "wrong_assertion": 96,
+    "span_boundary_error": 68,
+    "not_an_error": 56,
+    "fabricated_entity": 43
+  },
+  "judge_category_percent": {
+    "wrong_code": 28.0,
+    "wrong_value_or_date": 19.4,
+    "wrong_assertion": 19.2,
+    "span_boundary_error": 13.6,
+    "not_an_error": 11.2,
+    "fabricated_entity": 8.6
+  },
+  "rule_vs_judge_agreement_overall": 0.77,
+  "rule_vs_judge_per_rule": {
+    "wrong_assertion": {
+      "n": 100,
+      "agree": 95,
+      "judge_breakdown": {
+        "wrong_assertion": 95,
+        "span_boundary_error": 2,
+        "not_an_error": 1,
+        "fabricated_entity": 1,
+        "wrong_code": 1
+      }
+    },
+    "span_boundary_error": {
+      "n": 100,
+      "agree": 58,
+      "judge_breakdown": {
+        "span_boundary_error": 58,
+        "wrong_code": 37,
+        "fabricated_entity": 2,
+        "not_an_error": 2,
+        "wrong_assertion": 1
+      }
+    },
+    "wrong_code": {
+      "n": 100,
+      "agree": 96,
+      "judge_breakdown": {
+        "wrong_code": 96,
+        "span_boundary_error": 3,
+        "fabricated_entity": 1
+      }
+    },
+    "wrong_value_or_date": {
+      "n": 100,
+      "agree": 97,
+      "judge_breakdown": {
+        "wrong_value_or_date": 97,
+        "not_an_error": 2,
+        "span_boundary_error": 1
+      }
+    },
+    "fabricated_entity": {
+      "n": 100,
+      "agree": 39,
+      "judge_breakdown": {
+        "not_an_error": 51,
+        "fabricated_entity": 39,
+        "wrong_code": 6,
+        "span_boundary_error": 4
+      }
+    }
+  },
+  "rule_cat_totals_full_population": {
+    "wrong_value_or_date": 3193,
+    "fabricated_entity": 1965,
+    "span_boundary_error": 811,
+    "wrong_assertion": 637,
+    "wrong_code": 565
+  },
+  "extrapolated_judge_counts": {
+    "fabricated_entity": 795,
+    "not_an_error": 1089,
+    "span_boundary_error": 611,
+    "wrong_assertion": 613,
+    "wrong_code": 967,
+    "wrong_value_or_date": 3097
+  },
+  "extrapolated_judge_pct_of_fp": {
+    "fabricated_entity": 11.08,
+    "not_an_error": 15.18,
+    "span_boundary_error": 8.51,
+    "wrong_assertion": 8.55,
+    "wrong_code": 13.48,
+    "wrong_value_or_date": 43.19
+  },
+  "total_predicted_entities": 13454,
+  "total_tp": 6283,
+  "total_fp": 7171,
+  "true_hallucination_count": 6082,
+  "true_hallucination_pct_of_fp": 84.82,
+  "true_hallucination_pct_of_all_pred": 45.21,
+  "extrapolation_method": "rule-stratified: each FP rule-category was sampled at 100 rows; judge-category distribution within each rule-cat is extrapolated to that rule-cat's full population (3193+1965+811+637+565=7171), then summed across rule-cats. Equivalent to a post-stratified Horvitz-Thompson estimator over a stratified random sample."
+}
