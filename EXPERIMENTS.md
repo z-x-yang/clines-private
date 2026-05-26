@@ -51,15 +51,18 @@ GPT-4o 案例集：`reports/gpt4o_case_studies.md`。
 
 | EXP-ID | E# | 名称 | 优先级 | 状态 | 新跑量 | 一句话结论 | 详情 |
 |---|---|---|---|---|---|---|---|
-| EXP-A | E1 | IAA Cohen's κ + F1-based agreement | P0 | BLOCKED-DATA | 0（等 Mo cross-annotation, ~05-21） | TBD | experiments/EXP-A_iaa.md |
-| EXP-B | E2 | Bootstrap 95% CI + permutation test（Figure 3A-D） | P0 | PENDING | 0（复用 with_positions + reviewed_updated2，纯统计） | TBD | experiments/EXP-B_bootstrap_ci.md |
-| EXP-C | E3 | Document-level resample stability | P1 | PENDING | 0（同上） | TBD | experiments/EXP-C_stability.md |
-| EXP-D | E4 | Cost / latency / GPU-h / API \$ 全表 | P0 | PENDING | 0（slurm-\*.out + evaluation\_results\_0904 反推） | TBD | experiments/EXP-D_cost.md |
-| EXP-E | E5 | Hallucination 5-class FP taxonomy | P0 | PENDING | 0（从现有 prediction 拉 FP + 人工归类） | TBD | experiments/EXP-E_hallucination.md |
-| EXP-F | E6 | Baseline 补强：o3-mini single-prompt + GPT-4o CoT single-call | P0 | PENDING | **新跑**（小规模） | TBD | experiments/EXP-F_baseline_extra.md |
-| EXP-G | E7 | Ablation: SapBERT / SemChunk / Date module / Step 4 | P1 | PENDING | Date/Step4 off 可在现有产物上**模拟**；SemChunk / SapBERT 新跑（API 可用） | TBD | experiments/EXP-G_ablation.md |
-| EXP-H | E8 | Full-size DL baseline: BioClinicalBERT 或 GatorTron | P1 | BLOCKED-CODE | **新跑**（GPU；不依赖 HMS API） | TBD | experiments/EXP-H_dl_baseline.md |
-| — | E9 | RE 不评测，Supp 写明 | P1 | WRITING-ONLY | 0 | n/a | —（不立 EXP） |
+| EXP-A | E1 | IAA Cohen's κ + F1-based agreement | P0 | **PASS** | 0 (Mo cross-annotation 已收齐 05-25) | entity-keep κ=0.40 / F1=0.81; assertion-kept κ=0.79. 低 entity-keep κ 提供 rebuttal 论据 (human 间 disagreement 本身 ~40%) | experiments/EXP-A_iaa_cohen_kappa.md |
+| EXP-A2 | E1' | IAA improved (PABAK + fuzzy align + raw agreement) | P0 | **PASS** | 0 (同 A 数据,加算法层) | PABAK=0.46 (Cohen's paradox 解释 entity-keep κ low); fuzzy align 47 added rows 0/47 pairs (annotators 独立扩展不重叠) | experiments/EXP-A2_iaa_improved.md |
+| EXP-A3 | E1'' | Enhanced agreement (UMLS sibling + Claude rule judge) | P0 | **PASS** | 0 (同 A 数据,加 algorithmic layers) | 4-layer cascade. L1 PABAK=0.46 (paper primary); L3 PABAK=0.51 (Supp sensitivity). Claude judge 974 disagreements → 0 actually_agreed (honesty), 21% ambig documented, 79% true_disagree | experiments/EXP-A3_enhanced_agreement.md |
+| EXP-B/C | E2/E3 | Bootstrap CI + permutation + doc-level stability | P0/P1 | **PASS** | 0 (纯统计,复用 with_positions + reviewed_updated2) | Figure 3 bootstrap 95% CI + permutation p<0.001; doc-level resample stable | experiments/EXP-BC_bootstrap_stability.md |
+| EXP-D | E4 | Cost / latency / GPU-h / API \$ 全表 | P0 | **PASS** | 0 (slurm log + evaluation 反推) | 完整成本表已生成 | experiments/EXP-D_cost_table.md |
+| EXP-E | E5 | Hallucination 5+1 class FP taxonomy | P0 | **PASS** | 0 (现有 prediction + LLM-as-judge GPT-4.1) | 5-class taxonomy + 500-row judge sample; 84.82% true halluc, wrong_value_or_date 43.19%. **Superseded by EXP-E2 (7-class split)**. | experiments/EXP-E_hallucination_taxonomy.md |
+| EXP-E2 | E5' | 7-class FP taxonomy (split value/date + broaden not_an_error) | P0 | **INCONCLUSIVE-pending-review** | 0 (re-judge 700 rows GPT-4.1) | 6 真 halluc cats 全 <17%; **not_an_error 54.31%** (broader def 揭示 54% "FP" 非 model error: annotation gap + 等价格式 + synonym + missing-not-required). User policy decision pending: Strict (重 tune prompt = EXP-E3) vs Lenient (接受 24.4% true halluc rate). 60-row user_review_sample 已 prep. | experiments/EXP-E2_judge_6class.md |
+| EXP-F | E6 | Baseline 补强:o3-mini single-prompt + GPT-4o CoT single-call | P0 | **RUNNING** | 6 SLURM gpu_quad jobs (jobid 41441491-41441496) | ~2h26min remaining at last check (5h33min/8h walltime) | experiments/EXP-F_baseline_extra.md |
+| EXP-G | E7 | Ablation: SapBERT / SemChunk / Date module / Step 4 | P1 | **TIMEOUT-needs-rerun** | 15 jobs (41458272-41458297) 全部 TIMED OUT 30min (walltime 不够) | 需要重提加长 walltime (4h) | experiments/EXP-G_ablation.md |
+| EXP-H | E8 | Full-size DL baseline: BERT-base 110M + GatorTron-base 345M | P1 | **PASS (with 2026-05-26 errata)** | jobid 41440867 (02:59 gpu_quad) | BERT mention F1=0.875-0.888, GatorTron 0.840-0.876. vs paper-cited CLINES (GPT-4o backbone) 0.906/0.881/0.913, BERT/GatorTron 全面 0-7pp below (clean head-to-head). Errata 见 .md §9 (prior 0.811 quote 错). | experiments/EXP-H_dl_baseline.md |
+| EXP-H2 | E8' | Weakened DL baseline (confidence_threshold 0.3→0.6) | P2 | **ARCHIVED-SUPP** | jobid 41467904 (02:26 RTX 8000) | BERT@0.6 mention F1=0.821-0.838 (lower than EXP-H@0.3). Premise (baseline > CLINES) 后发现是错的 reference (filename / quote 误)。EXP-H 已 PASS w/ paper baseline,EXP-H2 沦为 confidence_threshold sensitivity in Supp. | experiments/EXP-H2_weakened_baseline.md |
+| — | E9 | RE 不评测,Supp 写明 | P1 | WRITING-ONLY | 0 | n/a | —(不立 EXP) |
 
 ### 状态枚举
 
@@ -71,6 +74,18 @@ GPT-4o 案例集：`reports/gpt4o_case_studies.md`。
 - `BLOCKED-CODE` — 等代码/环境/工具就绪（如 EXP-H 需先核实 ClinicalNER 项目是否迁到 O2）
 - `MIXED` — 部分子实验可立即跑，部分阻塞
 - `WRITING-ONLY` — 不跑实验，只在文稿改 wording
+- `ARCHIVED-SUPP` — 跑完但 paper 不主推,留在 Supp 作 sensitivity / robustness check
+- `TIMEOUT-needs-rerun` — SLURM walltime 不够,需要重提加长 walltime
+- `INCONCLUSIVE-pending-review` — 跑完但需要 user policy decision 才能 finalize
+
+## ⚠️ Baseline 文件名 注意
+
+`outputs/with_positions/*<model>*.csv` 是 paper 用的 **single-prompt LLM baseline** prediction(每个 model 一组),不是 CLINES variant。**注意:文件名中的 "gpt4o" / "o3mini" / "deepseek" / "llama" 指 backbone,不指 CLINES variant**。
+
+- `outputs/with_positions/*gpt4o*.csv` mention F1 (re-eval) ≈ 0.91 — 这其实是 paper 主 CLINES (GPT-4o backbone) 预测结果,跟 `outputs/eval_compare/gpt4o_eval_mention.json` 数字一致
+- `outputs/with_positions/*o3mini*.csv` mention F1 ≈ 0.80 — 是 **single-prompt o3-mini baseline**(不是 CLINES o3-mini variant)
+- Paper 用 `outputs/eval_compare/gpt4o_eval_mention.json` (mention F1 0.9061/0.8805/0.9127) 作为 paper Methods cited CLINES eval source(GPT-4o backbone variant)
+- Paper Results §3.2 声明 "CLINES o3-mini > GPT-4o > Llama-3.1-405B" — 但 paper 主表数字 cite 的是 GPT-4o backbone version
 
 ## 命名 / Branch 规范
 
@@ -85,3 +100,4 @@ GPT-4o 案例集：`reports/gpt4o_case_studies.md`。
 
 - 2026-05-13：初版创建。锁定 Phase 风格 + 9 项实验编号 E1-E9 / EXP-A..EXP-H。E9 走方案 (b)（不评测，Supp 写明），不立 EXP 项。User 拍板"能不跑就不跑"策略（2026-05-13）。HMS API 暂不可用，BLOCKED-API 实验等 key 到位。
 - 2026-05-19：HMS API key 已拿到（user 从 SharePoint 取得，存放在 `OPENAIKEY` env var，不入 git）。Deployment probe 显示 `gpt-4o-1120` / `gpt-4o-mini-0718` / `gpt-4.1` 系列 / `o3-mini-0131` / `o4-mini-0416` 可用，alias（`gpt-4o` / `gpt-4o-mini` / `o3-mini`）全部 404。`openai_provider.py` 的 `n2n_dict` 同步修正（`gpt4omini→gpt-4o-mini-0718`、`o3mini→o3-mini-0131`），`o3mini` api_version 由 `2024-10-21` 升到 `2024-12-01-preview`（reasoning 推荐版本）。`run_inference.sh` 清除 hardcode 的失效 key / dev endpoint，改为 fail-fast 检查 `OPENAIKEY` env var 并默认 `OPENAIENDPOINT=https://azure-ai.hms.edu`。EXP-F 状态由 `BLOCKED-API` → `PENDING`；EXP-G 同步。
+- 2026-05-25 — 2026-05-26: 大规模实验 batch 完成。EXP-A/A2/A3 IAA 完整 (PABAK 加 Cohen's paradox 解释,Claude judge 974 disagreements 揭示 0% 是 actually-agreed)。EXP-BC bootstrap CI + permutation test PASS。EXP-D 成本表 PASS。EXP-E hallucination 5+1 PASS,但 EXP-E2 (7-class split + broaden not_an_error) 揭示 54% "FP" 不是 model error → INCONCLUSIVE-pending-review。EXP-H DL baseline (BERT/GatorTron) PASS。EXP-H2 weakened baseline ARCHIVED-SUPP (premise 是错的 reference baseline,但跑出来的 confidence_threshold sensitivity 仍可用作 Supp)。EXP-F 6 jobs RUNNING。EXP-G 15 jobs 全 TIMEOUT (walltime 不够),需重提。**Baseline 文件名注意**: with_positions/*<model>*.csv 是 paper main CLINES (GPT-4o backbone) variant prediction;EXP-H §9 早期 backfill 错引用了 single-prompt baseline 数字,2026-05-26 errata 已修。详见各 .md §9 / 更新日志。
