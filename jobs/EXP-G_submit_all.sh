@@ -4,11 +4,13 @@
 # Ablations: full | sapbert_off | semchunk_off | date_off | step4_off
 # Datasets : 4CE | coral_pdac | coral_breastca
 #
-# Total = 5 × 3 = 15 sbatch jobs (each <30min, gpu_quad backfill-friendly).
-# "full" runs serve as the matched-sample control (5 representative notes
+# Total = 5 × 3 = 15 sbatch jobs (Plan A re-launch 2026-05-26: each ~60-80min
+# on gpu_quad with 90min walltime cap; original batch 1+2 with 30min walltime
+# all timed out / failed and were the trigger for this re-launch).
+# "full" runs serve as the matched-sample control (3 representative notes
 # per dataset on the full pipeline, with the same GPT-4o-1120 deployment as
 # the ablations). Reuse of `outputs/with_positions/` is NOT possible because
-# that artifact covers different note sets; we need the matched 5-note slice
+# that artifact covers different note sets; we need the matched 3-note slice
 # for a fair ΔF1 comparison.
 #
 # Usage:

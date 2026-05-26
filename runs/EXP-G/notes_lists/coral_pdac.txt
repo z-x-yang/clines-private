@@ -1,12 +1,9 @@
-# EXP-G representative CORAL-pancreas notes (5 notes).
-# Selection criteria (mixed):
+# EXP-G representative CORAL-pancreas notes (3 notes, Plan A re-launch 2026-05-26).
+# Dropped 10 (mid-size) + 6 (moderate) from original 5.
+# Selection criteria (kept):
 #   - 9:  488 rows, 163 dated rows, ~2.9k words → largest + date-heavy
 #   - 14: 408 rows, 69 dated, ~2.4k words → multi-chunk, mid dates
 #   - 1:  404 rows, 119 dated, ~1.7k words → date-heavy
-#   - 10: 230 rows, 66 dated, ~1.7k words → mid-size
-#   - 6:  256 rows, 38 dated, ~1.8k words → moderate
 9
 14
 1
-10
-6

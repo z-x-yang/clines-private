@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=EXP-G_ablation
-#SBATCH --time=00:30:00
+#SBATCH --time=01:30:00
 #SBATCH --mem=64G
 #SBATCH -c 4
 #SBATCH --gres=gpu:1
@@ -16,12 +16,13 @@
 #   MODEL_NAME = gpt4o (default; matches main paper baseline)
 #
 # All four ablations + control "full" share this sbatch. Per RESPONSE_PLAN
-# §1.5 user decision, each (ablation, dataset) run processes only 5
-# representative notes (note_id_list under runs/EXP-G/notes_lists/).
+# §1.5 user decision, each (ablation, dataset) run processes only 3
+# representative notes (Plan A re-launch 2026-05-26; original 5 shrunk to 3
+# after batch 1+2 ran out of 30-min walltime).
 #
 # Compliance:
 #   - §7 HOLD_ON_FAIL sourced; opt-in via env (set by submitter)
-#   - §8 walltime 30min for smoke-size jobs
+#   - §8 walltime 90min (medium-job; ablations needed > 30min in batch 2)
 #   - fail-fast: set -euo pipefail; no silent fallback
 #   - logs under runs/EXP-G/logs/slurm-<jobid>.{out,err} per CLAUDE.md §10
 
