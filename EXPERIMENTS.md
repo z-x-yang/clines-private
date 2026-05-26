@@ -51,7 +51,8 @@ GPT-4o 案例集：`reports/gpt4o_case_studies.md`。
 
 | EXP-ID | E# | 名称 | 优先级 | 状态 | 新跑量 | 一句话结论 | 详情 |
 |---|---|---|---|---|---|---|---|
-| EXP-A | E1 | IAA Cohen's κ + F1-based agreement | P0 | BLOCKED-DATA | 0（等 Mo cross-annotation, ~05-21） | TBD | experiments/EXP-A_iaa.md |
+| EXP-A | E1 | IAA Cohen's κ + F1-based agreement | P0 | PASS | 0（cross-annotation 已到位；pure stats） | κ_entity 0.29(4CE)/0.46(CORAL)/0.40(overall); F1 0.80/0.81/0.81；详 review-style caveat | experiments/EXP-A_iaa_cohen_kappa.md |
+| EXP-A2 | E1 | IAA 改进版：+ PABAK + fuzzy-align added rows + raw agreement | P0 | PASS | 0（同 EXP-A 输入） | **主报 PABAK_entity 0.41(4CE)/0.49(CORAL)/0.46(overall)**; F1 0.79/0.80/0.80; κ_entity 0.28/0.44/0.38（次报）; 0/47 added rows 跨标注者 fuzzy 对齐（结构性结果，非阈值问题） | experiments/EXP-A2_iaa_improved.md |
 | EXP-B | E2 | Bootstrap 95% CI + permutation test（Figure 3A-D） | P0 | PENDING | 0（复用 with_positions + reviewed_updated2，纯统计） | TBD | experiments/EXP-B_bootstrap_ci.md |
 | EXP-C | E3 | Document-level resample stability | P1 | PENDING | 0（同上） | TBD | experiments/EXP-C_stability.md |
 | EXP-D | E4 | Cost / latency / GPU-h / API \$ 全表 | P0 | PENDING | 0（slurm-\*.out + evaluation\_results\_0904 反推） | TBD | experiments/EXP-D_cost.md |
@@ -85,3 +86,4 @@ GPT-4o 案例集：`reports/gpt4o_case_studies.md`。
 
 - 2026-05-13：初版创建。锁定 Phase 风格 + 9 项实验编号 E1-E9 / EXP-A..EXP-H。E9 走方案 (b)（不评测，Supp 写明），不立 EXP 项。User 拍板"能不跑就不跑"策略（2026-05-13）。HMS API 暂不可用，BLOCKED-API 实验等 key 到位。
 - 2026-05-19：HMS API key 已拿到（user 从 SharePoint 取得，存放在 `OPENAIKEY` env var，不入 git）。Deployment probe 显示 `gpt-4o-1120` / `gpt-4o-mini-0718` / `gpt-4.1` 系列 / `o3-mini-0131` / `o4-mini-0416` 可用，alias（`gpt-4o` / `gpt-4o-mini` / `o3-mini`）全部 404。`openai_provider.py` 的 `n2n_dict` 同步修正（`gpt4omini→gpt-4o-mini-0718`、`o3mini→o3-mini-0131`），`o3mini` api_version 由 `2024-10-21` 升到 `2024-12-01-preview`（reasoning 推荐版本）。`run_inference.sh` 清除 hardcode 的失效 key / dev endpoint，改为 fail-fast 检查 `OPENAIKEY` env var 并默认 `OPENAIENDPOINT=https://azure-ai.hms.edu`。EXP-F 状态由 `BLOCKED-API` → `PENDING`；EXP-G 同步。
+- 2026-05-25：EXP-A IAA 完成（PASS）：κ_entity 0.29/0.46/0.40, F1 0.80/0.81/0.81。User 看完结果后拍板加三个改进 → 新立 **EXP-A2**：(a) PABAK 加入；(b) annotator-added rows 用 (span IoU≥0.5 AND mention fuzzy≥0.8) fuzzy-align 到 entity-keep 表；(c) raw_agreement 显式报。EXP-A2 完成（PASS）：PABAK_entity 0.41/0.49/0.46（推荐主报）, κ_entity 略降 0.28/0.44/0.38（次报，附 Cohen's paradox 脚注），F1 0.79/0.80/0.80。47 个 added rows 中 0 个跨标注者对齐（结构性结果：annotators 几乎不重叠地添加自由文本 → 加强 review-style caveat）。
