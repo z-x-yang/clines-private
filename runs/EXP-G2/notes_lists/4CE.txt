@@ -1,0 +1,9 @@
+# EXP-G representative 4CE notes (2 notes per dataset, Plan B 2026-05-26).
+# Plan A (3 notes / 90min) all TIMED OUT — even 30min/note rate puts 3 notes
+# at exactly walltime. Plan B drops the LARGEST note (report06, 718 rows /
+# 5 chunks) so the 2 remaining notes + ~45min SapBERT init fits in 2h budget.
+# Selection criteria (kept):
+#   - KUMC_5: 452 rows, 175 dated rows, ~2.1k words → date-heavy
+#   - d30982c684512d4f0b6fd79836539d9ac: 368 rows, 41 dated, ~1.5k words → mid-size, multi-chunk
+KUMC_5
+d30982c684512d4f0b6fd79836539d9ac

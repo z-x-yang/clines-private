@@ -1,0 +1,7 @@
+# EXP-G representative CORAL-pancreas notes (2 notes, Plan B 2026-05-26).
+# Drop note 9 (488 rows, largest + most date-heavy).
+# Selection criteria (kept):
+#   - 14: 408 rows, 69 dated, ~2.4k words → multi-chunk, mid dates
+#   - 1:  404 rows, 119 dated, ~1.7k words → date-heavy
+14
+1
