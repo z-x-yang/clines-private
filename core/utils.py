@@ -6,9 +6,10 @@ def get_tags_from_list1(list1):
 
 
 def clean_and_fill_list(main_tags, lst, tag_key, default_item):
-    # Remove items with tags not in list1
+    # main_tags is an ordered, deduped tag list (list1 / clean_results order).
+    tag_set = set(main_tags)
     cleaned_list = {int(item[tag_key]): item for item in lst if int(
-        item[tag_key]) in main_tags}
+        item[tag_key]) in tag_set}
 
     # Fill missing tags with default items
     for tag in main_tags:
@@ -17,15 +18,28 @@ def clean_and_fill_list(main_tags, lst, tag_key, default_item):
             new_item[tag_key] = tag
             cleaned_list[tag] = new_item
 
-    # Return list ordered by the tags in list1
+    # Aligned to main_tags order so it lines up positionally with clean_results
     return [cleaned_list[tag] for tag in main_tags]
 
 # Main processing function
 
 
 def process_lists_based_on_list1(list1, list2, list3, list4, list5):
-    # Get all unique tags from list1
-    main_tags = get_tags_from_list1(list1)
+    # Unique tags from list1 in FIRST-OCCURRENCE order. get_tags_from_list1
+    # returned a set, so clean_and_fill_list emitted the aux lists (info /
+    # status / date / relate) in set-iteration order while clean_results
+    # (= list1) kept its own order. result_aggregation index-zips clean_results
+    # against these aux lists, so any order mismatch silently attached
+    # assertion/value/date to the WRONG entity with no error raised. Ordering
+    # by first occurrence makes that positional alignment correct by
+    # construction (and is robust to non-contiguous / sparse tag values).
+    seen = set()
+    main_tags = []
+    for item in list1:
+        tag = int(item['TAG'])
+        if tag not in seen:
+            seen.add(tag)
+            main_tags.append(tag)
 
     # Clean and fill list2 based on tags from list1
     list2_cleaned = clean_and_fill_list(main_tags, list2, 'tag', {
