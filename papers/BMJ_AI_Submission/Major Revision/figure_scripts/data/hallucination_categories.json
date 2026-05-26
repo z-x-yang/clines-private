@@ -1,0 +1,103 @@
+{
+  "model_tag": "gpt4.1",
+  "taxonomy": "7-class (EXP-E2): split wrong_value vs wrong_date, broaden not_an_error",
+  "n_judged": 700,
+  "judge_category_counts_sample": {
+    "not_an_error": 315,
+    "wrong_code": 157,
+    "wrong_assertion": 97,
+    "wrong_value": 56,
+    "span_boundary_error": 46,
+    "fabricated_entity": 21,
+    "wrong_date": 8
+  },
+  "judge_category_pct_sample": {
+    "not_an_error": 45.0,
+    "wrong_code": 22.43,
+    "wrong_assertion": 13.86,
+    "wrong_value": 8.0,
+    "span_boundary_error": 6.57,
+    "fabricated_entity": 3.0,
+    "wrong_date": 1.14
+  },
+  "rule_cat_totals_full_population": {
+    "wrong_value_or_date": 3193,
+    "fabricated_entity": 1965,
+    "span_boundary_error": 811,
+    "wrong_assertion": 637,
+    "wrong_code": 565
+  },
+  "per_rule_breakdown": {
+    "wrong_value_or_date": {
+      "n": 300,
+      "judge_breakdown": {
+        "not_an_error": 229,
+        "wrong_value": 56,
+        "wrong_date": 8,
+        "span_boundary_error": 6,
+        "wrong_assertion": 1
+      }
+    },
+    "wrong_assertion": {
+      "n": 100,
+      "judge_breakdown": {
+        "wrong_assertion": 95,
+        "wrong_code": 2,
+        "not_an_error": 1,
+        "span_boundary_error": 1,
+        "fabricated_entity": 1
+      }
+    },
+    "span_boundary_error": {
+      "n": 100,
+      "judge_breakdown": {
+        "wrong_code": 58,
+        "span_boundary_error": 39,
+        "not_an_error": 2,
+        "fabricated_entity": 1
+      }
+    },
+    "wrong_code": {
+      "n": 100,
+      "judge_breakdown": {
+        "wrong_code": 85,
+        "not_an_error": 14,
+        "wrong_assertion": 1
+      }
+    },
+    "fabricated_entity": {
+      "n": 100,
+      "judge_breakdown": {
+        "not_an_error": 69,
+        "fabricated_entity": 19,
+        "wrong_code": 12
+      }
+    }
+  },
+  "extrapolated_judge_counts": {
+    "wrong_code": 1199,
+    "not_an_error": 3895,
+    "wrong_assertion": 621,
+    "fabricated_entity": 388,
+    "wrong_value": 596,
+    "span_boundary_error": 387,
+    "wrong_date": 85
+  },
+  "extrapolated_judge_pct_of_fp": {
+    "wrong_code": 16.72,
+    "not_an_error": 54.31,
+    "wrong_assertion": 8.67,
+    "fabricated_entity": 5.41,
+    "wrong_value": 8.31,
+    "span_boundary_error": 5.39,
+    "wrong_date": 1.19
+  },
+  "total_fp_population": 7171,
+  "true_hallucination_count_excl_not_an_error": 3276,
+  "true_hallucination_pct_of_fp": 45.69,
+  "extrapolation_method": "Post-stratified Horvitz-Thompson: each rule-category was sampled at sample_per_category rows; per-rule judge distribution extrapolated to that rule-cat's full population size; summed across rule-cats.",
+  "category_above_20pct_threshold": [
+    "not_an_error"
+  ],
+  "max_category_pct": 54.31
+}

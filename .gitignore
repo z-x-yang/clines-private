@@ -54,3 +54,20 @@ papers/BMJ_AI_Submission/Major Revision/*
 !papers/BMJ_AI_Submission/Major Revision/cross-annotation/
 papers/BMJ_AI_Submission/Major Revision/cross-annotation/*
 !papers/BMJ_AI_Submission/Major Revision/cross-annotation/*.txt
+# Revision response artifacts (LaTeX letters, figure scripts/data, figure PDFs).
+!papers/BMJ_AI_Submission/Major Revision/response/
+papers/BMJ_AI_Submission/Major Revision/response/*
+!papers/BMJ_AI_Submission/Major Revision/response/*.tex
+!papers/BMJ_AI_Submission/Major Revision/response/*.md
+!papers/BMJ_AI_Submission/Major Revision/figure_scripts/
+papers/BMJ_AI_Submission/Major Revision/figure_scripts/*
+!papers/BMJ_AI_Submission/Major Revision/figure_scripts/*.py
+!papers/BMJ_AI_Submission/Major Revision/figure_scripts/*.md
+!papers/BMJ_AI_Submission/Major Revision/figure_scripts/data/
+papers/BMJ_AI_Submission/Major Revision/figure_scripts/data/*
+!papers/BMJ_AI_Submission/Major Revision/figure_scripts/data/*.csv
+!papers/BMJ_AI_Submission/Major Revision/figure_scripts/data/*.json
+!papers/BMJ_AI_Submission/Major Revision/figures/
+papers/BMJ_AI_Submission/Major Revision/figures/*
+!papers/BMJ_AI_Submission/Major Revision/figures/*.pdf
+!papers/BMJ_AI_Submission/Major Revision/figures/*.png
