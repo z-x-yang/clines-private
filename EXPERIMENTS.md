@@ -58,7 +58,7 @@ GPT-4o 案例集：`reports/gpt4o_case_studies.md`。
 | EXP-E | E5 | Hallucination 5-class FP taxonomy | P0 | PENDING | 0（从现有 prediction 拉 FP + 人工归类） | TBD | experiments/EXP-E_hallucination.md |
 | EXP-F | E6 | Baseline 补强：o3-mini single-prompt + GPT-4o CoT single-call | P0 | PENDING | **新跑**（小规模） | TBD | experiments/EXP-F_baseline_extra.md |
 | EXP-G | E7 | Ablation: SapBERT / SemChunk / Date module / Step 4 | P1 | PENDING | Date/Step4 off 可在现有产物上**模拟**；SemChunk / SapBERT 新跑（API 可用） | TBD | experiments/EXP-G_ablation.md |
-| EXP-H | E8 | Full-size DL baseline: BERT-base 110M + GatorTron-base 345M (inference-only) | P1 | RUNNING | **新跑**（GPU；不依赖 HMS API；HF inference 无 fine-tune） | TBD | experiments/EXP-H_dl_baseline.md |
+| EXP-H | E8 | Full-size DL baseline: BERT-base 110M + GatorTron-base 345M (inference-only) | P1 | **PASS** | jobid 41440867 跑完 2026-05-25 (02:59 gpu_quad). BERT-base mention F1=0.875-0.888 / GatorTron F1=0.840-0.876. High P caveat 见 .md §8. | TBD | experiments/EXP-H_dl_baseline.md |
 | — | E9 | RE 不评测，Supp 写明 | P1 | WRITING-ONLY | 0 | n/a | —（不立 EXP） |
 
 ### 状态枚举

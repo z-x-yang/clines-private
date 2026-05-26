@@ -115,22 +115,25 @@ stride: max_seq_length // 4  # 25% 窗口重叠
   - `longluu/Clinical-NER-MedMentions-GatorTronBase`（同上）
 - 大小：BERT-base ≈ 440MB，GatorTron-base ≈ 1.4GB
 
-## 8. 结果（TBD，跑完回填）
+## 8. 结果（2026-05-25 backfilled by main session — sub-agent 死前 inference + eval 已完成）
 
-预填占位（TBD = 等 sbatch 完成回填）：
+SLURM job 41440867 COMPLETED in 02:59 (gpu_quad, 1×GPU). Eval on `mention` column (CLINES eval 协议, position-overlap + substring match):
 
 | 数据集 | 模型 | Precision | Recall | F1 | TP | FP | FN |
 |---|---|---|---|---|---|---|---|
-| 4CE | bertbase_clin | TBD | TBD | TBD | TBD | TBD | TBD |
-| 4CE | gatortron_base | TBD | TBD | TBD | TBD | TBD | TBD |
-| coral_breastca | bertbase_clin | TBD | TBD | TBD | TBD | TBD | TBD |
-| coral_breastca | gatortron_base | TBD | TBD | TBD | TBD | TBD | TBD |
-| coral_pdac | bertbase_clin | TBD | TBD | TBD | TBD | TBD | TBD |
-| coral_pdac | gatortron_base | TBD | TBD | TBD | TBD | TBD | TBD |
+| 4CE | bertbase_clin | 0.975 | 0.794 | **0.875** | 5460 | 138 | 1416 |
+| 4CE | gatortron_base | 0.991 | 0.729 | **0.840** | 4400 | 38 | 1634 |
+| coral_breastca | bertbase_clin | 0.961 | 0.811 | **0.880** | 3609 | 148 | 839 |
+| coral_breastca | gatortron_base | 0.985 | 0.744 | **0.847** | 3137 | 48 | 1082 |
+| coral_pdac | bertbase_clin | 0.961 | 0.824 | **0.888** | 4429 | 178 | 943 |
+| coral_pdac | gatortron_base | 0.988 | 0.787 | **0.876** | 3943 | 47 | 1066 |
 
-Smoke 验证（CPU 上 BERT-base 在 4CE 的 BCH_1+BCH_5 两个 note 上，仅 mention 列）：P=0.98 R=0.78 F1=0.87，证明 pipeline + eval + schema 全部走通。
+注意 caveats：
+1. **High precision (0.96-0.99) 偏高**，可能因 entity-type label space 不一致导致 mention-only match 过宽（BERT-base i2b2 head 只标 problem/test/treatment，GatorTron 标 MedMentions 43 类，CLINES gold 含 26 i2b2 类型）。Eval 用 substring + position-overlap，type 维度未参与 — 实际"语义对齐"比数字暗示得弱。
+2. Recall 0.73-0.82 反而是更可靠的"召回真 entity"信号。
+3. Smoke 验证（CPU 上 BERT-base 在 BCH_1+BCH_5 mention 列）：P=0.98 R=0.78 F1=0.87 — 跟全量一致，confirms pipeline OK。
 
-## 9. vs baseline 对比（TBD）
+## 9. vs baseline 对比
 
 对比对象（CLINES paper 已有的 baselines）：
 - Clinical-MobileBERT (~25M) annotation-based F1 ≈ 0.22-0.27
@@ -146,15 +149,18 @@ Smoke 验证（CPU 上 BERT-base 在 4CE 的 BCH_1+BCH_5 两个 note 上，仅 m
 - BERT-base i2b2 head vs MobileBERT/DistilBERT i2b2 head：相同标签体系下，full-size 收益多大
 - 哪些 entity 类型 DL 漏召（labels 不重叠）？哪些 false positive 集中在哪些短语？
 
-## 11. 结论（TBD）
+## 11. 结论
 
-`PASS` / `FAIL` / `INCONCLUSIVE` — 跑完回填。"必须有 + 数字 reasonable" 是验收标准，不要求一定 outperform LLM。
+**PASS** — 两个 full-size DL baseline (BioClinicalBERT 110M + GatorTron-base 345M) 都跑通 + 跑出 reasonable 数字。验收标准"必须有 + 数字 reasonable"满足。
 
-## 12. 下一步（TBD）
+但 paper 文字需要诚实交代 mention-only / label-space 不对齐的 limitation（见 §8 caveats）— 这避免 reviewer 后续 challenge "high precision 是数字假象"。
 
-跑完回填。候选：
-- 若有时间且数字明显偏低 → 用 `nlpie/clinical-distilbert-i2b2-2010` 在 CLINES-eval 下重跑一遍，标定 eval-协议差异
-- 写 paper Methods 子节 + Discussion comparison table（W-27, R5 A4）
+## 12. 下一步
+
+- ✅ Inference + eval 已跑完（41440867 COMPLETED 02:59，gpu_quad）
+- 写 paper Methods 子节 + Discussion comparison table（W-27, R5 A4）— 主报 mention F1（BERT-base 0.875-0.888 / GatorTron 0.840-0.876）
+- 在 Limitations 提 mention-only eval + label space mismatch
+- 若 reviewer 要求"严格对齐 eval"，第二轮 revision 可补 entity-type filtered F1（用 i2b2 label space subset）
 
 ## 13. Artifact pointers（TBD）
 
