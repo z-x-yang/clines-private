@@ -268,14 +268,17 @@ class PipelineCoordinator:
                 }
 
                 clean_item = clean_results_list[i]
-                # EXP-G ablation: step4_off skips entity_linking entirely so
-                # clean_item has no 'CODE' key. Other ablations (sapbert_off)
-                # still populate CODE with a NORM_OFF placeholder. Outside
-                # ablation mode, missing CODE is a real bug — fail fast.
-                if self.disable_step4_reconcile:
-                    mapped_code_raw = clean_item.get('CODE')
-                else:
-                    mapped_code_raw = clean_item['CODE']
+                # entity_linking (entity_processor.py:91) only writes 'CODE'
+                # when SapBERT returns a non-None match; entities it cannot
+                # link legitimately have no 'CODE' key. step4_off skips
+                # entity_linking entirely. In every case, a missing 'CODE'
+                # means "no UMLS code for this entity" (→ code=None below),
+                # which is a valid outcome — NOT a bug. Hard-indexing
+                # clean_item['CODE'] here raised KeyError that the outer
+                # except swallowed into a partial record (mention/position
+                # only, dropping assertion/value/date too), biasing the
+                # control's code/assertion/value recall downward.
+                mapped_code_raw = clean_item.get('CODE')
                 if mapped_code_raw:
                     mapped_code = json.loads(mapped_code_raw)
                     tmp['code'] = list(mapped_code.keys())[0]
