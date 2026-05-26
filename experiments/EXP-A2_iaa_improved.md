@@ -6,7 +6,7 @@
 - **作战表 E#**: E1 (re-run of EXP-A with methodological improvements; covers R1 M1 / R2 M2 / **R5 A2 hard requirement**)
 - **日期**: 2026-05-25
 - **Job ID**: local (no SLURM; pure-CPU stats; runtime <2 s)
-- **Commit hash**: `<LAUNCH_HASH>` (40-char launch hash, backfilled per experiments-rules.md §8.1 step 4)
+- **Commit hash**: `ec5a16f2813fe7fc508202777f5cf46d7236284e` (40-char launch hash, backfilled per experiments-rules.md §8.1 step 4)
 - **Branch**: `exp/EXP-A2_iaa_improved`
 - **Owner**: zongxin (sub-agent: Claude Code)
 - **Baseline of**: `exp/EXP-A_iaa_cohen_kappa` @ `f09edc091019db85d91106c716ad441123aa2fb8` (EXP-A run)
