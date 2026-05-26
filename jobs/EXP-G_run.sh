@@ -1,10 +1,9 @@
 #!/bin/bash
 #SBATCH --job-name=EXP-G_ablation
-#SBATCH --time=02:00:00
-#SBATCH --mem=64G
-#SBATCH -c 4
-#SBATCH --gres=gpu:1
-#SBATCH -p gpu_quad
+#SBATCH --time=04:00:00
+#SBATCH --mem=96G
+#SBATCH -c 8
+#SBATCH -p short
 #SBATCH --output=runs/EXP-G/logs/slurm-%j.out
 #SBATCH --error=runs/EXP-G/logs/slurm-%j.err
 #SBATCH --mail-type=END,FAIL
@@ -17,13 +16,17 @@
 #
 # All four ablations + control "full" share this sbatch. Per RESPONSE_PLAN
 # §1.5 user decision, each (ablation, dataset) run processes 2 representative
-# notes (Plan B re-launch 2026-05-26; Plan A's 3 notes × 90min all timed
-# out — per-note rate is ~30min so dropping the largest note + adding 30min
-# margin gives 2h budget = headroom for 45min SapBERT init + 2 notes).
+# notes (Plan C re-launch 2026-05-26: GPU partition queue saturated for ~3h+
+# so switched to CPU partition `short`. SapBERT's GPU is gated by use_gpu &
+# torch.cuda.is_available() — auto-falls-back to CPU. The pre-computed
+# 17.4GB cache at ./cache/dense_embed_*.pt skips the 45min embed step
+# entirely (line 75 cache hit), so CPU walltime is dominated by GPT-4o
+# API calls (~30min × 2 notes ≈ 1h) + FAISS index setup + minor I/O.
+# 4h walltime with 96G mem and 8 CPUs gives ample headroom).
 #
 # Compliance:
 #   - §7 HOLD_ON_FAIL sourced; opt-in via env (set by submitter)
-#   - §8 walltime 120min (medium-job; Plan A's 90min was tight)
+#   - §8 not applicable (not a smoke; medium-job CPU walltime)
 #   - fail-fast: set -euo pipefail; no silent fallback
 #   - logs under runs/EXP-G/logs/slurm-<jobid>.{out,err} per CLAUDE.md §10
 
@@ -120,7 +123,7 @@ echo "  flags: ${ABLATION_FLAGS[*]:-<none = full pipeline>}"
 echo "  jobid=${SLURM_JOB_ID:-local}  node=$(hostname)"
 echo "================================================================"
 
-CUDA_VISIBLE_DEVICES=0 OPENAIKEY="${OPENAIKEY}" OPENAIENDPOINT="${OPENAIENDPOINT}" \
+OPENAIKEY="${OPENAIKEY}" OPENAIENDPOINT="${OPENAIENDPOINT}" \
 python main.py \
     --notes_dir "${NOTES_DIR}" \
     --note_id_list "${NOTE_ID_LIST}" \

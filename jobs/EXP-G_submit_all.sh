@@ -4,10 +4,17 @@
 # Ablations: full | sapbert_off | semchunk_off | date_off | step4_off
 # Datasets : 4CE | coral_pdac | coral_breastca
 #
-# Total = 5 × 3 = 15 sbatch jobs (Plan B re-launch 2026-05-26: each ~90-120min
-# on gpu_quad with 2h walltime cap; Plan A 3-notes/90min all TIMED OUT, even
-# though per-note rate is ~30min — SapBERT init ate 45min of full-pipeline
-# jobs. Plan B drops the largest note in each dataset to fit in 2h).
+# Total = 5 × 3 = 15 sbatch jobs.
+# Plan C re-launch 2026-05-26: gpu_quad queue saturated (15 PENDING for ~3h
+# with "Priority" reason), so switched to `-p short` CPU partition (no
+# --gres=gpu:1). SapBERT auto-falls-back to CPU when CUDA unavailable
+# (use_gpu = use_gpu AND torch.cuda.is_available(), see
+# llm_interface/retrieval/retriever_coordinator.py:21). The 17.4GB
+# pre-computed embedding cache at ./cache/dense_embed_*.pt makes embed_dict
+# a cache hit (line 75), so the dominant CPU cost is GPT-4o API calls
+# (~30min × 2 notes ≈ 1h) + FAISS index setup. 4h walltime, 96G mem, 8 CPUs.
+# Plan A (3-notes/90min on gpu_quad) all TIMED OUT; Plan B (2-notes/120min
+# on gpu_quad) never started due to queue saturation.
 # "full" runs serve as the matched-sample control (2 representative notes
 # per dataset on the full pipeline, with the same GPT-4o-1120 deployment as
 # the ablations). Reuse of `outputs/with_positions/` is NOT possible because

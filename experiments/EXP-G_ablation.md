@@ -121,7 +121,7 @@ ABLATION=sapbert_off DATASET=4CE MODEL_NAME=gpt4o \
 ## 6. 配置快照
 
 - **Config source**: `jobs/EXP-G_run.sh` (parametrized sbatch).
-- **关键超参 inline copy**:
+- **关键超参 inline copy (Plan C, 2026-05-26)**:
 
 ```bash
 # jobs/EXP-G_run.sh inlined defaults
@@ -130,12 +130,36 @@ SCHEMA=default
 MAX_RETRIES=1
 CHUNK_SIZE=768                     # same as paper baseline
 NUM_WORKERS=2
-# walltime: 00:30:00 (CLAUDE.md §8 smoke window for gpu_quad backfill)
-# partition: gpu_quad
-# mem: 64G
-# gres: gpu:1
+# walltime: 04:00:00  (CPU partition; SapBERT auto-falls-back to CPU
+#                     via use_gpu = use_gpu AND torch.cuda.is_available())
+# partition: short    (12h max, ~10k CPUs, immediate scheduling)
+# mem: 96G            (17.4GB SapBERT cache + model + workspace headroom)
+# -c 8                (more threads for CPU FAISS / tokenizer / sapbert inference)
+# gres: <none>        (no GPU)
 # OPENAIENDPOINT: https://azure-ai.hms.edu (HMS Azure proxy)
 ```
+
+### 6.1 Plan history
+
+- **Plan A** (2026-05-26 morning, jobids 41458272-97): 3 notes per dataset
+  × 30min walltime × gpu_quad. **TIMED OUT all 15**: SapBERT init + cache
+  load ate 45min, leaving < zero budget for 3 notes × ~30min API calls.
+- **Plan B** (2026-05-26 ~07:00, jobids 41511335-49): 2 notes per dataset
+  × 120min walltime × gpu_quad. **Never started**: 15 jobs PENDING for ~3h
+  with reason "Priority" — gpu_quad queue saturated. Cancelled to free
+  slots + repivot.
+- **Plan C** (current, 2026-05-26 ~11:14, jobids 41516590-604): same 2
+  notes per dataset, but `-p short` CPU partition, 4h walltime, 8 cores,
+  96G mem, no `--gres=gpu:1`. SapBERT's `.cuda()` calls are all gated by
+  `self.use_gpu = use_gpu AND torch.cuda.is_available()` (see
+  `llm_interface/retrieval/retriever_coordinator.py:21` +
+  `embedding_service.py:22/42/57`), so on a CPU node it auto-falls-back
+  cleanly. The pre-computed 17.4GB embedding cache at
+  `./cache/dense_embed_{all,bodyloc}.pt` makes `embed_dictionary()` a
+  cache hit (retriever_coordinator.py:75), so the GPU's only real
+  advantage (fast `embed_term` over 5.7M UMLS terms) doesn't matter
+  here. Net effect: dominant cost is GPT-4o API calls (~30min × 2 notes
+  per job), CPU/GPU parity for the rest.
 
 - `runs/EXP-G/snapshot/config_resolved.yaml`: `N/A: snapshot writer 未实现，见 EXPERIMENTS.md banner; config = jobs/EXP-G_run.sh @ launch commit (字段 1)`.
 
@@ -214,3 +238,6 @@ Expected directions (priors):
 ## 更新日志
 
 - 2026-05-25: launch — branch `exp/EXP-G_ablation` cut from i2b2 @ `8735bbb`. Code changes for 4 ablation flags + `--note_id_list` committed. sbatch templates + note_id_lists scaffolded. Submit pending OPENAIKEY env var.
+- 2026-05-26 morning: Plan A submitted (15 jobs 41458272-97, 3 notes × 30min × gpu_quad). All 15 TIMED OUT — SapBERT init + cache load ate the 30min budget.
+- 2026-05-26 ~07:00: `disable_step4_reconcile` ablation surfaced a `KeyError: 'CODE'` in `ehr_processing_pipeline/pipeline_coordinator.py:271` (step4_off skips entity_linking → no `'CODE'` key in clean_results). Fixed: added `disable_step4_reconcile` guard with `.get('CODE')` fallback. Plan B submitted (15 jobs 41511335-49, 2 notes × 120min × gpu_quad). Never started — gpu_quad queue saturated, all 15 PENDING with reason "Priority" for ~3h. Cancelled.
+- 2026-05-26 ~11:14: Plan C submitted (15 jobs 41516590-604, 2 notes × 240min × **`-p short` CPU**, `-c 8`, 96G mem, no `--gres=gpu:1`). SapBERT auto-falls-back to CPU; 17.4GB pre-computed embedding cache makes `embed_dictionary()` a cache hit so the GPU's real advantage (fast embed of 5.7M UMLS terms) is moot here. Submitted with `HOLD_ON_FAIL=1` + dual-track watchdog (sacct + .err/.out grep) per CLAUDE.md §10.
