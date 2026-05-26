@@ -238,12 +238,16 @@ def main() -> int:
             f"Neither {judged_path} nor {rule_path} exists. Run extract_fp.py first."
         )
 
+    # EXP-E2 7-class taxonomy (split wrong_value_or_date → wrong_value /
+    # wrong_date; keep not_an_error separate for paper case studies).
     categories = [
         "fabricated_entity",
         "span_boundary_error",
         "wrong_code",
         "wrong_assertion",
-        "wrong_value_or_date",
+        "wrong_value",
+        "wrong_date",
+        "not_an_error",
     ]
 
     out_lines = [

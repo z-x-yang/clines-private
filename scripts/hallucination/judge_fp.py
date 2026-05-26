@@ -302,8 +302,25 @@ _JSON_PATTERN = re.compile(r"\{[\s\S]*\}")
 
 
 def _parse_judge_output(content: str) -> Dict:
-    """Extract the JSON object from the model response. Fail-fast on parse error."""
-    m = _JSON_PATTERN.search(content)
+    """Extract the JSON object from the model response. Fail-fast on parse
+    error or any missing schema field.
+
+    The prompt requires ALL THREE of `category`, `rationale`, `confidence`
+    plus no surrounding prose. Per CLAUDE.md §2 (fail-fast), we enforce
+    the full schema here rather than silently defaulting missing keys —
+    silent defaults would mask judge non-compliance with the prompt
+    contract, and judge_confidence is later used in case-study sorting
+    where None would skew toward the bottom.
+    """
+    # Reject any surrounding prose. The prompt forbids it; treating it as
+    # OK silently lets adversarial responses sneak past.
+    stripped = content.strip()
+    if not (stripped.startswith("{") and stripped.endswith("}")):
+        raise ValueError(
+            f"Judge response had surrounding prose (prompt forbids it): "
+            f"{content[:200]!r}"
+        )
+    m = _JSON_PATTERN.search(stripped)
     if not m:
         raise ValueError(f"No JSON object found in judge response: {content[:200]!r}")
     raw = m.group(0)
@@ -311,8 +328,18 @@ def _parse_judge_output(content: str) -> Dict:
         obj = json.loads(raw)
     except json.JSONDecodeError as e:
         raise ValueError(f"Judge response JSON parse error: {e}; raw={raw[:200]!r}")
-    if "category" not in obj:
-        raise ValueError(f"Judge response missing 'category' key: {obj}")
+    for required_key in ("category", "rationale", "confidence"):
+        if required_key not in obj:
+            raise ValueError(
+                f"Judge response missing required key {required_key!r}: "
+                f"got keys={sorted(obj.keys())!r}; raw={raw[:200]!r}"
+            )
+    # Sanity-check confidence is a numeric in [0, 1].
+    c = obj["confidence"]
+    if not isinstance(c, (int, float)) or not (0.0 <= float(c) <= 1.0):
+        raise ValueError(
+            f"Judge response 'confidence' must be a float in [0,1]; got {c!r}"
+        )
     return obj
 
 
@@ -350,8 +377,8 @@ def judge_one(chat_fn, row: dict, max_retries: int = 3) -> Dict:
                     f"Judge returned invalid category {parsed['category']!r}; "
                     f"expected one of {VALID_CATEGORIES}"
                 )
-            parsed.setdefault("rationale", "")
-            parsed.setdefault("confidence", None)
+            # No silent defaults — _parse_judge_output already enforces all
+            # three keys (category / rationale / confidence) per CLAUDE.md §2.
             return parsed
         except Exception as e:
             last_err = e
@@ -483,6 +510,19 @@ def main() -> int:
     out_path = Path(args.output_csv)
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
+    # Fail-fast: refuse to append to a non-empty output_csv unless --resume
+    # is explicitly passed. Without this guard, a rerun blindly appends new
+    # judged rows to old ones, duplicating fp_row_idx values and skewing the
+    # per-rule denominator in the Horvitz-Thompson extrapolation (silent
+    # data corruption, per CLAUDE.md §2 fail-fast).
+    if out_path.exists() and out_path.stat().st_size > 0 and not args.resume:
+        raise FileExistsError(
+            f"output_csv already exists and is non-empty: {out_path}. "
+            "Aborting per CLAUDE.md §2 (no silent append + duplicate rows). "
+            "Either: (a) delete it and re-run for a fresh judge run; or "
+            "(b) re-invoke with --resume to skip already-judged rows."
+        )
+
     already_judged: set = set()
     if args.resume and out_path.exists():
         existing = pd.read_csv(out_path)
@@ -520,9 +560,10 @@ def main() -> int:
                 )
                 raise
 
+            # _parse_judge_output guarantees all three keys present.
             row_d["judge_category"] = judged["category"]
-            row_d["judge_rationale"] = judged.get("rationale", "")
-            row_d["judge_confidence"] = judged.get("confidence")
+            row_d["judge_rationale"] = judged["rationale"]
+            row_d["judge_confidence"] = judged["confidence"]
             judged_rows.append(row_d)
 
             out_df_single = pd.DataFrame([row_d])
