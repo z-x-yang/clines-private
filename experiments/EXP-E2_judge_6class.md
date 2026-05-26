@@ -14,7 +14,7 @@ R1 M9 / R2 M3 / R4 C3 / R5 S2 — supersedes EXP-E.
 - **作战表 E#**: E5 (revision-of-EXP-E)
 - **日期**: 2026-05-26
 - **Job ID**: hostname=$(hostname) — no SLURM (local CPU + Azure API calls)
-- **Commit hash**: `<COMMIT_HASH>` (filled at launch commit)
+- **Commit hash**: `23b797faea8ce60d1777a0eaded31809c0d567ed` (filled at launch commit)
 - **Branch**: `exp/EXP-E2_judge_6class`
 - **Owner**: zongxin (sub-agent dispatched)
 
