@@ -268,10 +268,22 @@ class PipelineCoordinator:
                 }
 
                 clean_item = clean_results_list[i]
-                mapped_code = json.loads(clean_item['CODE'])
-                tmp['code'] = list(mapped_code.keys())[0]
-                tmp['type'] = mapped_code[tmp['code']][1]
-                tmp['code'] = tmp['code'] + '||' + mapped_code[tmp['code']][0]
+                # EXP-G ablation: step4_off skips entity_linking entirely so
+                # clean_item has no 'CODE' key. Other ablations (sapbert_off)
+                # still populate CODE with a NORM_OFF placeholder. Outside
+                # ablation mode, missing CODE is a real bug — fail fast.
+                if self.disable_step4_reconcile:
+                    mapped_code_raw = clean_item.get('CODE')
+                else:
+                    mapped_code_raw = clean_item['CODE']
+                if mapped_code_raw:
+                    mapped_code = json.loads(mapped_code_raw)
+                    tmp['code'] = list(mapped_code.keys())[0]
+                    tmp['type'] = mapped_code[tmp['code']][1]
+                    tmp['code'] = tmp['code'] + '||' + mapped_code[tmp['code']][0]
+                else:
+                    tmp['code'] = None
+                    tmp['type'] = None
 
                 status_item = status_results_list[i] if i < len(
                     status_results_list) else {}

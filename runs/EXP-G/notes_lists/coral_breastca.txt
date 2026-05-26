@@ -1,9 +1,7 @@
-# EXP-G representative CORAL-breast notes (3 notes, Plan A re-launch 2026-05-26).
-# Dropped 21 (mid-size) + 24 (smaller baseline) from original 5.
+# EXP-G representative CORAL-breast notes (2 notes, Plan B 2026-05-26).
+# Drop note 23 (446 rows, largest).
 # Selection criteria (kept):
-#   - 23: 446 rows, 91 dated, ~2.1k words → largest + date-heavy
 #   - 34: 430 rows, 102 dated, ~2.9k words → multi-chunk + date-heavy
 #   - 36: 314 rows, 105 dated, ~2.1k words → date-heavy
-23
 34
 36
