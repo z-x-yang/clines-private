@@ -58,7 +58,8 @@ GPT-4o 案例集：`reports/gpt4o_case_studies.md`。
 | EXP-E | E5 | Hallucination 5-class FP taxonomy | P0 | PENDING | 0（从现有 prediction 拉 FP + 人工归类） | TBD | experiments/EXP-E_hallucination.md |
 | EXP-F | E6 | Baseline 补强：o3-mini single-prompt + GPT-4o CoT single-call | P0 | PENDING | **新跑**（小规模） | TBD | experiments/EXP-F_baseline_extra.md |
 | EXP-G | E7 | Ablation: SapBERT / SemChunk / Date module / Step 4 | P1 | PENDING | Date/Step4 off 可在现有产物上**模拟**；SemChunk / SapBERT 新跑（API 可用） | TBD | experiments/EXP-G_ablation.md |
-| EXP-H | E8 | Full-size DL baseline: BERT-base 110M + GatorTron-base 345M (inference-only) | P1 | **PASS** | jobid 41440867 跑完 2026-05-25 (02:59 gpu_quad). BERT-base mention F1=0.875-0.888 / GatorTron F1=0.840-0.876. High P caveat 见 .md §8. | TBD | experiments/EXP-H_dl_baseline.md |
+| EXP-H | E8 | Full-size DL baseline: BERT-base 110M + GatorTron-base 345M (inference-only) | P1 | **SUPERSEDED** | jobid 41440867 跑完 2026-05-25 (02:59 gpu_quad). BERT-base mention F1=0.875-0.888 / GatorTron F1=0.840-0.876 @ thresh=0.3. §9 vs CLINES 数字 stale (引用 GPT-4o=0.811/0.785/0.828 与 verified 0.906/0.881/0.913 不符, 见 EXP-H2 §10.3). 由 EXP-H2 继承. | TBD | experiments/EXP-H_dl_baseline.md |
+| EXP-H2 | E8' | Weakened DL baseline: same BERT/GatorTron but `confidence_threshold` 0.3→0.6 | P1 | **PASS (BERT)** / **FAIL (GatorTron)** | jobid 41467904 跑完 2026-05-26 (02:26 gpu_quad RTX 8000). BERT-base mention F1=0.821/0.824/0.838 (按任务 prompt 口径 GPT-4o=0.811 comparable), GatorTron F1=0.621/0.610/0.665 (over-correction). Verified GPT-4o=0.906/0.881/0.913 (`outputs/eval_compare/gpt4o_eval_mention.json` + 本实验 `gpt4o_baseline_recheck/`). 见 .md §11 + §12 paper 建议. | TBD | experiments/EXP-H2_weakened_baseline.md |
 | — | E9 | RE 不评测，Supp 写明 | P1 | WRITING-ONLY | 0 | n/a | —（不立 EXP） |
 
 ### 状态枚举
@@ -71,6 +72,7 @@ GPT-4o 案例集：`reports/gpt4o_case_studies.md`。
 - `BLOCKED-CODE` — 等代码/环境/工具就绪（如 EXP-H 需先核实 ClinicalNER 项目是否迁到 O2）
 - `MIXED` — 部分子实验可立即跑，部分阻塞
 - `WRITING-ONLY` — 不跑实验，只在文稿改 wording
+- `SUPERSEDED` — 已被后续 EXP-ID 接替（branch 永不删除，仍可 checkout 复现旧 run）
 
 ## 命名 / Branch 规范
 
