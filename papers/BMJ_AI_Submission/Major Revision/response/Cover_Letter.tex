@@ -1,5 +1,6 @@
 \documentclass[11pt,letterpaper]{article}
 \usepackage[margin=1in]{geometry}
+\usepackage{xcolor}
 \usepackage{hyperref}
 \usepackage{parskip}
 
@@ -39,13 +40,13 @@ The revised manuscript incorporates substantial additions to address the reviewe
     \item added \textbf{bootstrap 95\% confidence intervals} and permutation tests to every primary F1 comparison (R1.2), and a document-level resampling stability analysis (R1.3);
     \item completed a \textbf{seven-class hallucination taxonomy} with stratified manual judging of 700 candidate false positives, finding that 54.3\% of apparent false positives are not true model errors but rather annotation gaps, with each true-hallucination category accounting for $\leq 17\%$ of cases (R1.9, R2.3, R4.3, R5.3.2);
     \item added \textbf{cost, latency, and computational efficiency} reporting per dataset and per model, including total LLM invocations per note and Azure OpenAI list-price USD per note (R1.5, R4.4);
-    \item expanded the baseline cohort with \textbf{o3-mini single-prompt}, \textbf{GPT-4o chain-of-thought single-prompt}, and a fine-tuned \textbf{BioClinicalBERT} comparator, closing the previous baseline asymmetry (R1.7, R3.8, R5.4.1);
+    \item expanded the baseline cohort with \textbf{o3-mini single-prompt}, \textbf{GPT-4o chain-of-thought single-prompt}, and two off-the-shelf clinical deep-learning encoders (\textbf{BERT-base clinical NER} and \textbf{GatorTron-base}), closing the previous baseline asymmetry (R1.7, R3.8, R5.4.1);
     \item performed a \textbf{component-wise ablation} of the four pipeline stages, isolating the contribution of semantic chunking, SapBERT normalization, the date module, and cross-chunk reconciliation (R1.8, R3.5);
     \item replaced the STROBE reporting checklist with \textbf{MI-CLAIM} and \textbf{TRIPOD+AI} checklists in the supplementary materials (R1.4, R5.3.3);
     \item reframed all instances of ``agentic'' and ``zero-shot'' to more precise language (R1.6, R2.1), tempered scalability and interoperability claims with explicit discussion of FP8 precision for Llama-3.1-405B, GDPR considerations, and UMLS-to-SNOMED/LOINC/RxNorm/OMOP-CDM mapping requirements (R5.4.3, R5.4.4);
     \item added the BMJ DH\&AI ``Objective / Methods and Analysis / Results / Conclusion'' abstract structure plus the required summary box (R1.18, R5.2.1, R5.2.2);
     \item clarified annotator credentialing (all annotators completed CITI Human Subjects Research training) and explicitly stated that LLM inference used the \textbf{HMS HIPAA-compliant Azure OpenAI tenant} under a Business Associate Agreement with Microsoft, with no clinical data transmitted to OpenAI directly (R1.15);
-    \item added a Patient and Public Involvement statement (R1.20), specified \textbf{Mass General Brigham IRB} as the reviewing authority for exempt determination (R1.21), and corrected the i2b2 2010 citation to Uzuner et al.\ 2011 (R1.10);
+    \item added a Patient and Public Involvement statement (R1.20), replaced the vague ethics statement with an accurate one---under the U.S. Common Rule (45~CFR~46.104) the secondary analysis of fully de-identified data does not constitute human-subjects research and required no IRB approval at the authors' institution (R1.21)---and corrected the i2b2 2010 citation to Uzuner et al.\ 2011 (R1.10);
     \item incorporated and discussed the three contemporary comparators highlighted by Reviewer 5 (John Snow Labs Healthcare NLP, CLEAR, and Ntinopoulos et al.\ 2025), with reasoned positioning where direct empirical comparison was not feasible (R5.4.5).
 \end{itemize}
 
