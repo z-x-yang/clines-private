@@ -1,0 +1,10 @@
+dataset,system,paradigm,code_f1,mention_f1
+4CE,CLINES (GPT-4o),pipeline,0.8737,
+4CE,o3-mini single-prompt,single_llm,0.5005,0.6731
+4CE,GPT-4o CoT single-call,single_llm,0.3976,0.4794
+CORAL-P,CLINES (GPT-4o),pipeline,0.8482,
+CORAL-P,o3-mini single-prompt,single_llm,0.4311,0.6771
+CORAL-P,GPT-4o CoT single-call,single_llm,0.3407,0.5467
+CORAL-B,CLINES (GPT-4o),pipeline,0.8139,
+CORAL-B,o3-mini single-prompt,single_llm,0.3633,0.6586
+CORAL-B,GPT-4o CoT single-call,single_llm,0.2745,0.4819

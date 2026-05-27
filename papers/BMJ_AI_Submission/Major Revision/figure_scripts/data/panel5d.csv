@@ -1,0 +1,11 @@
+system,paradigm,metric,mean,lo,hi,note
+CLINES (GPT-4o),pipeline,mention,0.900,0.881,0.913,
+CLINES (GPT-4o),pipeline,code,0.845,0.814,0.874,
+o3-mini SP,single_llm,mention,0.670,0.659,0.677,
+o3-mini SP,single_llm,code,0.432,0.363,0.501,
+GPT-4o CoT,single_llm,mention,0.503,0.479,0.547,
+GPT-4o CoT,single_llm,code,0.338,0.275,0.398,
+BERT-base,dl_encoder,mention,0.881,0.875,0.888,
+BERT-base,dl_encoder,code,0.0,0.0,0.0,no UMLS normalization
+GatorTron,dl_encoder,mention,0.854,0.840,0.876,
+GatorTron,dl_encoder,code,0.0,0.0,0.0,no UMLS normalization

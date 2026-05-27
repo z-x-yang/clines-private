@@ -1,0 +1,5 @@
+family,model,metric,mean,lo,hi,source
+api,CLINES (GPT-4o),usd_per_note,0.209,0.150,0.242,EXP-D §8.1 (input exact; output token-profile of equivalent prompts)
+api,o3-mini,usd_per_note,0.968,0.643,1.140,EXP-D §8.1 (o3-mini full-sweep direct token log)
+local,Llama-3.1-405B,gpuh_per_note,0.410,0.200,0.540,EXP-D §8.1 (8×H100 FP8; tqdm s/it propagation)
+local,DeepSeek-R1-32B,gpuh_per_note,0.083,0.040,0.110,EXP-D §8.1 (2×H100 BF16; scaling estimate)
