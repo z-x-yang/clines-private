@@ -1,0 +1,158 @@
+\relax 
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyperFirstAtBeginDocument{\AtBeginDocument}
+\HyperFirstAtBeginDocument{\ifx\hyper@anchor\@undefined
+\global\let\oldcontentsline\contentsline
+\gdef\contentsline#1#2#3#4{\oldcontentsline{#1}{#2}{#3}}
+\global\let\oldnewlabel\newlabel
+\gdef\newlabel#1#2{\newlabelxx{#1}#2}
+\gdef\newlabelxx#1#2#3#4#5#6{\oldnewlabel{#1}{{#2}{#3}}}
+\AtEndDocument{\ifx\hyper@anchor\@undefined
+\let\contentsline\oldcontentsline
+\let\newlabel\oldnewlabel
+\fi}
+\fi}
+\global\let\hyper@last\relax 
+\gdef\HyperFirstAtBeginDocument#1{#1}
+\providecommand*\HyPL@Entry[1]{}
+\Newlabel{cor1}{1}
+\Newlabel{cor2}{2}
+\Newlabel{contrib}{1}
+\HyPL@Entry{0<</S/D>>}
+\Newlabel{1}{a}
+\Newlabel{2}{b}
+\Newlabel{3}{c}
+\Newlabel{4}{d}
+\Newlabel{5}{e}
+\Newlabel{6}{f}
+\citation{Tayefi_2021,Sushil_2024}
+\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{4}{section.1}\protected@file@percent }
+\citation{Kohane_2021}
+\citation{Kim_2023}
+\citation{Savova_2010}
+\citation{Aronson2001MetaMap}
+\citation{Friedman_1995}
+\citation{Tayefi_2021,Pathak_2013}
+\citation{Lample_2016,Lee_2020,Alsentzer_2019}
+\citation{https://doi.org/10.48550/arxiv.2303.08774}
+\citation{Singhal_2023}
+\citation{https://doi.org/10.48550/arxiv.2005.14165}
+\citation{https://doi.org/10.48550/arxiv.2203.03540}
+\citation{Rohanian_2023,Rohanian_2024}
+\citation{Kohane_2012}
+\citation{Radford2018Improving}
+\citation{Karabacak_2023,https://doi.org/10.48550/arxiv.2309.05922}
+\citation{https://doi.org/10.48550/arxiv.2303.18223,https://doi.org/10.48550/arxiv.2407.21783}
+\citation{Brat_2020}
+\citation{tiktoken2024}
+\citation{semchunk2024}
+\@writefile{toc}{\contentsline {section}{\numberline {2}Methods}{8}{section.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}CLINES architecture and modules}{8}{subsection.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Step 1 -- Note chunking}{8}{section*.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces \textbf  {Overview of CLINES.} Step 1, segments long clinical notes into semantically coherent chunks to constrain LLM's context window and improve robustness. Step 2, from each chunk, extract clinical entities with broad coverage, including medications, diseases, and laboratory tests. Step 3, for each entity, uses local context to: (a) normalize to an ontology term with a unique code; (b) for event-type entities, extract or infer start and end dates, when imprecise; and (c) infer assertion status and capture clinically relevant modifiers, e.g., for medications: dose, unit, frequency, and route; for tests: numeric values (with units); for diseases: activity status and other pertinent attributes. Step 4, reconciles entity-level information across all chunks and exports results in user-specified formats (e.g., i2b2, JSON, SQL).}}{9}{figure.1}\protected@file@percent }
+\newlabel{fig:clines-overview}{{1}{9}{\textbf {Overview of CLINES.} Step 1, segments long clinical notes into semantically coherent chunks to constrain LLM's context window and improve robustness. Step 2, from each chunk, extract clinical entities with broad coverage, including medications, diseases, and laboratory tests. Step 3, for each entity, uses local context to: (a) normalize to an ontology term with a unique code; (b) for event-type entities, extract or infer start and end dates, when imprecise; and (c) infer assertion status and capture clinically relevant modifiers, e.g., for medications: dose, unit, frequency, and route; for tests: numeric values (with units); for diseases: activity status and other pertinent attributes. Step 4, reconciles entity-level information across all chunks and exports results in user-specified formats (e.g., i2b2, JSON, SQL)}{figure.1}{}}
+\citation{liu2021self}
+\citation{He_2023,Hou_2023}
+\@writefile{toc}{\contentsline {paragraph}{Step 2 -- Clinical entity extraction}{10}{section*.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Step 3 -- Concept and attribute enrichment}{10}{section*.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Step 4 -- Aggregation and schema adaptation}{11}{section*.4}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces \textbf  {CLINES LLM-based module workflow.} (A) Within each note chunk, the LLM tags clinical entities; post-processing yields an entity list with source offsets and a surrounding context window. (B) The LLM performs preliminary normalization, after which an embedding-based retriever queries the ontology database to return the nearest term, concept code, and semantic type. (C) Explicit dates/times are extracted from local context; when documentation is vague, admission/discharge metadata are used to resolve relative or fuzzy expressions to the most plausible calendar dates. (D) Context is used to capture modifiers (e.g., for medications: dose, unit, frequency, route; for tests: numeric values and units; for diseases: activity status), and to infer latent modifiers implied by panel tests (e.g., default units). All machine-inferred fields are flagged as ``inferred'' to facilitate audit and downstream use.}}{12}{figure.2}\protected@file@percent }
+\newlabel{fig:clines-workflow}{{2}{12}{\textbf {CLINES LLM-based module workflow.} (A) Within each note chunk, the LLM tags clinical entities; post-processing yields an entity list with source offsets and a surrounding context window. (B) The LLM performs preliminary normalization, after which an embedding-based retriever queries the ontology database to return the nearest term, concept code, and semantic type. (C) Explicit dates/times are extracted from local context; when documentation is vague, admission/discharge metadata are used to resolve relative or fuzzy expressions to the most plausible calendar dates. (D) Context is used to capture modifiers (e.g., for medications: dose, unit, frequency, route; for tests: numeric values and units; for diseases: activity status), and to infer latent modifiers implied by panel tests (e.g., default units). All machine-inferred fields are flagged as ``inferred'' to facilitate audit and downstream use}{figure.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Implementation and LLM configuration}{12}{subsection.2.2}\protected@file@percent }
+\citation{Johnson_2016}
+\citation{Brat_2020}
+\citation{Sushil_2024}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Study design and data}{14}{subsection.2.3}\protected@file@percent }
+\citation{liu2021self}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.4}Annotation protocol}{15}{subsection.2.4}\protected@file@percent }
+\citation{Feinstein_1990,Byrt_1993}
+\citation{Hripcsak_2005}
+\citation{Byrt_1993}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.5}Inter-annotator agreement}{16}{subsection.2.5}\protected@file@percent }
+\citation{Hripcsak_2005}
+\citation{Uzuner_2011}
+\citation{Savova_2010}
+\citation{Aronson2001MetaMap}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.6}Baselines}{17}{subsection.2.6}\protected@file@percent }
+\citation{Rohanian_2023,Rohanian_2024}
+\citation{Uzuner_2011}
+\citation{https://doi.org/10.48550/arxiv.2203.03540}
+\citation{Norgeot_2020}
+\citation{Collins_2024}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.7}Evaluation metrics and protocol}{18}{subsection.2.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3}Results}{19}{section.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Primary performance and backbone comparison}{19}{subsection.3.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces \textbf  {Performance of CLINES across LLM backbones, with 95\% confidence intervals.} (A--D) F1 for entity-code normalization (SapBERT cosine $\ge 0.95$), assertion status, begin-date, and numeric value on 4CE, CORAL--Breast, and CORAL--Pancreas, for CLINES instantiated with five LLM backbones (GPT-4o, DeepSeek-R1, Llama-3.1-405B, o3-mini, and the smaller Phi-4). Error bars are 95\% percentile bootstrap confidence intervals ($B=2000$ document-level resamples). GPT-4o is the strongest backbone overall; differences among the strongest backbones on the date columns are not resolvable at these sample sizes. (E) F1, precision, and recall versus note length for CLINES (GPT-4o), grouped into quantile-based length bins; markers indicate the bin-median word count, lines show bin-mean scores, shaded ribbons denote 95\% bootstrap confidence intervals, and per-bin note counts are annotated.}}{21}{figure.3}\protected@file@percent }
+\newlabel{fig:clines-performance}{{3}{21}{\new {\textbf {Performance of CLINES across LLM backbones, with 95\% confidence intervals.} (A--D) F1 for entity-code normalization (SapBERT cosine $\ge 0.95$), assertion status, begin-date, and numeric value on 4CE, CORAL--Breast, and CORAL--Pancreas, for CLINES instantiated with five LLM backbones (GPT-4o, DeepSeek-R1, Llama-3.1-405B, o3-mini, and the smaller Phi-4). Error bars are 95\% percentile bootstrap confidence intervals ($B=2000$ document-level resamples). GPT-4o is the strongest backbone overall; differences among the strongest backbones on the date columns are not resolvable at these sample sizes. (E) F1, precision, and recall versus note length for CLINES (GPT-4o), grouped into quantile-based length bins; markers indicate the bin-median word count, lines show bin-mean scores, shaded ribbons denote 95\% bootstrap confidence intervals, and per-bin note counts are annotated.}}{figure.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Statistical confidence and stability under small evaluation sets}{22}{subsection.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Comparison with single-prompt and deep-learning baselines}{22}{subsection.3.3}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces \textbf  {Inter-annotator agreement and hallucination analysis.} (a)\nobreakspace  {}Mention-level inter-annotator agreement per cross-annotated note (F1-based IAA, Cohen's $\kappa $, and PABAK); pooled across the cross-annotated subset, F1$=0.837$, $\kappa =0.597$, PABAK$=0.609$. (b)\nobreakspace  {}Pre-specified structural-disambiguation rule triggers ($n=552$; 15.6\% of candidate-mention rows), the principal source of apparent annotator divergence. (c)\nobreakspace  {}Seven-class hallucination taxonomy applied to candidate false positives, with population-level rates extrapolated to the full false-positive set ($N=7{,}171$) by post-stratified Horvitz--Thompson estimation. (d)\nobreakspace  {}Annotation gap versus true hallucination: 54.3\% of apparent false positives are not true errors (annotation gap, synonym equivalence, or guideline ambiguity), leaving a 45.7\% true-hallucination share of false positives ($\approx 24.4\%$ of all predictions).}}{24}{figure.4}\protected@file@percent }
+\newlabel{fig:iaa-halluc}{{4}{24}{\new {\textbf {Inter-annotator agreement and hallucination analysis.} (a)~Mention-level inter-annotator agreement per cross-annotated note (F1-based IAA, Cohen's $\kappa $, and PABAK); pooled across the cross-annotated subset, F1$=0.837$, $\kappa =0.597$, PABAK$=0.609$. (b)~Pre-specified structural-disambiguation rule triggers ($n=552$; 15.6\% of candidate-mention rows), the principal source of apparent annotator divergence. (c)~Seven-class hallucination taxonomy applied to candidate false positives, with population-level rates extrapolated to the full false-positive set ($N=7{,}171$) by post-stratified Horvitz--Thompson estimation. (d)~Annotation gap versus true hallucination: 54.3\% of apparent false positives are not true errors (annotation gap, synonym equivalence, or guideline ambiguity), leaving a 45.7\% true-hallucination share of false positives ($\approx 24.4\%$ of all predictions).}}{figure.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Inter-annotator agreement}{25}{subsection.3.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.5}Hallucination and error analysis}{25}{subsection.3.5}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces \textbf  {Robustness, cost, and component contributions.} (a)\nobreakspace  {}Primary CLINES (GPT-4o) code-F1 comparison against backbone alternatives with 95\% percentile bootstrap confidence intervals. (b)\nobreakspace  {}Per-note cost: hosted-API dollars per note (CLINES (GPT-4o) versus o3-mini) and local GPU-hours per note (Llama-3.1-405B FP8 on 8$\times $H100 versus DeepSeek-R1-32B); the dollar and GPU-hour axes are not directly comparable. (c)\nobreakspace  {}Component ablation (change in code F1 relative to the full pipeline, mean of three datasets) for two backbones (GPT-4o and GPT-4o-mini); removing SapBERT-based UMLS normalization dominates on both backbones. (d)\nobreakspace  {}CLINES versus single-prompt LLM baselines (o3-mini single-prompt, GPT-4o chain-of-thought) and full-size clinical deep-learning encoders (BERT-base clinical NER, GatorTron-base); the encoders emit entity spans only and produce no UMLS codes, so their code F1 is undefined.}}{26}{figure.5}\protected@file@percent }
+\newlabel{fig:robustness-cost}{{5}{26}{\new {\textbf {Robustness, cost, and component contributions.} (a)~Primary CLINES (GPT-4o) code-F1 comparison against backbone alternatives with 95\% percentile bootstrap confidence intervals. (b)~Per-note cost: hosted-API dollars per note (CLINES (GPT-4o) versus o3-mini) and local GPU-hours per note (Llama-3.1-405B FP8 on 8$\times $H100 versus DeepSeek-R1-32B); the dollar and GPU-hour axes are not directly comparable. (c)~Component ablation (change in code F1 relative to the full pipeline, mean of three datasets) for two backbones (GPT-4o and GPT-4o-mini); removing SapBERT-based UMLS normalization dominates on both backbones. (d)~CLINES versus single-prompt LLM baselines (o3-mini single-prompt, GPT-4o chain-of-thought) and full-size clinical deep-learning encoders (BERT-base clinical NER, GatorTron-base); the encoders emit entity spans only and produce no UMLS codes, so their code F1 is undefined.}}{figure.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.6}Cost, latency, and computational efficiency}{27}{subsection.3.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.7}Component ablation}{27}{subsection.3.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.8}Note-length analysis}{28}{subsection.3.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.9}Performance on MIMIC-III}{28}{subsection.3.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4}Discussion}{28}{section.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Principal findings}{28}{subsection.4.1}\protected@file@percent }
+\citation{JohnSnowLabs_HealthcareNLP}
+\citation{Lopez_2025_CLEAR}
+\citation{Ntinopoulos_2025}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Backbone model considerations}{29}{subsection.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Positioning versus existing approaches}{30}{subsection.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Case studies: robust clinical inference}{31}{subsection.4.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.5}Dataset-level variation and generalization}{32}{subsection.4.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.6}Schema adaptability}{32}{subsection.4.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.7}Implications}{32}{subsection.4.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.8}Deployment considerations}{33}{subsection.4.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.9}Interoperability with production terminologies}{33}{subsection.4.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.10}Ethical considerations in demographic-attribute extraction}{34}{subsection.4.10}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.11}Limitations}{34}{subsection.4.11}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.12}Future work}{36}{subsection.4.12}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.13}Conclusion}{37}{subsection.4.13}\protected@file@percent }
+\bibstyle{vancouver}
+\bibdata{references}
+\bibcite{Tayefi_2021}{{1}{}{{}}{{}}}
+\bibcite{Sushil_2024}{{2}{}{{}}{{}}}
+\bibcite{Kohane_2021}{{3}{}{{}}{{}}}
+\bibcite{Kim_2023}{{4}{}{{}}{{}}}
+\bibcite{Savova_2010}{{5}{}{{}}{{}}}
+\bibcite{Aronson2001MetaMap}{{6}{}{{}}{{}}}
+\bibcite{Friedman_1995}{{7}{}{{}}{{}}}
+\bibcite{Pathak_2013}{{8}{}{{}}{{}}}
+\bibcite{Lample_2016}{{9}{}{{}}{{}}}
+\bibcite{Lee_2020}{{10}{}{{}}{{}}}
+\bibcite{Alsentzer_2019}{{11}{}{{}}{{}}}
+\bibcite{https://doi.org/10.48550/arxiv.2303.08774}{{12}{}{{}}{{}}}
+\bibcite{Singhal_2023}{{13}{}{{}}{{}}}
+\bibcite{https://doi.org/10.48550/arxiv.2005.14165}{{14}{}{{}}{{}}}
+\bibcite{https://doi.org/10.48550/arxiv.2203.03540}{{15}{}{{}}{{}}}
+\bibcite{Rohanian_2023}{{16}{}{{}}{{}}}
+\bibcite{Rohanian_2024}{{17}{}{{}}{{}}}
+\bibcite{Kohane_2012}{{18}{}{{}}{{}}}
+\bibcite{Radford2018Improving}{{19}{}{{}}{{}}}
+\bibcite{Karabacak_2023}{{20}{}{{}}{{}}}
+\bibcite{https://doi.org/10.48550/arxiv.2309.05922}{{21}{}{{}}{{}}}
+\bibcite{https://doi.org/10.48550/arxiv.2303.18223}{{22}{}{{}}{{}}}
+\bibcite{https://doi.org/10.48550/arxiv.2407.21783}{{23}{}{{}}{{}}}
+\bibcite{Brat_2020}{{24}{}{{}}{{}}}
+\bibcite{tiktoken2024}{{25}{}{{}}{{}}}
+\bibcite{semchunk2024}{{26}{}{{}}{{}}}
+\bibcite{liu2021self}{{27}{}{{}}{{}}}
+\bibcite{He_2023}{{28}{}{{}}{{}}}
+\bibcite{Hou_2023}{{29}{}{{}}{{}}}
+\bibcite{Johnson_2016}{{30}{}{{}}{{}}}
+\bibcite{Feinstein_1990}{{31}{}{{}}{{}}}
+\bibcite{Byrt_1993}{{32}{}{{}}{{}}}
+\bibcite{Hripcsak_2005}{{33}{}{{}}{{}}}
+\bibcite{Uzuner_2011}{{34}{}{{}}{{}}}
+\bibcite{Norgeot_2020}{{35}{}{{}}{{}}}
+\bibcite{Collins_2024}{{36}{}{{}}{{}}}
+\bibcite{JohnSnowLabs_HealthcareNLP}{{37}{}{{}}{{}}}
+\bibcite{Lopez_2025_CLEAR}{{38}{}{{}}{{}}}
+\bibcite{Ntinopoulos_2025}{{39}{}{{}}{{}}}
+\providecommand\NAT@force@numbers{}\NAT@force@numbers
+\gdef \@abspage@last{47}

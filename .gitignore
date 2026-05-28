@@ -41,16 +41,22 @@ umls_dictionary.txt
 # figures/ - LaTeX figure build binaries (from origin/i2b2)
 figures/
 
-# papers/ is mostly large binaries (LaTeX build artifacts, PDFs, docx, zipped
-# annotation data with potential PHI). Only allow specific text artifacts in
-# the BMJ Revision response folder to enter git.
+# papers/ contains the canonical LaTeX source for the BMJ revision plus
+# revision-side response artifacts. The Submission/ subtree (LaTeX manuscript
+# + supplement source, figures, vendor class files, accompanying source-code
+# snapshot) is fully tracked starting 2026-05-28; the Major Revision/ subtree
+# uses a deny-by-default + selective whitelist below to keep PHI-bearing
+# cross-annotation binaries out.
 papers/*
 !papers/BMJ_AI_Submission/
-papers/BMJ_AI_Submission/*
+# Re-include the LaTeX figures/ dir that the global `figures/` rule (line 42)
+# would otherwise block.
+!papers/BMJ_AI_Submission/Submission/CLINES latex bmj/figures/
 !papers/BMJ_AI_Submission/Major Revision/
 papers/BMJ_AI_Submission/Major Revision/*
 !papers/BMJ_AI_Submission/Major Revision/*.md
 !papers/BMJ_AI_Submission/Major Revision/*.txt
+!papers/BMJ_AI_Submission/Major Revision/*.pdf
 !papers/BMJ_AI_Submission/Major Revision/cross-annotation/
 papers/BMJ_AI_Submission/Major Revision/cross-annotation/*
 !papers/BMJ_AI_Submission/Major Revision/cross-annotation/*.txt

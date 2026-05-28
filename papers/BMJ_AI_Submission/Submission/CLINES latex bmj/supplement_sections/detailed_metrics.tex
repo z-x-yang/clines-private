@@ -1,0 +1,39 @@
+\section{\new{Detailed Performance Metrics with Bootstrap Confidence Intervals}}
+
+\new{This section expands Figure~5a of the main text with the full per-field, per-dataset breakdown for the four full-pipeline backbones evaluated under the identical CLINES workflow. For every field we report the point F1 with a bias-corrected 95\% bootstrap confidence interval (2{,}000 resamples over notes; seed 20260525). \emph{Code} F1 requires both correct span detection and correct UMLS concept assignment; \emph{Assertion}, \emph{Value}, and \emph{Unit} are conditional on a correctly matched mention; \emph{Begin/End date} F1 reflect temporal-boundary agreement after relative-date normalization. The mention-level breakdown and single-prompt / deep-learning baselines appear in Figure~5d.}
+
+\begin{table}[H]
+\centering
+\scriptsize
+\setlength{\tabcolsep}{3.2pt}
+\renewcommand{\arraystretch}{1.15}
+\new{
+\begin{tabular}{llcccccc}
+\toprule
+Backbone & Dataset & Code & Assertion & Value & Unit & Begin date & End date \\
+\midrule
+\multirow{3}{*}{GPT-4o-1120}
+ & 4CE     & 0.874\,(.849--.896) & 0.884\,(.857--.909) & 0.815\,(.748--.867) & 0.771\,(.710--.826) & 0.555\,(.495--.624) & 0.560\,(.498--.637) \\
+ & CORAL-B & 0.814\,(.787--.838) & 0.840\,(.803--.871) & 0.801\,(.711--.858) & 0.752\,(.675--.810) & 0.683\,(.614--.756) & 0.690\,(.622--.764) \\
+ & CORAL-P & 0.848\,(.834--.865) & 0.873\,(.857--.887) & 0.905\,(.877--.932) & 0.895\,(.863--.926) & 0.708\,(.630--.783) & 0.722\,(.638--.797) \\
+\midrule
+\multirow{3}{*}{Llama-3.1-405B-FP8}
+ & 4CE     & 0.781\,(.759--.801) & 0.842\,(.825--.858) & 0.771\,(.715--.822) & 0.764\,(.698--.823) & 0.780\,(.627--.867) & 0.729\,(.443--.847) \\
+ & CORAL-B & 0.701\,(.667--.731) & 0.761\,(.714--.799) & 0.617\,(.546--.683) & 0.545\,(.476--.612) & 0.734\,(.636--.820) & 0.735\,(.634--.821) \\
+ & CORAL-P & 0.781\,(.751--.810) & 0.852\,(.831--.872) & 0.857\,(.808--.900) & 0.761\,(.687--.840) & 0.780\,(.706--.843) & 0.772\,(.698--.836) \\
+\midrule
+\multirow{3}{*}{DeepSeek-R1}
+ & 4CE     & 0.749\,(.719--.776) & 0.823\,(.800--.847) & 0.815\,(.766--.861) & 0.810\,(.757--.848) & 0.731\,(.570--.873) & 0.711\,(.518--.844) \\
+ & CORAL-B & 0.717\,(.670--.760) & 0.755\,(.718--.791) & 0.651\,(.569--.728) & 0.651\,(.578--.707) & 0.738\,(.651--.810) & 0.721\,(.633--.799) \\
+ & CORAL-P & 0.713\,(.685--.743) & 0.801\,(.772--.831) & 0.862\,(.830--.890) & 0.810\,(.766--.845) & 0.722\,(.644--.794) & 0.729\,(.652--.795) \\
+\midrule
+\multirow{3}{*}{o3-mini}
+ & 4CE     & 0.665\,(.641--.690) & 0.738\,(.715--.760) & 0.711\,(.660--.761) & 0.655\,(.588--.713) & 0.706\,(.573--.767) & 0.608\,(.208--.715) \\
+ & CORAL-B & 0.608\,(.577--.636) & 0.706\,(.672--.733) & 0.667\,(.590--.734) & 0.735\,(.671--.791) & 0.653\,(.600--.714) & 0.630\,(.542--.713) \\
+ & CORAL-P & 0.655\,(.624--.686) & 0.746\,(.722--.770) & 0.776\,(.705--.836) & 0.720\,(.649--.782) & 0.629\,(.540--.706) & 0.635\,(.550--.707) \\
+\bottomrule
+\end{tabular}
+}
+\caption{\new{Per-field F1 with 95\% bootstrap confidence intervals for the four full-pipeline backbones across the three expert-annotated datasets (4CE; CORAL breast cancer, CORAL-B; CORAL pancreatic cancer, CORAL-P). CORAL-P value/unit fields exceed code F1 because numeric laboratory and pathology measurements are densely and explicitly reported in oncology synoptic notes. Date-field F1 is uniformly lower, reflecting the difficulty of resolving relative and implicit temporal expressions.}}
+\label{supp:detailed-metrics}
+\end{table}

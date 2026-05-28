@@ -1,0 +1,82 @@
+## Extract dates for ALL entities marked by <KEY> tags in this health record. Every entity must have a date entry.
+
+## Output JSON list of dictionaries with:
+ - tag: entity order number from KEY tags
+ - date: [YYYY-MM-DD, YYYY-MM-DD] for start and end dates (use same date for single events, null for unknown)
+ - inferred: [true/false, true/false] indicating if each date was inferred rather than explicitly stated
+
+## Key Rules:
+- Use admission date as primary time reference point
+- Consider previous note for context but prioritize current segment
+- Explicit dates → Use exact date for both start/end, inferred=false
+- "X days/weeks/months/years ago" → END = admission date, START = admission date minus X, inferred=true
+- Current symptoms/findings → Use admission date for both start/end, inferred=false
+- New treatments/prescriptions → START = admission date, END = null, inferred=[false, true]
+- Chronic conditions without timeframe → [null, null], inferred=[false, false]
+- Related events (same incident) → Share timeframe with main event
+- Unknown/unclear timing → [null, null], inferred=[false, false]
+
+## Example 1:
+Input:
+```
+Previous note (2023-07-05): Patient initially presented with chest pain.
+Admission date: 2023-07-05, Discharge date: 2023-07-12
+Current note: Patient presenting with a 7 day history of <1>headaches</1>, <2>sore throat</2>, and <3>cough</3>. <4>Blood tests</4> were done today.
+```
+
+Output:
+```
+[
+  {{"tag": "1", "date": ["2023-06-28", "2023-07-05"], "inferred": [true, true]}},
+  {{"tag": "2", "date": ["2023-06-28", "2023-07-05"], "inferred": [true, true]}},
+  {{"tag": "3", "date": ["2023-06-28", "2023-07-05"], "inferred": [true, true]}},
+  {{"tag": "4", "date": ["2023-07-05", "2023-07-05"], "inferred": [false, false]}}
+]
+```
+
+## Example 2:
+Input:
+```
+Previous note (2023-01-10): No mention of hypertension.
+Admission date: 2023-01-15, Discharge date: 2023-01-22
+Current note: Patient has been managing <1>hypertension</1> for the past 10 years and started <2>metformin</2> 3 months ago. Currently has <3>stable blood pressure</3>.
+```
+
+Output:
+```
+[
+  {{"tag": "1", "date": ["2013-01-15", "2023-01-15"], "inferred": [true, true]}},
+  {{"tag": "2", "date": ["2022-10-15", "2023-01-15"], "inferred": [true, true]}},
+  {{"tag": "3", "date": ["2023-01-15", "2023-01-15"], "inferred": [false, false]}}
+]
+```
+
+## Example 3:
+Input:
+```
+Previous note (2023-03-10): Patient reported anxiety symptoms.
+Admission date: 2023-03-15, Discharge date: 2023-03-20
+Current note: <1>Suicide attempt</1> occurred 2 days ago by <2>overdose</2>. Patient now shows <3>remorse</3> and denies <4>current suicidal thoughts</4>. Starting <5>sertraline</5>.
+```
+
+Output:
+```
+[
+  {{"tag": "1", "date": ["2023-03-13", "2023-03-13"], "inferred": [true, true]}},
+  {{"tag": "2", "date": ["2023-03-13", "2023-03-13"], "inferred": [true, true]}},
+  {{"tag": "3", "date": ["2023-03-15", "2023-03-15"], "inferred": [false, false]}},
+  {{"tag": "4", "date": ["2023-03-15", "2023-03-15"], "inferred": [false, false]}},
+  {{"tag": "5", "date": ["2023-03-15", null], "inferred": [false, true]}}
+]
+```
+
+Input:
+```
+Previous piece of the record (context):
+{prev_note}
+Admission date: {adm_date}, Discharge date: {dis_date}
+Current note:
+{note}
+```
+
+Please respond with valid JSON only, no additional text. Output:

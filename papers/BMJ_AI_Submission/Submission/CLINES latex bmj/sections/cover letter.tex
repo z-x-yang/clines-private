@@ -1,0 +1,33 @@
+\documentclass[12pt]{letter}
+\usepackage[margin=1in]{geometry}
+\usepackage{setspace}
+\setstretch{1.1}
+
+\begin{document}
+	
+	\begin{letter}{\textit{The Lancet Digital Health}}
+		
+		\opening{Dear Editor-in-Chief and Editorial Team,}
+		
+		Please find enclosed our manuscript entitled ``CLINES: Clinical LLM-based Information Extraction and Structuring Agent'', which we submit for consideration as an Original Research Article in \textit{The Lancet Digital Health}.
+		
+		Clinical narratives in EHRs contain rich diagnostic, therapeutic, and temporal details that are often absent from structured fields, leaving manual chart review as the de facto standard for high-quality labels. Manual review is slow, costly, and variable, and existing rule-based NLP systems and single-prompt applications of large language models (LLMs) struggle with ontology grounding, temporal reasoning, long notes, and analysis-ready output.
+		
+		To address this gap, we developed \textbf{CLINES}, a modular, model-agnostic agentic pipeline that performs end-to-end structuring of clinical narratives. CLINES semantically chunks long notes, uses reasoning-capable LLMs to extract entities and key attributes (including assertion status, experiencer, and numerical values with units), normalizes concepts to the Unified Medical Language System, resolves explicit and relative dates, and aggregates information into an i2b2-style schema suitable for downstream databases and analytic pipelines.
+		
+		This study offers three practical advances for digital health. \textbf{First, CLINES turns free-text clinical notes into ontology-grounded, auditable, i2b2-compatible tables}, substantially reducing dependence on manual chart review for cohort discovery, computable phenotyping, and routine generation of analysis-ready datasets. \textbf{Second, CLINES provides a model-agnostic agentic workflow for LLM deployment in health systems}, enabling institutions to swap between open and commercial LLMs under a common pipeline and to balance accuracy, cost, privacy, and governance without redesigning workflows. \textbf{Third, CLINES demonstrates robust zero-shot performance across multiple real-world datasets and disease domains}, offering a concrete path to operationalising LLM-based information extraction without corpus-specific supervised training. Together, these features align with \textit{The Lancet Digital Health}'s focus on practice-changing digital innovation for clinical care and population health.
+		
+		We evaluated CLINES in a zero-shot setting on three de-identified EHR corpora (MIMIC-III, 4CE, and CORAL oncology reports). Baselines covered three major categories of clinical NLP: rule/lexicon-based systems, compact clinical transformer encoders, and single-prompt LLMs. Across all corpora and tasks, CLINES consistently outperformed every method in each of these three categories and maintained stable performance for 1--3k-word notes, with typical absolute F1 gains on the order of 0.2--0.4 over all the baselines.
+		
+		This manuscript is original, has not been published previously, and is not under consideration elsewhere. All authors have approved the final version and agree with its submission to \textit{The Lancet Digital Health}. All corpora were de-identified and used under institutional approvals and data-use agreements, as detailed in the manuscript, and data and code availability statements are provided.
+		
+		\closing{Sincerely,\\[1ex]
+			Tianxi Cai, on behalf of all co-authors\\
+			Department of Biomedical Informatics, Harvard Medical School, Boston, MA, USA\\
+			Harvard T.H. Chan School of Public Health, Boston, MA, USA\\
+			Email: \texttt{tcai.hsph@gmail.com}
+		}
+		
+	\end{letter}
+	
+\end{document}

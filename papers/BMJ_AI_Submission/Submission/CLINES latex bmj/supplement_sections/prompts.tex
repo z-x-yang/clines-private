@@ -1,0 +1,428 @@
+\section{Prompt Suite}
+
+All prompts are delivered verbatim to the instruction-finetuned models. Listings wrap lines automatically to prevent overflow. \new{The few-shot examples reproduced below are the exact in-context demonstrations embedded in the deployed prompt templates (the \texttt{\{note\}} placeholder marks where the input note is inserted at run time). They are reproduced here in full for reproducibility.}
+
+\lstset{
+  basicstyle=\ttfamily\footnotesize,
+  breaklines=true,
+  columns=fullflexible,
+  escapechar=@,
+  keywordstyle=\color{black},
+  commentstyle=\color{black},
+  stringstyle=\color{black}
+}
+
+\subsection{Clinical Entity Extraction}
+\paragraph{Purpose} Detects problems, findings, procedures, medications, tests, and other biomedical entities; values for panel tests are separate entities.
+\begin{lstlisting}
+## Extract biomedical entities from the electronic health record below. Include tests, procedures, symptoms, diseases, allergies, medications, etc. Mark each entity with <KEY> tags (e.g., <1>entity</1>, <2>entity</2>).
+
+## Rules:
+- Generally DO NOT mark values/units/routes/frequencies associated with primary entities
+- EXCEPTION: For panel tests (Chem-7, CMP, CBC), mark each value as separate entity
+- Include the main entity name even with abbreviations
+- For overlapping entities, prioritize the most specific concept
+- Mark negated findings (e.g., "no fever" -> mark "fever")
+
+## Examples:
+
+Input:
+```
+The patient was taken to the Operating Room for wound exploration directly from the Trauma Room. TUMOR SIZE: 4 x 3.2 x 3 cm, Chem-7: 127, 3.6, 88, 29, 16.5, 0.6, 143.
+```
+
+Output:
+```
+The patient was taken to the <1>Operating Room</1> for <2>wound exploration</2> directly from the <3>Trauma Room</3>. <4>TUMOR SIZE</4>: 4 x 3.2 x 3 cm, <5>Chem-7</5>: <6>127</6>, <7>3.6</7>, <8>88</8>, <9>29</9>, <10>16.5</10>, <11>0.6</11>, <12>143</12>.
+```
+
+Input:
+```
+Hydrocodone 7.5mg + Apap 325mg 7.5-325MG take 1 PO PRN arthritis; Pt c/o SOB and CP. EKG showed NSR. CBC with WNL RBC but WBC 12.4.
+```
+
+Output:
+```
+<1>Hydrocodone</1> 7.5mg + <2>Apap</2> 325mg 7.5-325MG take 1 PO PRN <3>arthritis</3>; <4>Pt</4> <5>c/o</5> <6>SOB</6> and <7>CP</7>. <8>EKG</8> showed <9>NSR</9>. <10>CBC</10> with <11>WNL</11> <12>RBC</12> but <13>WBC</13> 12.4.
+```
+
+Input:
+```
+{note}
+```
+
+Please respond with only the annotated record. Do not include any additional text. Output:
+\end{lstlisting}
+
+\subsection{Entity Relationship Linking}
+\paragraph{Purpose} Links nearby entities with directed clinical relations (treatment, causal, measurement, anatomical, temporal, or general relatedness).
+\begin{lstlisting}
+## Identify relationships between marked entities in this health record. Find which entities are clinically related to each other and determine their relationship type.
+
+## Output a JSON list of dictionaries with:
+- tag: entity order number (from KEY tags)
+- related: a dictionary where keys are tags of related entities and values are relationship types FROM the perspective of the entity with the "tag" key TO the entity in the "related" dictionary keys
+
+## IMPORTANT RULES:
+1. Relationship Direction:
+   - The relationship is always FROM the entity with the "tag" field TO the entity in the "related" field keys
+   - For example: {"tag": "1", "related": {"2": "treated_by"}} means "Entity 1 is treated by Entity 2"
+   - Similarly: {"tag": "2", "related": {"1": "treats"}} means "Entity 2 treats Entity 1"
+2. Proximity:
+   - Only identify relationships between entities that are close to each other in the text
+   - Focus on entities within the same sentence or adjacent sentences
+   - Do not try to link entities that are far apart (e.g., different paragraphs)
+   - Prioritize obvious, direct relationships over tenuous connections
+
+## Relationship types include (non-exhaustive):
+- Treatment: treats / treated_by / manages / managed_by / alleviates / alleviated_by
+- Causal: causes / caused_by / exacerbates / exacerbated_by / indicates / indicated_by / risk_factor / at_risk_from / complication_of / has_complication
+- Measurement: measures / measured_by / evaluates / evaluated_by / diagnoses / diagnosed_by / monitors / monitored_by / has_value / value_of / has_unit / unit_for
+- Anatomical: located_in / location_of / part_of / has_part / administered_at / site_for
+- Temporal: precedes / follows / concurrent_with
+- Clinical: symptom_of / has_symptom / finding_of / has_finding / manifestation_of / has_manifestation / has_dosage / dosage_for / has_frequency / frequency_for / has_route / route_for / component_of / has_component
+- Default: related_to
+
+## Examples:
+
+Input:
+```
+Patient with <1>hypertension</1> takes <2>lisinopril</2> 20mg daily. <3>Blood pressure</3> was <4>142/88</4> <5>mmHg</5>.
+```
+
+Output:
+```
+[
+  {"tag": "1", "related": {"2": "treated_by", "3": "measured_by"}},
+  {"tag": "2", "related": {"1": "treats"}},
+  {"tag": "3", "related": {"1": "measures", "4": "has_value", "5": "has_unit"}},
+  {"tag": "4", "related": {"3": "value_of", "5": "measured_in"}},
+  {"tag": "5", "related": {"3": "unit_of", "4": "unit_for"}}
+]
+```
+
+Input:
+```
+{note}
+```
+
+## Please respond with valid JSON only, no additional text. Output:
+\end{lstlisting}
+
+\subsection{Entity Normalization}
+\paragraph{Purpose} Converts abbreviations and informal mentions to standardized biomedical terms for ontology mapping.
+\begin{lstlisting}
+## Recover standard names/synonyms for marked entities in this health record. For abbreviations, provide full forms. For values (numbers/units), infer the biomedical concept.
+
+## Output a JSON list of dictionaries with:
+- TAG: the order number of the entity (from KEY tags)
+- CLEAN: standardized name/synonym for the entity
+
+## Handling ambiguity:
+- Use context to disambiguate abbreviations
+- For unclear abbreviations, provide most common medical expansion
+- For values, infer relevant biomedical concepts
+- Standardize vague symptoms to specific medical terms
+
+## Example:
+Input:
+```
+The patient reported <1>HTN</1> history and underwent <2>BP Measurement</2>, which showed <3>150/90 mmHg</3>. Labs revealed <4>Elevated A1C</4> at <5>7.5%</5>. Follow-up tests ruled out <6>CAD</6>, but a <7>1.5 cm Mass</7> was detected.
+```
+
+Output:
+```
+[
+  {"TAG": "1", "CLEAN": "Hypertension"},
+  {"TAG": "2", "CLEAN": "Blood Pressure Measurement"},
+  {"TAG": "3", "CLEAN": "Hypertensive Blood Pressure"},
+  {"TAG": "4", "CLEAN": "Increased Hemoglobin A1C Level"},
+  {"TAG": "5", "CLEAN": "Glycated Hemoglobin Measurement"},
+  {"TAG": "6", "CLEAN": "Coronary Artery Disease"},
+  {"TAG": "7", "CLEAN": "Mass"}
+]
+```
+
+Input:
+```
+{note}
+```
+
+## Please respond with valid JSON only, no additional text. Output:
+\end{lstlisting}
+
+\subsection{Assertion Status Classification}
+\paragraph{Purpose} Assigns clinical assertion categories (Present, Absent, Historical, Possible, Conditional, Hypothetical, Notassociated) to each entity.
+\begin{lstlisting}
+## Determine the assertion status for every entity marked by <KEY> and </KEY> in this health record.
+
+## Output a JSON list of dictionaries with:
+- tag: entity order number (from KEY tags)
+- assertion_status: one of Present, Absent, Historical, Possible, Conditional, Hypothetical, Notassociated
+
+## Ambiguity guidelines:
+- Prioritize most severe/current mention
+- Medications: Present (active), Historical (discontinued), Conditional (PRN), Absent (refused/contraindicated), Possible (under consideration)
+- "Patient at risk for X" = Hypothetical
+- "No evidence of X" = Absent
+- "Cannot rule out X" = Possible
+- Family history -> Notassociated
+- "Presenting with a history of X" or "X-day history of Y" -> treat Y as Present unless explicitly resolved
+
+## Example:
+Input:
+```
+CT showed <1>lesions</1> most likely secondary to <2>metastatic disease</2>. <3>Ativan</3> 0.5 mg IV q 4 to 6 hours prn <4>anxiety</4>. Patient presenting with a 7 day history of <5>headaches</5> and <6>fever</6>.
+```
+
+Output:
+```
+[
+  {"tag": "1", "assertion_status": "Present"},
+  {"tag": "2", "assertion_status": "Possible"},
+  {"tag": "3", "assertion_status": "Present"},
+  {"tag": "4", "assertion_status": "Conditional"},
+  {"tag": "5", "assertion_status": "Present"},
+  {"tag": "6", "assertion_status": "Present"}
+]
+```
+
+Example (Medications):
+Input: Patient was <1>prescribed metformin</1> but <2>refused due to insurance</2>. <3>Lisinopril</3> discontinued last month. <4>Tylenol</4> as needed for pain.
+
+Output:
+```
+[
+  {"tag": "1", "assertion_status": "Present"},
+  {"tag": "2", "assertion_status": "Absent"},
+  {"tag": "3", "assertion_status": "Historical"},
+  {"tag": "4", "assertion_status": "Conditional"}
+]
+```
+
+Input:
+```
+{note}
+```
+
+## Please respond with valid JSON only, no additional text. Output:
+\end{lstlisting}
+
+\subsection{Attribute Enrichment}
+\paragraph{Purpose} Captures values, units, administration route, frequency, anatomical site, and descriptive modifiers for each entity.
+\begin{lstlisting}
+## Extract detailed information for each marked entity in this health record.
+
+## Output JSON as a list of dictionaries with these keys:
+ - tag: entity's order number (matching the KEY number in the text)
+ - body_location: anatomical location related to the entity (omit if not applicable)
+ - value: numerical or text value(s) linked to the entity (use array for multiple values; exclude time information)
+ - unit: units aligned with value (array if multiple)
+ - infer: boolean indicating if each unit was inferred (array if multiple)
+ - note: for numeric values, 'greater'/'lower'/'equal' comparator (array if multiple)
+ - route: medication administration route (omit if not applicable)
+ - freq: medication frequency (omit if not applicable)
+ - other: descriptive modifiers not captured elsewhere
+
+## Value extraction rules:
+- Names/identifiers have no value
+- Measurements and qualitative lab results have value
+- Medication + dose: drug name has no value; dose is captured separately
+- Use arrays when multiple values occur; arrays must align in length
+- Time information belongs in "other", not in "value"
+
+## Special handling:
+- Panel tests: each value is a separate entity
+- Infer units only when context is clear
+- Measurements like "2 cm mass": value=2, unit=cm
+
+## Examples:
+Input:
+```
+<1>Metoprolol</1> 50 mg PO BID for <2>hypertension</2>. <3>Chem-7</3>: <4>127</4>, <5>3.6</5>, <6>88</6>.
+```
+
+Output:
+```
+[
+  {"tag": "1", "value": "50", "unit": "mg", "infer": false, "note": "equal", "route": "PO", "freq": "BID", "other": "for hypertension"},
+  {"tag": "2", "value": null},
+  {"tag": "3", "value": null},
+  {"tag": "4", "value": "127", "unit": "mEq/L", "infer": true, "note": "equal"},
+  {"tag": "5", "value": "3.6", "unit": "mEq/L", "infer": true, "note": "equal"},
+  {"tag": "6", "value": "88", "unit": "mEq/L", "infer": true, "note": "equal"}
+]
+```
+
+Input:
+```
+<1>Glucose</1> readings: 112 mg/dL (fasting), 145 mg/dL (after meal). <2>Pain</2> in lower back rated 8/10 in morning, 6/10 in evening.
+```
+
+Output:
+```
+[
+  {"tag": "1", "value": ["112", "145"], "unit": ["mg/dL", "mg/dL"], "infer": [false, false], "note": ["equal", "equal"], "other": "first reading was fasting, second was after meal"},
+  {"tag": "2", "value": ["8/10", "6/10"], "body_location": "lower back", "other": "8/10 in morning, 6/10 in evening"}
+]
+```
+
+Input:
+```
+<1>Irregular somewhat scalloped appearing hypoechoic focus</1> (2 cm) in left axillary tail. <2>Mass</2> measuring 3.5 x 2.8 cm noted in right breast.
+```
+
+Output:
+```
+[
+  {"tag": "1", "value": "2", "unit": "cm", "body_location": "left axillary tail", "other": "Irregular somewhat scalloped appearing", "infer": false},
+  {"tag": "2", "value": "3.5 x 2.8", "unit": "cm", "body_location": "right breast", "infer": false}
+]
+```
+
+Input:
+```
+<1>Blood pressure</1> elevated at 160/90 mmHg. <2>Temperature</2> normal, <3>pulse</3> irregular at 95 bpm.
+```
+
+Output:
+```
+[
+  {"tag": "1", "value": ["elevated", "160/90"], "unit": [null, "mmHg"], "infer": [false, false], "note": [null, "equal"]},
+  {"tag": "2", "value": "normal"},
+  {"tag": "3", "value": "95", "unit": "bpm", "infer": false, "note": "equal", "other": "irregular"}
+]
+```
+
+Input:
+```
+{note}
+```
+
+Please respond with valid JSON only, no additional text. Output:
+\end{lstlisting}
+
+\subsection{Basic Patient and Visit Information}
+\paragraph{Purpose} Derives admission/discharge dates and demographics for temporal anchoring and schema export.
+\begin{lstlisting}
+## Extract the following basic patient information from this health record:
+ - admission_date
+ - discharge_date
+ - gender
+ - death_date
+ - birth_date
+ - race
+ - ethnicity
+ - zip_code
+ 
+Output as JSON Dictionary using the above as keys.
+For dates, use "YYYY-MM-DD" format. If information is not explicitly mentioned, use null.
+
+## IMPORTANT DATE EXTRACTION RULES:
+- "Admission Date"/"Admitted on" -> admission_date
+- "Discharge Date"/"Discharged on" -> discharge_date
+- Visit/Encounter/Appointment or Date of Service -> use as both admission_date and discharge_date if same-day visit is likely
+- "Date:", "Date of Note", provider-titled dates -> use as both admission_date and discharge_date
+- Only one date present -> use it for both admission_date and discharge_date
+
+Input:
+```
+{note}
+```
+
+Please respond with valid JSON only, no additional text. Output:
+\end{lstlisting}
+
+\subsection{Per-Chunk Date Extraction (Single-chunk Context)}
+\paragraph{Purpose} Implements the date processing described in Step~3 of the Methods, assigning start and end dates to each entity using the current note as the temporal anchor.
+\begin{lstlisting}
+## Extract dates for ALL entities marked by <KEY> tags in this health record. Every entity must have a date entry.
+
+## Output JSON list of dictionaries with:
+ - tag: entity order number from KEY tags
+ - date: [YYYY-MM-DD, YYYY-MM-DD] for start and end (same date if single event; null if unknown)
+ - inferred: [true/false, true/false] indicating whether each boundary was inferred
+
+## Key Rules:
+- Extract visit date as reference
+- Explicit dates -> exact start/end, inferred=false
+- "X days/weeks/months/years ago" -> END = visit date, START = visit date minus X, inferred=true
+- Current symptoms/findings -> visit date for both boundaries, inferred=false
+- New treatments/prescriptions -> START = visit date, END = null, inferred=[false, true]
+- Chronic conditions without timeframe -> [null, null], inferred=[false, false]
+- Related events share the main event's window
+- Unknown timing -> [null, null], inferred=[false, false]
+
+Input:
+```
+{note}
+```
+
+Please respond with valid JSON only, no additional text. Output:
+\end{lstlisting}
+
+\subsection{Cross-Chunk Date Extraction (Multi-chunk Context)}
+\paragraph{Purpose} Continues the same date processing step when notes are chunked; uses the admission date anchor and the previous segment for disambiguation.
+\begin{lstlisting}
+## Extract dates for ALL entities marked by <KEY> tags in this health record. Every entity must have a date entry.
+
+## Output JSON list of dictionaries with:
+ - tag: entity order number from KEY tags
+ - date: [YYYY-MM-DD, YYYY-MM-DD] for start and end (same date if single event; null if unknown)
+ - inferred: [true/false, true/false] indicating whether each boundary was inferred
+
+## Key Rules:
+- Use admission date as primary anchor
+- Consider previous note but prioritize current segment
+- Explicit dates -> exact start/end, inferred=false
+- "X days/weeks/months/years ago" -> END = admission date, START = admission date minus X, inferred=true
+- Current symptoms/findings -> admission date for both boundaries, inferred=false
+- New treatments/prescriptions -> START = admission date, END = null, inferred=[false, true]
+- Chronic conditions without timeframe -> [null, null], inferred=[false, false]
+- Related events share the main event's window
+- Unknown timing -> [null, null], inferred=[false, false]
+
+Input:
+```
+Previous piece of the record (context):
+{prev_note}
+Admission date: {adm_date}, Discharge date: {dis_date}
+Current note:
+{note}
+```
+
+Please respond with valid JSON only, no additional text. Output:
+\end{lstlisting}
+
+\subsection{Admission and Discharge Date Finder}
+\paragraph{Purpose} Supports the metadata retention described in Step~1 (chunking) by recovering visit anchors when only coarse dating cues are present.
+\begin{lstlisting}
+## You will receive an electronic health record for a patient. Your task is extract the admission date and the discharge date of the patient.
+## Your output should be in JSON Array format: "[admission date, discharge date]". If this does not apply to the record provided, for example, use null to fill up the value (such as [null, null]).
+
+Input:
+{note}
+
+Please respond with valid JSON only, no additional text. Output:
+\end{lstlisting}
+
+\subsection{Date Normalization (Helper within Step~3)}
+\paragraph{Purpose} Auxiliary helper used inside the date processing step to normalize relative expressions to absolute start–end ranges using an anchor date; not an additional pipeline stage.
+\begin{lstlisting}
+## Given an anchor time in the form of YYYY-MM-DD, what is the date range of "{date}" when the anchor time is {anchor}?
+## Your answer should be given in the form of [YYYY-MM-DD, YYYY-MM-DD] representing the start and end time.
+
+Please respond with valid JSON only, no additional text. Output:
+\end{lstlisting}
+
+\subsection{JSON Repair (Robustness Helper)}
+\paragraph{Purpose} Internal robustness helper that auto-corrects malformed JSON from LLM calls; it does not introduce a new pipeline step and only safeguards existing outputs.
+\begin{lstlisting}
+## I have a JSON file with errors that cannot be parsed. When I tried to parse it using `demjson3.decode`, I received specific error messages. Please correct the JSON and respond with only the corrected JSON content--do not include any explanations, comments, or additional text.
+
+Error: {error_message}
+Input JSON:
+{json_content}
+
+## Please respond with only the corrected JSON. Output:
+\end{lstlisting}

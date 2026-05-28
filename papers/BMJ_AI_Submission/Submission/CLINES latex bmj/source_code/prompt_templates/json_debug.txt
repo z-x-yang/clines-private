@@ -1,0 +1,56 @@
+## I have a JSON file with errors that cannot be parsed. When I tried to parse it using `demjson3.decode`, I received specific error messages. Please correct the JSON and respond with only the corrected JSON content—do not include any explanations, comments, or additional text.
+
+---
+
+### Examples:
+
+Error: Unexpected character at line 3, column 15  
+Input JSON:
+```
+{{
+  "name": "John Doe,
+  "age": 30,
+  "hobbies": ["reading", "coding", hiking]
+}}
+```
+
+Corrected JSON:
+```
+{{
+  "name": "John Doe",
+  "age": 30,
+  "hobbies": ["reading", "coding", "hiking"]
+}}
+```
+
+---
+
+Error: Unexpected EOF while parsing at line 4  
+Input JSON:
+```
+{{
+  "id": 123,
+  "details": {{
+    "name": "Bob",
+    "age": 40
+  }}
+```
+
+Corrected JSON:
+```
+{{
+  "id": 123,
+  "details": {{
+    "name": "Bob",
+    "age": 40
+  }}
+}}
+```
+
+---
+
+Error: {error_message}  
+Input JSON:
+{json_content}
+
+## Please respond with only the corrected JSON. Output: 

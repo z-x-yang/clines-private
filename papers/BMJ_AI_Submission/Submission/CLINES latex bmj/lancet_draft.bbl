@@ -1,0 +1,254 @@
+\begin{thebibliography}{10}
+
+\bibitem{Tayefi_2021}
+Tayefi M, Ngo P, Chomutare T, Dalianis H, Salvi E, Budrionis A, et~al.
+\newblock Challenges and opportunities beyond structured data in analysis of
+  electronic health records.
+\newblock WIREs Computational Statistics. 2021 Feb;13(6).
+\newblock Available from: \url{http://dx.doi.org/10.1002/wics.1549}.
+
+\bibitem{Sushil_2024}
+Sushil M, Kennedy VE, Mandair D, Miao BY, Zack T, Butte AJ.
+\newblock CORAL: Expert-Curated Oncology Reports to Advance Language Model
+  Inference.
+\newblock NEJM AI. 2024 Mar;1(4).
+\newblock Available from: \url{http://dx.doi.org/10.1056/aidbp2300110}.
+
+\bibitem{Kohane_2021}
+Kohane IS, Aronow BJ, Avillach P, Beaulieu-Jones BK, Bellazzi R, Bradford RL,
+  et~al.
+\newblock What Every Reader Should Know About Studies Using Electronic Health
+  Record Data but May Be Afraid to Ask.
+\newblock Journal of Medical Internet Research. 2021 Mar;23(3):e22219.
+\newblock Available from: \url{http://dx.doi.org/10.2196/22219}.
+
+\bibitem{Kim_2023}
+Kim MK, Rouphael C, McMichael J, Welch N, Dasarathy S.
+\newblock Challenges in and Opportunities for Electronic Health Record-Based
+  Data Analysis and Interpretation.
+\newblock Gut and Liver. 2023 Oct;18(2):201–208.
+\newblock Available from: \url{http://dx.doi.org/10.5009/gnl230272}.
+
+\bibitem{Savova_2010}
+Savova GK, Masanz JJ, Ogren PV, Zheng J, Sohn S, Kipper-Schuler KC, et~al.
+\newblock Mayo clinical Text Analysis and Knowledge Extraction System (cTAKES):
+  architecture, component evaluation and applications.
+\newblock Journal of the American Medical Informatics Association. 2010
+  Sep;17(5):507–513.
+\newblock Available from: \url{http://dx.doi.org/10.1136/jamia.2009.001560}.
+
+\bibitem{Aronson2001MetaMap}
+Aronson AR.
+\newblock Effective mapping of biomedical text to the UMLS Metathesaurus: the
+  MetaMap program.
+\newblock In: Proceedings of the AMIA Symposium; 2001. p.~17.
+
+\bibitem{Friedman_1995}
+Friedman C, Hripcsak G, DuMouchel W, Johnson SB, Clayton PD.
+\newblock Natural language processing in an operational clinical information
+  system.
+\newblock Natural Language Engineering. 1995 Mar;1(1):83–108.
+\newblock Available from: \url{http://dx.doi.org/10.1017/S1351324900000061}.
+
+\bibitem{Pathak_2013}
+Pathak J, Kho AN, Denny JC.
+\newblock Electronic health records-driven phenotyping: challenges, recent
+  advances, and perspectives.
+\newblock Journal of the American Medical Informatics Association. 2013
+  Dec;20(e2):e206–e211.
+\newblock Available from: \url{http://dx.doi.org/10.1136/amiajnl-2013-002428}.
+
+\bibitem{Lample_2016}
+Lample G, Ballesteros M, Subramanian S, Kawakami K, Dyer C.
+\newblock Neural Architectures for Named Entity Recognition.
+\newblock In: Proceedings of the 2016 Conference of the North American Chapter
+  of the Association for Computational Linguistics: Human Language Technologies
+  (NAACL-HLT); 2016. p. 260-70.
+
+\bibitem{Lee_2020}
+Lee J, Yoon W, Kim S, Kim D, Kim S, So CH, et~al.
+\newblock {BioBERT}: a pre-trained biomedical language representation model for
+  biomedical text mining.
+\newblock Bioinformatics. 2020;36(4):1234-40.
+
+\bibitem{Alsentzer_2019}
+Alsentzer E, Murphy J, Boag W, Weng WH, Jindi D, Naumann T, et~al.
+\newblock Publicly Available Clinical {BERT} Embeddings.
+\newblock In: Proceedings of the 2nd Clinical Natural Language Processing
+  Workshop; 2019. p. 72-8.
+
+\bibitem{https://doi.org/10.48550/arxiv.2303.08774}
+{OpenAI}, Achiam J, Adler S, Agarwal S, Ahmad L, Akkaya I, et~al.. GPT-4
+  Technical Report. arXiv; 2023.
+\newblock Available from: \url{https://arxiv.org/abs/2303.08774}.
+
+\bibitem{Singhal_2023}
+Singhal K, Azizi S, Tu T, Mahdavi SS, Wei J, Chung HW, et~al.
+\newblock Large language models encode clinical knowledge.
+\newblock Nature. 2023 Jul;620(7972):172–180.
+\newblock Available from: \url{http://dx.doi.org/10.1038/s41586-023-06291-2}.
+
+\bibitem{https://doi.org/10.48550/arxiv.2005.14165}
+Brown TB, Mann B, Ryder N, Subbiah M, Kaplan J, Dhariwal P, et~al.. Language
+  Models are Few-Shot Learners. arXiv; 2020.
+\newblock Available from: \url{https://arxiv.org/abs/2005.14165}.
+
+\bibitem{https://doi.org/10.48550/arxiv.2203.03540}
+Yang X, Chen A, PourNejatian N, Shin HC, Smith KE, Parisien C, et~al..
+  GatorTron: A Large Clinical Language Model to Unlock Patient Information from
+  Unstructured Electronic Health Records. arXiv; 2022.
+\newblock Available from: \url{https://arxiv.org/abs/2203.03540}.
+
+\bibitem{Rohanian_2023}
+Rohanian O, Nouriborji M, Kouchaki S, Clifton DA.
+\newblock On the effectiveness of compact biomedical transformers.
+\newblock Bioinformatics. 2023 Feb;39(3).
+\newblock Available from:
+  \url{http://dx.doi.org/10.1093/bioinformatics/btad103}.
+
+\bibitem{Rohanian_2024}
+Rohanian O, Nouriborji M, Jauncey H, Kouchaki S, Nooralahzadeh F, Clifton L,
+  et~al.
+\newblock Lightweight transformers for clinical natural language processing.
+\newblock Natural Language Engineering. 2024 Jan;30(5):887–914.
+\newblock Available from: \url{http://dx.doi.org/10.1017/S1351324923000542}.
+
+\bibitem{Kohane_2012}
+Kohane IS, Churchill SE, Murphy SN.
+\newblock A translational engine at the national scale: informatics for
+  integrating biology and the bedside.
+\newblock Journal of the American Medical Informatics Association. 2012
+  Mar;19(2):181–185.
+\newblock Available from: \url{http://dx.doi.org/10.1136/amiajnl-2011-000492}.
+
+\bibitem{Radford2018Improving}
+Radford A, Narasimhan K, Salimans T, Sutskever I.
+\newblock Improving Language Understanding by Generative Pre-Training.
+\newblock OpenAI; 2018.
+\newblock Available from:
+  \url{https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf}.
+
+\bibitem{Karabacak_2023}
+Karabacak M, Margetis K.
+\newblock Embracing Large Language Models for Medical Applications:
+  Opportunities and Challenges.
+\newblock Cureus. 2023 May.
+\newblock Available from: \url{http://dx.doi.org/10.7759/cureus.39305}.
+
+\bibitem{https://doi.org/10.48550/arxiv.2309.05922}
+Rawte V, Sheth A, Das A. A Survey of Hallucination in Large Foundation Models.
+  arXiv; 2023.
+\newblock Available from: \url{https://arxiv.org/abs/2309.05922}.
+
+\bibitem{https://doi.org/10.48550/arxiv.2303.18223}
+Zhao WX, Zhou K, Li J, Tang T, Wang X, Hou Y, et~al.
+\newblock A Survey of Large Language Models.
+\newblock arXiv preprint arXiv:230318223. 2023.
+\newblock Available from: \url{https://arxiv.org/abs/2303.18223}.
+
+\bibitem{https://doi.org/10.48550/arxiv.2407.21783}
+Grattafiori A, Dubey A, Jauhri A, Pandey A, Kadian A, Al-Dahle A, et~al.
+\newblock The Llama 3 Herd of Models.
+\newblock arXiv preprint arXiv:240721783. 2024.
+\newblock Available from: \url{https://arxiv.org/abs/2407.21783}.
+
+\bibitem{Brat_2020}
+Brat GA, Weber GM, Gehlenborg N, Avillach P, Palmer NP, Chiovato L, et~al.
+\newblock International electronic health record-derived COVID-19 clinical
+  course profiles: the 4CE consortium.
+\newblock npj Digital Medicine. 2020 Aug;3(1).
+\newblock Available from: \url{http://dx.doi.org/10.1038/s41746-020-00308-0}.
+
+\bibitem{tiktoken2024}
+OpenAI. tiktoken. GitHub; 2024.
+\newblock GitHub repository, release 0.6.0 (published 2024-02-09).
+\newblock Available from: \url{https://github.com/openai/tiktoken}.
+
+\bibitem{semchunk2024}
+Isaacus-dev. semchunk. GitHub; 2024.
+\newblock GitHub repository, version 2.0.0 (released 2024-06-19).
+\newblock Available from: \url{https://github.com/isaacus-dev/semchunk}.
+
+\bibitem{liu2021self}
+Liu F, Shareghi E, Meng Z, Basaldella M, Collier N.
+\newblock Self-alignment Pretraining for Biomedical Entity Representations.
+\newblock In: Proceedings of the 2021 Conference of the North American Chapter
+  of the Association for Computational Linguistics: Human Language
+  Technologies; 2021. p. 4228-38.
+
+\bibitem{He_2023}
+He T, Belouali A, Patricoski J, Lehmann H, Ball R, Anagnostou V, et~al.
+\newblock Trends and opportunities in computable clinical phenotyping: A
+  scoping review.
+\newblock Journal of Biomedical Informatics. 2023 Apr;140:104335.
+\newblock Available from: \url{http://dx.doi.org/10.1016/j.jbi.2023.104335}.
+
+\bibitem{Hou_2023}
+Hou J, Zhao R, Gronsbell J, Lin Y, Bonzel CL, Zeng Q, et~al.
+\newblock Generate Analysis-Ready Data for Real-world Evidence: Tutorial for
+  Harnessing Electronic Health Records With Advanced Informatic Technologies.
+\newblock Journal of Medical Internet Research. 2023 May;25:e45662.
+\newblock Available from: \url{http://dx.doi.org/10.2196/45662}.
+
+\bibitem{Johnson_2016}
+Johnson AEW, Pollard TJ, Shen L, Lehman LwH, Feng M, Ghassemi M, et~al.
+\newblock MIMIC-III, a freely accessible critical care database.
+\newblock Scientific Data. 2016 May;3(1).
+\newblock Available from: \url{http://dx.doi.org/10.1038/sdata.2016.35}.
+
+\bibitem{Feinstein_1990}
+Feinstein AR, Cicchetti DV.
+\newblock High agreement but low kappa: I. The problems of two paradoxes.
+\newblock Journal of Clinical Epidemiology. 1990;43(6):543-9.
+
+\bibitem{Byrt_1993}
+Byrt T, Bishop J, Carlin JB.
+\newblock Bias, prevalence and kappa.
+\newblock Journal of Clinical Epidemiology. 1993;46(5):423-9.
+
+\bibitem{Hripcsak_2005}
+Hripcsak G, Rothschild AS.
+\newblock Agreement, the F-measure, and reliability in information retrieval.
+\newblock Journal of the American Medical Informatics Association.
+  2005;12(3):296-8.
+
+\bibitem{Uzuner_2011}
+Uzuner {\"O}, South BR, Shen S, DuVall SL.
+\newblock 2010 i2b2/VA challenge on concepts, assertions, and relations in
+  clinical text.
+\newblock Journal of the American Medical Informatics Association.
+  2011;18(5):552-6.
+
+\bibitem{Norgeot_2020}
+Norgeot B, Quer G, Beaulieu-Jones BK, Torkamani A, Dias R, Gianfrancesco M,
+  et~al.
+\newblock Minimum information about clinical artificial intelligence modeling:
+  the MI-CLAIM checklist.
+\newblock Nature Medicine. 2020;26(9):1320-4.
+
+\bibitem{Collins_2024}
+Collins GS, Moons KGM, Dhiman P, Riley RD, Beam AL, Van~Calster B, et~al.
+\newblock {TRIPOD+AI} statement: updated guidance for reporting clinical
+  prediction models that use regression or machine learning methods.
+\newblock BMJ. 2024;385:e078378.
+
+\bibitem{JohnSnowLabs_HealthcareNLP}
+{John Snow Labs}. Healthcare {NLP} ({S}park {NLP} for Healthcare), version 6.3;
+  2026.
+\newblock Production-grade clinical NLP platform; academic free licence.
+\newblock \url{https://www.johnsnowlabs.com/healthcare-nlp/}.
+
+\bibitem{Lopez_2025_CLEAR}
+Lopez I, Swaminathan A, Vedula K, et~al.
+\newblock Clinical entity augmented retrieval for clinical information
+  extraction.
+\newblock npj Digital Medicine. 2025;8:45.
+
+\bibitem{Ntinopoulos_2025}
+Ntinopoulos V, et~al.
+\newblock Large language models for data extraction from unstructured and
+  semi-structured electronic health records: a multiple model performance
+  evaluation.
+\newblock BMJ Health \& Care Informatics. 2025;32:e101139.
+
+\end{thebibliography}

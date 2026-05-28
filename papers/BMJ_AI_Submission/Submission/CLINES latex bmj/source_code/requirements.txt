@@ -1,0 +1,28 @@
+# CLINES: Clinical LLM‐based Information Extraction and Structuring Agent
+# Requires Python >=3.10
+
+# Core data processing
+pandas>=2.1.4
+numpy>=1.26.0
+tqdm>=4.66.0
+
+# Deep learning and NLP
+torch>=2.6.0
+transformers>=4.45.0
+faiss-gpu>=1.7.2  # Use faiss-cpu>=1.7.2 for CPU-only environments
+
+# OpenAI API and text processing
+openai>=1.60.0
+tiktoken>=0.8.0
+semchunk>=3.0.0
+
+# JSON and configuration management
+demjson3>=3.0.6
+pyyaml>=6.0.2
+
+# HTTP requests and utilities
+requests>=2.32.0
+python-dateutil>=2.9.0
+regex>=2024.11.0 
+azure-identity>=1.17.0
+matplotlib>=3.8.0

@@ -1,0 +1,37 @@
+\section{JSON Output Specification}
+
+The pipeline aggregates module outputs into a consolidated JSON structure before any format conversion. Field names are presented in monospace to distinguish schema tokens from prose. Missing or inapplicable entries are set to \texttt{null}.
+
+\begin{longtable}{@{}p{0.26\linewidth}p{0.14\linewidth}p{0.56\linewidth}@{}}
+\toprule
+\textbf{Field} & \textbf{Type} & \textbf{Definition} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Field} & \textbf{Type} & \textbf{Definition} \\
+\midrule
+\endhead
+\texttt{term\_index} & integer & Position of the entity in the note after ordering. \\
+\texttt{key} & string & Note or encounter identifier provided to the system. \\
+\texttt{admission\_date}, \texttt{discharge\_date} & string (YYYY-MM-DD) & Visit-level anchors propagated to each entity. \\
+\texttt{gender}, \texttt{death\_date}, \texttt{birth\_date}, \texttt{race}, \texttt{ethnicity}, \texttt{zip\_code} & string & Demographic attributes extracted once per note. \\
+\texttt{mention} & string & Original entity span text. \\
+\texttt{context} & string & Surrounding phrase or sentence for auditability. \\
+\texttt{mention\_start\_pos}, \texttt{mention\_end\_pos} & integer & Character offsets within the original note (start inclusive, end exclusive). \\
+\texttt{code} & string & Ontology identifier concatenated with preferred term as \texttt{code\symbol{124}\symbol{124}preferred\_term}. Derived via SapBERT retrieval over UMLS. \\
+\texttt{type} & string & UMLS semantic type associated with \texttt{code}. \\
+\texttt{assertion\_status} & categorical & One of Present, Absent, Historical, Possible, Conditional, Hypothetical, Notassociated. \\
+\texttt{body\_location} & string & Anatomical site text. \\
+\texttt{body\_location\_code} & string & Ontology mapping for \texttt{body\_location} using the same concatenation convention as \texttt{code}. \\
+\texttt{value} & string or array & Numeric or qualitative measurement linked to the entity; arrays hold parallel multi-value entries. \\
+\texttt{unit} & string or array & Measurement unit(s) aligned with \texttt{value}. \\
+\texttt{infer} & boolean or array & Indicates whether each unit was inferred rather than explicit. \\
+\texttt{note} & string or array & Comparator for numeric values (\texttt{greater}, \texttt{lower}, \texttt{equal}) or brief qualifier. \\
+\texttt{freq} & string & Medication frequency phrase. \\
+\texttt{route} & string & Medication administration route. \\
+\texttt{other} & string & Additional descriptors not captured elsewhere (for example "fasting", "irregular"). \\
+\texttt{related} & object & Directed relations to other entities; keys are target tags and values are relation types. \\
+\texttt{begin\_date}, \texttt{end\_date} & string (YYYY-MM-DD) & Normalized start and end dates for the entity. \\
+\texttt{begin\_date\_inferred}, \texttt{end\_date\_inferred} & boolean & Flags indicating whether each date boundary was inferred. \\
+\bottomrule
+\end{longtable}

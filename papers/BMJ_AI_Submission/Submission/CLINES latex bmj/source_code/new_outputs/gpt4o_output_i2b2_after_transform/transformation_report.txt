@@ -1,0 +1,265 @@
+=== CUI Code Transformation Report ===
+
+Processing completed at: 2025-06-09 15:51:29
+Total processing time: 145.58 seconds
+
+=== Overall Statistics ===
+Total files: 40
+Processed files: 40
+Total rows: 41252
+Successful conversions: 31304
+Failed conversions: 9948
+Success rate: 75.88%
+
+=== Conversion by System ===
+ICD10CM: 6148 (14.90%)
+LNC: 9565 (23.19%)
+RXNORM: 1322 (3.20%)
+ICD10PCS: 157 (0.38%)
+ICD9CM: 482 (1.17%)
+HCPCS: 81 (0.20%)
+CPT: 1500 (3.64%)
+SNOMEDCT_US: 12049 (29.21%)
+CUI: 9948 (24.12%)
+
+=== File-by-File Statistics ===
+
+coral_annotated_breastca_20_i2b2.csv:
+  Total rows: 1408
+  Successful conversions: 1102
+  Failed conversions: 306
+  Success rate: 78.27%
+
+coral_annotated_breastca_21_i2b2.csv:
+  Total rows: 889
+  Successful conversions: 721
+  Failed conversions: 168
+  Success rate: 81.10%
+
+coral_annotated_breastca_22_i2b2.csv:
+  Total rows: 674
+  Successful conversions: 458
+  Failed conversions: 216
+  Success rate: 67.95%
+
+coral_annotated_breastca_23_i2b2.csv:
+  Total rows: 1223
+  Successful conversions: 958
+  Failed conversions: 265
+  Success rate: 78.33%
+
+coral_annotated_breastca_24_i2b2.csv:
+  Total rows: 745
+  Successful conversions: 545
+  Failed conversions: 200
+  Success rate: 73.15%
+
+coral_annotated_breastca_25_i2b2.csv:
+  Total rows: 402
+  Successful conversions: 324
+  Failed conversions: 78
+  Success rate: 80.60%
+
+coral_annotated_breastca_26_i2b2.csv:
+  Total rows: 1335
+  Successful conversions: 1088
+  Failed conversions: 247
+  Success rate: 81.50%
+
+coral_annotated_breastca_27_i2b2.csv:
+  Total rows: 1811
+  Successful conversions: 1258
+  Failed conversions: 553
+  Success rate: 69.46%
+
+coral_annotated_breastca_28_i2b2.csv:
+  Total rows: 931
+  Successful conversions: 697
+  Failed conversions: 234
+  Success rate: 74.87%
+
+coral_annotated_breastca_29_i2b2.csv:
+  Total rows: 1157
+  Successful conversions: 832
+  Failed conversions: 325
+  Success rate: 71.91%
+
+coral_annotated_breastca_30_i2b2.csv:
+  Total rows: 825
+  Successful conversions: 630
+  Failed conversions: 195
+  Success rate: 76.36%
+
+coral_annotated_breastca_31_i2b2.csv:
+  Total rows: 930
+  Successful conversions: 704
+  Failed conversions: 226
+  Success rate: 75.70%
+
+coral_annotated_breastca_32_i2b2.csv:
+  Total rows: 1706
+  Successful conversions: 1172
+  Failed conversions: 534
+  Success rate: 68.70%
+
+coral_annotated_breastca_33_i2b2.csv:
+  Total rows: 839
+  Successful conversions: 695
+  Failed conversions: 144
+  Success rate: 82.84%
+
+coral_annotated_breastca_34_i2b2.csv:
+  Total rows: 1474
+  Successful conversions: 1075
+  Failed conversions: 399
+  Success rate: 72.93%
+
+coral_annotated_breastca_35_i2b2.csv:
+  Total rows: 509
+  Successful conversions: 377
+  Failed conversions: 132
+  Success rate: 74.07%
+
+coral_annotated_breastca_36_i2b2.csv:
+  Total rows: 1017
+  Successful conversions: 800
+  Failed conversions: 217
+  Success rate: 78.66%
+
+coral_annotated_breastca_37_i2b2.csv:
+  Total rows: 716
+  Successful conversions: 495
+  Failed conversions: 221
+  Success rate: 69.13%
+
+coral_annotated_breastca_38_i2b2.csv:
+  Total rows: 1150
+  Successful conversions: 877
+  Failed conversions: 273
+  Success rate: 76.26%
+
+coral_annotated_breastca_39_i2b2.csv:
+  Total rows: 531
+  Successful conversions: 377
+  Failed conversions: 154
+  Success rate: 71.00%
+
+coral_annotated_pdac_0_i2b2.csv:
+  Total rows: 829
+  Successful conversions: 662
+  Failed conversions: 167
+  Success rate: 79.86%
+
+coral_annotated_pdac_10_i2b2.csv:
+  Total rows: 785
+  Successful conversions: 581
+  Failed conversions: 204
+  Success rate: 74.01%
+
+coral_annotated_pdac_11_i2b2.csv:
+  Total rows: 2337
+  Successful conversions: 1778
+  Failed conversions: 559
+  Success rate: 76.08%
+
+coral_annotated_pdac_12_i2b2.csv:
+  Total rows: 1589
+  Successful conversions: 1254
+  Failed conversions: 335
+  Success rate: 78.92%
+
+coral_annotated_pdac_13_i2b2.csv:
+  Total rows: 888
+  Successful conversions: 627
+  Failed conversions: 261
+  Success rate: 70.61%
+
+coral_annotated_pdac_14_i2b2.csv:
+  Total rows: 1477
+  Successful conversions: 1119
+  Failed conversions: 358
+  Success rate: 75.76%
+
+coral_annotated_pdac_15_i2b2.csv:
+  Total rows: 1040
+  Successful conversions: 774
+  Failed conversions: 266
+  Success rate: 74.42%
+
+coral_annotated_pdac_16_i2b2.csv:
+  Total rows: 600
+  Successful conversions: 424
+  Failed conversions: 176
+  Success rate: 70.67%
+
+coral_annotated_pdac_17_i2b2.csv:
+  Total rows: 1040
+  Successful conversions: 895
+  Failed conversions: 145
+  Success rate: 86.06%
+
+coral_annotated_pdac_18_i2b2.csv:
+  Total rows: 780
+  Successful conversions: 626
+  Failed conversions: 154
+  Success rate: 80.26%
+
+coral_annotated_pdac_19_i2b2.csv:
+  Total rows: 824
+  Successful conversions: 555
+  Failed conversions: 269
+  Success rate: 67.35%
+
+coral_annotated_pdac_1_i2b2.csv:
+  Total rows: 890
+  Successful conversions: 748
+  Failed conversions: 142
+  Success rate: 84.04%
+
+coral_annotated_pdac_2_i2b2.csv:
+  Total rows: 1164
+  Successful conversions: 886
+  Failed conversions: 278
+  Success rate: 76.12%
+
+coral_annotated_pdac_3_i2b2.csv:
+  Total rows: 600
+  Successful conversions: 430
+  Failed conversions: 170
+  Success rate: 71.67%
+
+coral_annotated_pdac_4_i2b2.csv:
+  Total rows: 781
+  Successful conversions: 564
+  Failed conversions: 217
+  Success rate: 72.22%
+
+coral_annotated_pdac_5_i2b2.csv:
+  Total rows: 798
+  Successful conversions: 622
+  Failed conversions: 176
+  Success rate: 77.94%
+
+coral_annotated_pdac_6_i2b2.csv:
+  Total rows: 886
+  Successful conversions: 729
+  Failed conversions: 157
+  Success rate: 82.28%
+
+coral_annotated_pdac_7_i2b2.csv:
+  Total rows: 1053
+  Successful conversions: 788
+  Failed conversions: 265
+  Success rate: 74.83%
+
+coral_annotated_pdac_8_i2b2.csv:
+  Total rows: 1011
+  Successful conversions: 802
+  Failed conversions: 209
+  Success rate: 79.33%
+
+coral_annotated_pdac_9_i2b2.csv:
+  Total rows: 1608
+  Successful conversions: 1255
+  Failed conversions: 353
+  Success rate: 78.05%

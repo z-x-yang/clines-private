@@ -1,0 +1,83 @@
+## Determine the assertion status for every entity marked by <KEY> and </KEY> in this health record.
+
+## Output a JSON list of dictionaries with:
+- tag: entity order number (from KEY tags)
+- assertion_status: one of these categories:
+  * Present: problem currently exists. Example: "History of chest pain"; "The patient has had increasing weight gain."
+  * Absent: problem definitely does not exist. Example: "Patient denies pain"; "Elevated enzymes have resolved."
+  * Historical: problem existed in past but not currently. Example: "Patient was previously on medication X but has since discontinued it"; "Past history of asthma that is currently in remission."
+  * Possible: problem may exist (uncertain, suspected). Example: "We suspect this is pneumonia"; "Pneumonia unlikely."
+  * Conditional: problem occurs only under certain conditions. Example: "Penicillin causes a rash"; "Ativan 0.5 mg IV q4-6 hours as needed for anxiety."
+  * Hypothetical: problem mentioned theoretically. Example: "If the patient were to experience chest pain, it could indicate a myocardial infarction."
+  * Notassociated: problem relates to someone other than patient. Example: "Family history of prostate cancer."
+
+## Ambiguity guidelines:
+- Prioritize most severe/current mention
+- For medications:
+  * Present: Currently prescribed/taking or active prescription
+  * Historical: Previously prescribed but discontinued/completed
+  * Conditional: PRN (as needed) medications or conditional prescriptions
+  * Absent: Explicitly refused, contraindicated, or allergic
+  * Possible: Under consideration or trial basis
+- "Patient at risk for X" = Hypothetical
+- "No evidence of X" = Absent
+- "Cannot rule out X" = Possible
+- For family history, classify conditions as Notassociated
+
+## Medication-specific context:
+- "Prescribed/Started on X" = Present
+- "Patient refuses X" or "declined X" = Absent  
+- "Discontinued X" or "stopped X" = Historical
+- "X as needed" or "PRN X" = Conditional
+- "Consider starting X" = Possible
+
+## IMPORTANT CLARIFICATION:
+- "Presenting with a history of X" or "X-day history of Y" typically means the symptom/problem Y is PRESENT and has been occurring for X time period
+- Only classify symptoms as Historical when there is clear indication the problem has resolved
+- Key phrases indicating PRESENT status despite "history" wording:
+  * "presenting with history of..." = Present
+  * "recent history of..." = Present
+  * "with X day/week history of..." = Present
+  * "comes with history of..." = Present
+- Key phrases indicating HISTORICAL status:
+  * "past medical history significant for..." = Historical
+  * "previous history of... now resolved" = Historical
+  * "history of... that has since improved" = Historical
+
+## Example:
+Input:
+```
+CT showed <1>lesions</1> most likely secondary to <2>metastatic disease</2>. <3>Ativan</3> 0.5 mg IV q 4 to 6 hours prn <4>anxiety</4>. Patient presenting with a 7 day history of <5>headaches</5> and <6>fever</6>.
+```
+
+Output:
+```
+[
+  {{"tag": "1", "assertion_status": "Present"}},
+  {{"tag": "2", "assertion_status": "Possible"}},
+  {{"tag": "3", "assertion_status": "Present"}},
+  {{"tag": "4", "assertion_status": "Conditional"}},
+  {{"tag": "5", "assertion_status": "Present"}},
+  {{"tag": "6", "assertion_status": "Present"}}
+]
+```
+
+Example (Medications):
+Input: Patient was <1>prescribed metformin</1> but <2>refused due to insurance</2>. <3>Lisinopril</3> discontinued last month. <4>Tylenol</4> as needed for pain.
+
+Output:
+```
+[
+  {{"tag": "1", "assertion_status": "Present"}},
+  {{"tag": "2", "assertion_status": "Absent"}},
+  {{"tag": "3", "assertion_status": "Historical"}},
+  {{"tag": "4", "assertion_status": "Conditional"}}
+]
+```
+
+Input:
+```
+{note}
+```
+
+## Please respond with valid JSON only, no additional text. Output: 

@@ -1,0 +1,14 @@
+## Given an anchor time in the form of YYYY-MM-DD, what is the date range of "{date}" when the anchor time is {anchor}?
+## Your answer should be given in the form of [YYYY-MM-DD, YYYY-MM-DD] representing the start and end time.
+
+---
+
+### Example:
+
+```
+["2118-06-02", "2118-06-14"]
+```
+
+---
+
+## Please respond with valid JSON only, no additional text. Output: 

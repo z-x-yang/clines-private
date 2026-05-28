@@ -1,0 +1,43 @@
+\section{i2b2 Export Schema}
+
+Structured outputs are rendered to the i2b2 \texttt{OBSERVATION\_FACT} layout with lightweight extensions for clinical NLP. Each entity produces one base row plus optional modifier rows when additional attributes are present. Field names follow the canonical i2b2 spelling to preserve compatibility.
+
+\subsection{Field Definitions}
+\begin{longtable}{@{}p{0.24\linewidth}p{0.14\linewidth}p{0.58\linewidth}@{}}
+\toprule
+\textbf{Field} & \textbf{Type} & \textbf{Definition} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Field} & \textbf{Type} & \textbf{Definition} \\
+\midrule
+\endhead
+\texttt{patient\_num} & integer & Pseudonymized patient identifier (provided upstream). \\
+\texttt{encounter\_num} & integer or string & Visit identifier; equals the pipeline key for the note. \\
+\texttt{birth\_date}, \texttt{death\_date} & date & Demographic dates when present. \\
+\texttt{sex\_cd}, \texttt{race\_cd}, \texttt{ethnicity\_cd}, \texttt{zip\_cd} & string & Demographic codes or free-text values from the note. \\
+\texttt{start\_date}, \texttt{end\_date} & date & Entity time span; defaults to visit anchors when explicit timing is absent. \\
+\texttt{concept\_cd} & string & Primary concept code from UMLS mapping (or downstream conversion). \\
+\texttt{name\_char} & string & Human-readable mention text. \\
+\texttt{observation\_blob} & string & Local context window for audit. \\
+\texttt{modifier\_cd} & string & Modifier type; \texttt{@} for base record, otherwise codes such as \texttt{DOSE}, \texttt{ROUTE}, \texttt{FREQ}, \texttt{ASSERTION\_STATUS}, \texttt{BODY\_LOCATION}, \texttt{OTHER\_INFO}, \texttt{RELATED}. \\
+\texttt{instance\_num} & integer & Sequential counter to distinguish multiple modifiers attached to the same entity. \\
+\texttt{valtype\_cd} & categorical & \texttt{N} for numeric, \texttt{T} for text. \\
+\texttt{tval\_char} & string & Text value or comparator when \texttt{valtype\_cd} is text or when expressing greater/lower/equal. \\
+\texttt{nval\_num} & numeric & Numeric value when applicable. \\
+\texttt{valueflag\_cd} & categorical & Abnormality flags if present (High, Low, Abnormal); otherwise null. \\
+\texttt{units\_cd} & string & Measurement unit. \\
+\texttt{unitflag\_cd} & boolean (string) & Indicates whether the unit was inferred (\texttt{true}/\texttt{false}). \\
+\texttt{entity\_index} & integer & Position of the entity in the original note (copied from \texttt{term\_index}). \\
+\texttt{code\_type} & string & Coding system label (ICD10CM, LNC, RXNORM, SNOMEDCT\_US, or CUI fallback). \\
+\bottomrule
+\end{longtable}
+
+\subsection{Base and Modifier Records}
+\begin{itemize}[leftmargin=1.3em]
+\item \textbf{Base record} (\texttt{modifier\_cd = @}): carries the primary concept, context, dates, and any value-unit pair directly associated with the entity.
+\item \textbf{Dose, route, frequency} modifiers: emitted when \texttt{value}, \texttt{route}, or \texttt{freq} appear in the JSON output.
+\item \textbf{Assertion status and body location} modifiers: capture clinical status and anatomical site for downstream phenotyping.
+\item \textbf{Other information} modifier: holds descriptive qualifiers not mapped elsewhere.
+\item \textbf{Related} modifier: serializes the directed relationship dictionary to maintain cross-entity links.
+\end{itemize}

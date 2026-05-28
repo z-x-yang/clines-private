@@ -1,0 +1,53 @@
+\section{\new{Reporting Checklists: MI-CLAIM and TRIPOD+AI}}
+
+\new{Because CLINES is a clinical artificial-intelligence system rather than an observational epidemiological study, we report it against AI-specific reporting standards---the Minimum Information about Clinical Artificial Intelligence Modeling (MI-CLAIM) checklist and the TRIPOD+AI statement---in place of the STROBE checklist used for observational studies. The tables below map each checklist's principal items to where they are addressed in the manuscript and supplement.}
+
+\begin{table}[H]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{6pt}
+\renewcommand{\arraystretch}{1.2}
+\new{
+\begin{tabular}{p{0.42\linewidth}p{0.50\linewidth}}
+\toprule
+MI-CLAIM item & Where addressed \\
+\midrule
+1. Study design, clinical problem, cohort/data source, ground truth & Methods (study design, datasets, annotation protocol); Ethics Approval \\
+2. Data preparation, partitioning, and pre-processing & Methods (chunking and pre-processing); Supplementary prompt suite \\
+3. Model description and optimization (architecture, training-free use of LLMs) & Methods (pipeline stages); Supplementary prompt suite and retrieval procedure \\
+4. Model performance, evaluation metrics, uncertainty & Results; Figures~3--5; Supplementary detailed-metrics and IAA tables \\
+5. Model examination (error analysis, ablation, robustness) & Results (ablation, hallucination analysis, note-length); Figures~4--5; Supplementary hallucination and consistency sections \\
+6. Reproducibility (code, prompts, models, data access tier) & Data Sharing (MIT-licensed reference implementation); Supplementary prompt suite, schemas, and retrieval pseudocode \\
+\bottomrule
+\end{tabular}
+}
+\caption{\new{MI-CLAIM (Norgeot et al., Nat Med 2020) item-to-location mapping. CLINES is used in a training-free configuration, so MI-CLAIM optimization items pertaining to model training are addressed by the prompt-suite and retrieval specifications rather than by a training procedure.}}
+\label{supp:miclaim}
+\end{table}
+
+\begin{table}[H]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{6pt}
+\renewcommand{\arraystretch}{1.2}
+\new{
+\begin{tabular}{p{0.42\linewidth}p{0.50\linewidth}}
+\toprule
+TRIPOD+AI item (grouped) & Where addressed \\
+\midrule
+Title and structured abstract & Title; Abstract (Objective / Methods and Analysis / Results / Conclusion) \\
+Background and objectives & Introduction \\
+Data sources, settings, participants & Methods (datasets); Ethics Approval; Data Sharing \\
+Predictors/inputs, outcome/target, ground-truth definition & Methods (task definition, i2b2 schema, annotation) \\
+Sample size and missing data & Methods; Results (per-dataset note and mention counts) \\
+AI model and analytical methods & Methods (pipeline); Supplementary prompt suite and retrieval procedure \\
+Model performance and uncertainty quantification & Results; Figures~3--5; Supplementary detailed-metrics (bootstrap 95\% CIs) \\
+Model evaluation, comparison with baselines, ablation & Results; Figure~5; Supplementary tables \\
+Limitations and generalizability & Discussion (Limitations; Dataset-level variation) \\
+Funding, conflicts, data and code availability & Funding; Declaration of Interests; Data Sharing \\
+\bottomrule
+\end{tabular}
+}
+\caption{\new{TRIPOD+AI (Collins et al., BMJ 2024) item-to-location mapping, grouped by checklist domain. Items specific to incremental-value and calibration analyses for risk-prediction models are not applicable to an information-extraction system and are reported as not applicable.}}
+\label{supp:tripod}
+\end{table}

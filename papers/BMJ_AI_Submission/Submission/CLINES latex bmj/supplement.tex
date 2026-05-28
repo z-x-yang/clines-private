@@ -1,0 +1,45 @@
+\documentclass[nopreprintline]{elsarticle}
+
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{multirow}
+\usepackage{float}
+\usepackage{enumitem}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{xcolor}
+\usepackage{listings}
+
+% Revision markup shared with the main document: \new{...} marks added text in
+% blue when revmode is on; identity otherwise. \long\def so it spans paragraphs.
+\newif\ifrevmode
+\revmodetrue   % flip to \revmodefalse for the clean version
+\makeatletter
+\protected\long\def\new#1{\ifrevmode{\color{blue}#1}\else#1\fi}
+\makeatother
+
+\journal{The Lancet Digital Health}
+
+\begin{document}
+
+\begin{frontmatter}
+\title{Supplementary Material for CLINES}
+\author{}
+\end{frontmatter}
+
+\tableofcontents
+
+\input{supplement_sections/introduction}
+\input{supplement_sections/prompts}
+\input{supplement_sections/json_schema}
+\input{supplement_sections/i2b2_schema}
+\input{supplement_sections/umls_pseudocode}
+\input{supplement_sections/cui_mapping}
+\input{supplement_sections/detailed_metrics}
+\input{supplement_sections/iaa_detail}
+\input{supplement_sections/hallucination}
+\input{supplement_sections/consistency}
+\input{supplement_sections/checklists}
+
+\end{document}

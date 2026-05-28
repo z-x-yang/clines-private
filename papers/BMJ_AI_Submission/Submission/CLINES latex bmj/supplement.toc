@@ -1,0 +1,38 @@
+\contentsline {section}{\numberline {1}Overview}{2}{}%
+\contentsline {section}{\numberline {2}Prompt Suite}{2}{}%
+\contentsline {subsection}{\numberline {2.1}Clinical Entity Extraction}{2}{}%
+\contentsline {paragraph}{Purpose}{2}{}%
+\contentsline {subsection}{\numberline {2.2}Entity Relationship Linking}{3}{}%
+\contentsline {paragraph}{Purpose}{3}{}%
+\contentsline {subsection}{\numberline {2.3}Entity Normalization}{4}{}%
+\contentsline {paragraph}{Purpose}{4}{}%
+\contentsline {subsection}{\numberline {2.4}Assertion Status Classification}{5}{}%
+\contentsline {paragraph}{Purpose}{5}{}%
+\contentsline {subsection}{\numberline {2.5}Attribute Enrichment}{6}{}%
+\contentsline {paragraph}{Purpose}{6}{}%
+\contentsline {subsection}{\numberline {2.6}Basic Patient and Visit Information}{8}{}%
+\contentsline {paragraph}{Purpose}{8}{}%
+\contentsline {subsection}{\numberline {2.7}Per-Chunk Date Extraction (Single-chunk Context)}{9}{}%
+\contentsline {paragraph}{Purpose}{9}{}%
+\contentsline {subsection}{\numberline {2.8}Cross-Chunk Date Extraction (Multi-chunk Context)}{9}{}%
+\contentsline {paragraph}{Purpose}{9}{}%
+\contentsline {subsection}{\numberline {2.9}Admission and Discharge Date Finder}{10}{}%
+\contentsline {paragraph}{Purpose}{10}{}%
+\contentsline {subsection}{\numberline {2.10}Date Normalization (Helper within Step\nobreakspace {}3)}{10}{}%
+\contentsline {paragraph}{Purpose}{10}{}%
+\contentsline {subsection}{\numberline {2.11}JSON Repair (Robustness Helper)}{11}{}%
+\contentsline {paragraph}{Purpose}{11}{}%
+\contentsline {section}{\numberline {3}JSON Output Specification}{11}{}%
+\contentsline {section}{\numberline {4}i2b2 Export Schema}{12}{}%
+\contentsline {subsection}{\numberline {4.1}Field Definitions}{12}{}%
+\contentsline {subsection}{\numberline {4.2}Base and Modifier Records}{13}{}%
+\contentsline {section}{\numberline {5}UMLS Retrieval Procedure}{14}{}%
+\contentsline {section}{\numberline {6}\new {Mapping UMLS Concepts to Source Terminologies}}{15}{}%
+\contentsline {section}{\numberline {7}\new {Detailed Performance Metrics with Bootstrap Confidence Intervals}}{15}{}%
+\contentsline {section}{\numberline {8}\new {Inter-Annotator Agreement: Per-Note Detail}}{16}{}%
+\contentsline {section}{\numberline {9}\new {Hallucination Taxonomy and Case Studies}}{17}{}%
+\contentsline {subsection}{\numberline {9.1}\new {Representative case studies}}{18}{}%
+\contentsline {section}{\numberline {10}\new {Output Consistency Across Repeated Runs}}{19}{}%
+\contentsline {subsection}{\numberline {10.1}\new {Protocol}}{19}{}%
+\contentsline {subsection}{\numberline {10.2}\new {Results}}{19}{}%
+\contentsline {section}{\numberline {11}\new {Reporting Checklists: MI-CLAIM and TRIPOD+AI}}{20}{}%

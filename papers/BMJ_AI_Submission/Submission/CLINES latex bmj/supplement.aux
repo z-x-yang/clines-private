@@ -1,0 +1,63 @@
+\relax 
+\@writefile{toc}{\contentsline {section}{\numberline {1}Overview}{2}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {2}Prompt Suite}{2}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Clinical Entity Extraction}{2}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Purpose}{2}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Entity Relationship Linking}{3}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Purpose}{3}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Entity Normalization}{4}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Purpose}{4}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.4}Assertion Status Classification}{5}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Purpose}{5}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.5}Attribute Enrichment}{6}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Purpose}{6}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.6}Basic Patient and Visit Information}{8}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Purpose}{8}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.7}Per-Chunk Date Extraction (Single-chunk Context)}{9}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Purpose}{9}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.8}Cross-Chunk Date Extraction (Multi-chunk Context)}{9}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Purpose}{9}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.9}Admission and Discharge Date Finder}{10}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Purpose}{10}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.10}Date Normalization (Helper within Step\nobreakspace  {}3)}{10}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Purpose}{10}{}\protected@file@percent }
+\gdef \LT@i {\LT@entry 
+    {1}{95.6981pt}\LT@entry 
+    {1}{60.29979pt}\LT@entry 
+    {1}{199.19916pt}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.11}JSON Repair (Robustness Helper)}{11}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Purpose}{11}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3}JSON Output Specification}{11}{}\protected@file@percent }
+\gdef \LT@ii {\LT@entry 
+    {1}{88.8019pt}\LT@entry 
+    {1}{60.29979pt}\LT@entry 
+    {1}{206.10063pt}}
+\@writefile{toc}{\contentsline {section}{\numberline {4}i2b2 Export Schema}{12}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Field Definitions}{12}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Base and Modifier Records}{13}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5}UMLS Retrieval Procedure}{14}{}\protected@file@percent }
+\@writefile{loa}{\contentsline {algorithm}{\numberline {1}{\ignorespaces UMLS Concept Retrieval with SapBERT and FAISS}}{14}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6}\new {Mapping UMLS Concepts to Source Terminologies}}{15}{}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces \new {Because every entity is anchored to a UMLS CUI, a single normalization step yields codes in arbitrarily many downstream terminologies via standard UMLS crosswalks, without re-running the model. The example crosswalks are illustrative of widely used UMLS source mappings; the specific target codes available for a given CUI depend on the licensed UMLS source vocabularies.}}}{15}{}\protected@file@percent }
+\newlabel{supp:cui-mapping}{{3}{15}}
+\@writefile{toc}{\contentsline {section}{\numberline {7}\new {Detailed Performance Metrics with Bootstrap Confidence Intervals}}{15}{}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces \new {Per-field F1 with 95\% bootstrap confidence intervals for the four full-pipeline backbones across the three expert-annotated datasets (4CE; CORAL breast cancer, CORAL-B; CORAL pancreatic cancer, CORAL-P). CORAL-P value/unit fields exceed code F1 because numeric laboratory and pathology measurements are densely and explicitly reported in oncology synoptic notes. Date-field F1 is uniformly lower, reflecting the difficulty of resolving relative and implicit temporal expressions.}}}{16}{}\protected@file@percent }
+\newlabel{supp:detailed-metrics}{{4}{16}}
+\@writefile{toc}{\contentsline {section}{\numberline {8}\new {Inter-Annotator Agreement: Per-Note Detail}}{16}{}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces \new {Per-note IAA on the cross-annotation subset (three notes per dataset; 4CE and CORAL). The pre-specified structural-disambiguation guidelines improve agreement on every metric for almost all notes. The pooled mention-level F1 reported in the main text is $0.837$ ($\kappa =0.597$, PABAK $=0.609$, raw agreement $80.5\%$), within the substantial-agreement range reported for clinical named-entity IAA (cf.\ i2b2 2010 challenge $\kappa =0.43$--$0.60$ for entity-boundary tasks). $\kappa $ is uniformly lower than F1 because, under the highly skewed keep/discard distribution, it is depressed by the base rate; PABAK and the pre$\to $post improvement confirm that the reconciliation guidelines resolve guideline-ambiguity divergence rather than substantive clinical disagreement.}}}{17}{}\protected@file@percent }
+\newlabel{supp:iaa-detail}{{5}{17}}
+\@writefile{toc}{\contentsline {section}{\numberline {9}\new {Hallucination Taxonomy and Case Studies}}{17}{}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces \new {Seven-class hallucination taxonomy over the full candidate-FP population, extrapolated from $n=700$ manually judged predictions via post-stratified Horvitz--Thompson estimation. The single largest category is \texttt  {not\_an\_error}: a majority (54.3\%) of apparent FPs are defensible predictions that the reference annotation omitted or recorded inconsistently. No individual \emph  {true}-hallucination category exceeds 17\% of FPs, and outright \texttt  {fabricated\_entity} errors account for only 5.4\%.}}}{18}{}\protected@file@percent }
+\newlabel{supp:halluc-taxonomy}{{6}{18}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {9.1}\new {Representative case studies}}{18}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {10}\new {Output Consistency Across Repeated Runs}}{19}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {10.1}\new {Protocol}}{19}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {10.2}\new {Results}}{19}{}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {7}{\ignorespaces \new {Per-field majority-vote stability across $R=5$ independent runs on the 20-note subset (mean fraction of contributing runs equal to the modal value; $n_{\mathrm  {cells}}$ is the number of (mention, field) cells with $\geq 2$ contributing runs).}}}{20}{}\protected@file@percent }
+\newlabel{supp:consistency-field-stability}{{7}{20}}
+\@writefile{toc}{\contentsline {section}{\numberline {11}\new {Reporting Checklists: MI-CLAIM and TRIPOD+AI}}{20}{}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {8}{\ignorespaces \new {MI-CLAIM (Norgeot et al., Nat Med 2020) item-to-location mapping. CLINES is used in a training-free configuration, so MI-CLAIM optimization items pertaining to model training are addressed by the prompt-suite and retrieval specifications rather than by a training procedure.}}}{21}{}\protected@file@percent }
+\newlabel{supp:miclaim}{{8}{21}}
+\@writefile{lot}{\contentsline {table}{\numberline {9}{\ignorespaces \new {TRIPOD+AI (Collins et al., BMJ 2024) item-to-location mapping, grouped by checklist domain. Items specific to incremental-value and calibration analyses for risk-prediction models are not applicable to an information-extraction system and are reported as not applicable.}}}{21}{}\protected@file@percent }
+\newlabel{supp:tripod}{{9}{21}}
+\gdef \@abspage@last{21}

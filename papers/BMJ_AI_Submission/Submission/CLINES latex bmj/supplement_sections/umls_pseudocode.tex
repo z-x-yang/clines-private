@@ -1,0 +1,22 @@
+\section{UMLS Retrieval Procedure}
+
+The concept enrichment module aligns cleaned entity mentions to UMLS concepts using SapBERT embeddings (\texttt{cambridgeltl/SapBERT-from-PubMedBERT-fulltext}) with FAISS nearest-neighbour search under an inner-product metric on \(L_2\)-normalized vectors (equivalent to cosine similarity). Two independent indices are built: an \emph{all-terms} index over the full deduplicated UMLS term list, and a restricted \emph{body-location} index used for anatomical-site resolution. The index type is selected by corpus size: for term lists larger than $50{,}000$ entries an inverted-file index (\texttt{IndexIVFFlat}) with an \texttt{IndexFlatIP} coarse quantizer is used, with the number of Voronoi cells set to $\text{nlist}=\min(4096, \max(\lfloor N/50\rfloor, 256))$ and query breadth $\text{nprobe}=\min(32, \text{nlist})$; for smaller lists an exact \texttt{IndexFlatIP} index is used. The pseudocode below mirrors the deployed implementation.
+
+\begin{algorithm}[H]
+\caption{UMLS Concept Retrieval with SapBERT and FAISS}
+\begin{algorithmic}[1]
+\STATE Load the UMLS term list with concept unique identifiers (CUIs) and semantic types; deduplicate while preserving term--CUI pairs.
+\STATE Encode all terms with the SapBERT encoder; apply $L_2$ normalization to obtain unit vectors of dimension $d$.
+\STATE \textbf{Index construction} (per index: all-terms, body-location):
+    \begin{enumerate}[label*=\arabic*.]
+    \item If $N > 50{,}000$: set $\text{nlist}=\min(4096, \max(\lfloor N/50\rfloor, 256))$; build \texttt{IndexIVFFlat} with an \texttt{IndexFlatIP} quantizer and \texttt{METRIC\_INNER\_PRODUCT}; train on the embeddings (subsampling to at most $10^6$ vectors when $N>10^6$); add all vectors.
+    \item Else: build an exact \texttt{IndexFlatIP} index and add all vectors.
+    \item Attempt GPU construction (\texttt{StandardGpuResources}); on GPU failure, retry the same construction on CPU.
+    \end{enumerate}
+\STATE \textbf{Query} (batched): filter out empty or null mentions; encode remaining mentions with the same SapBERT encoder and $L_2$ normalization; cast to \texttt{float32}.
+\STATE For \texttt{IndexIVFFlat}, set $\text{nprobe}=\min(32, \text{nlist})$; search the appropriate index for the top-$k$ matches ($k=1$ by default).
+\STATE For each mention, return a JSON object mapping the retrieved CUI to its preferred term and semantic type; attach the retrieved codes to the corresponding entities.
+\end{algorithmic}
+\end{algorithm}
+
+\new{Body-location mentions are additionally resolved against the body-location index so that anatomical sites map to anatomy-typed concepts rather than to the nearest concept of any semantic type. The retrieval is deterministic given the encoder, the term list, and the index parameters above; no external network calls are made during concept mapping.}

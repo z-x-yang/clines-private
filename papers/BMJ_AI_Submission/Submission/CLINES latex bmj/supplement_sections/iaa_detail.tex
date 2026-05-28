@@ -1,0 +1,28 @@
+\section{\new{Inter-Annotator Agreement: Per-Note Detail}}
+
+\new{This section provides the per-note inter-annotator agreement (IAA) results underlying Figure~4a and the headline agreement statistic in the main text. For the cross-annotation study, three notes per dataset (4CE; CORAL) were independently re-annotated by a second annotator, blinded to the original assignment. We report agreement before (\emph{pre}) and after (\emph{post}) applying the five pre-specified structural-disambiguation guidelines (Figure~4b), using three complementary statistics: mention-level F1, Cohen's $\kappa$, and prevalence-and-bias-adjusted $\kappa$ (PABAK). F1-based agreement is our primary metric because the keep/discard class distribution is highly skewed ($\approx$75\% keep), conditions under which $\kappa$ is depressed by the base rate (``Cohen's paradox''); we therefore report all three for transparency.}
+
+\begin{table}[H]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.15}
+\new{
+\begin{tabular}{llccccc}
+\toprule
+Dataset & Note & $n$ rows & F1 (pre$\to$post) & $\kappa$ (pre$\to$post) & PABAK (pre$\to$post) & Raw \% (pre$\to$post) \\
+\midrule
+4CE     & report03 & 334 & .891$\to$.901 & .470$\to$.636 & .653$\to$.711 & 82.6$\to$85.5 \\
+4CE     & report04 & 299 & .812$\to$.850 & .251$\to$.583 & .431$\to$.612 & 71.6$\to$80.6 \\
+4CE     & KUMC\_7  & 371 & .668$\to$.705 & .295$\to$.503 & .224$\to$.485 & 61.2$\to$74.2 \\
+CORAL   & pdac\_17 & 443 & .906$\to$.905 & .743$\to$.769 & .761$\to$.777 & 88.0$\to$88.8 \\
+CORAL   & pdac\_7  & 554 & .850$\to$.859 & .383$\to$.570 & .545$\to$.621 & 77.3$\to$81.0 \\
+CORAL   & pdac\_14 & 656 & .787$\to$.775 & .380$\to$.510 & .439$\to$.510 & 72.0$\to$75.5 \\
+\midrule
+\multicolumn{2}{l}{\emph{Pooled}} & 2{,}657 & \textbf{0.837} & 0.597 & 0.609 & 80.5 \\
+\bottomrule
+\end{tabular}
+}
+\caption{\new{Per-note IAA on the cross-annotation subset (three notes per dataset; 4CE and CORAL). The pre-specified structural-disambiguation guidelines improve agreement on every metric for almost all notes. The pooled mention-level F1 reported in the main text is $0.837$ ($\kappa=0.597$, PABAK $=0.609$, raw agreement $80.5\%$), within the substantial-agreement range reported for clinical named-entity IAA (cf.\ i2b2 2010 challenge $\kappa=0.43$--$0.60$ for entity-boundary tasks). $\kappa$ is uniformly lower than F1 because, under the highly skewed keep/discard distribution, it is depressed by the base rate; PABAK and the pre$\to$post improvement confirm that the reconciliation guidelines resolve guideline-ambiguity divergence rather than substantive clinical disagreement.}}
+\label{supp:iaa-detail}
+\end{table}

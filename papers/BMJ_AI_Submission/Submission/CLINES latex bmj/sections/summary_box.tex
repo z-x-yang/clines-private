@@ -1,0 +1,15 @@
+\new{%
+\bigskip
+\noindent\fbox{%
+  \begin{minipage}{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}
+  \textbf{Summary box}\par\medskip
+  \textbf{What is already known on this topic}\par
+  Free-text clinical notes hold diagnostic, temporal, and quantitative detail absent from structured EHR fields; rule-based systems and fine-tuned transformer encoders detect entities but normalize and attribute them inconsistently, and single-prompt large language models hallucinate and miss instructions on long notes.\par\medskip
+  \textbf{What this study adds}\par
+  CLINES, a training-free multi-step large-language-model pipeline, produces UMLS-normalized, attributed, time-stamped output that substantially outperforms single-prompt and chain-of-thought LLMs ($+0.37$ to $+0.54$ code F1) and full-size clinical encoders; the gains are robust across open- and closed-weight backbones and are quantified with confidence intervals, inter-annotator agreement, a hallucination taxonomy, per-note cost, and component ablations.\par\medskip
+  \textbf{How this study might affect research, practice, or policy}\par
+  CLINES offers an auditable, model-agnostic route to scale chart-review-like extraction for cohort discovery and real-world evidence, while the quantified residual hallucination rate makes explicit that human verification remains necessary before safety-critical use.
+  \end{minipage}%
+}
+\bigskip
+}

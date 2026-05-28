@@ -13,10 +13,10 @@ Compiled 2026-05-26 via WebSearch + ORCID.org cross-reference. **Please verify e
 | 5 | Enci Cai | HMS DBMI | **0009-0008-5329-9380** | ✅ Provided by Zongxin 2026-05-26 |
 | 6 | Mohammed Moro | HMS DBMI | **0009-0007-6108-6804** | ✅ Provided by Zongxin 2026-05-27 (Mo registered after initial compilation) |
 | 7 | Xiudi Li | UC Berkeley Biostat | **0000-0001-8304-1411** | ✅ Provided by Zongxin 2026-05-26 |
-| 8 | Huaiyuan Ying | Tsinghua Stat & Data Sci | **0009-0005-1575-6112** | ✅ WebSearch (orcid.org/0009-0005-1575-6112) |
+| 8 | Huaiyuan Ying | Tsinghua Stat & Data Sci | **0009-0008-9008-5293** | ✅ Provided by Zongxin 2026-05-28 (corrects earlier WebSearch hit) |
 | 9 | Nicholas Brown | HMS | **0000-0002-2166-3140** | ✅ Provided by Zongxin 2026-05-26 |
 | 10 | Griffin Weber | BIDMC + HMS DBMI | **0000-0002-2597-881X** | ✅ WebSearch (orcid.org/0000-0002-2597-881X) |
-| 11 | Sheng Yu | Tsinghua Stat & Data Sci | **0000-0002-4573-1929** | ✅ WebSearch (orcid.org/0000-0002-4573-1929) |
+| 11 | Sheng Yu | Tsinghua Stat & Data Sci | **0000-0002-6347-0507** | ✅ Provided by Zongxin 2026-05-28 (corrects earlier WebSearch hit; matches author_template.tsv) |
 | 12 | Isaac Kohane (corr) | HMS DBMI | **0000-0003-2192-5160** | ✅ WebSearch (orcid.org/0000-0003-2192-5160) |
 | 13 | Tianxi Cai (corr) | HMS DBMI + Harvard Chan | **0000-0002-5379-2502** | ✅ Provided by Zongxin 2026-05-26 |
 
@@ -44,9 +44,9 @@ Compiled 2026-05-26 via WebSearch + ORCID.org cross-reference. **Please verify e
 - [Enci Cai](https://orcid.org/0009-0008-5329-9380)
 - [Mohammed Moro](https://orcid.org/0009-0007-6108-6804)
 - [Xiudi Li](https://orcid.org/0000-0001-8304-1411)
-- [Huaiyuan Ying](https://orcid.org/0009-0005-1575-6112)
+- [Huaiyuan Ying](https://orcid.org/0009-0008-9008-5293)
 - [Nicholas Brown](https://orcid.org/0000-0002-2166-3140)
 - [Griffin Weber](https://orcid.org/0000-0002-2597-881X)
-- [Sheng Yu](https://orcid.org/0000-0002-4573-1929)
+- [Sheng Yu](https://orcid.org/0000-0002-6347-0507)
 - [Isaac Kohane](https://orcid.org/0000-0003-2192-5160)
 - [Tianxi Cai](https://orcid.org/0000-0002-5379-2502)

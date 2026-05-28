@@ -1,0 +1,39 @@
+\section{\new{Output Consistency Across Repeated Runs}}
+
+\new{Large-language-model outputs can vary across repeated invocations even at low decoding temperature, owing to non-deterministic kernel scheduling and floating-point non-associativity on accelerator hardware. Because CLINES is intended for chart-review-like tasks where reproducibility matters, we assess run-to-run stability of the end-to-end pipeline with a pre-specified protocol.}
+
+\subsection{\new{Protocol}}
+
+\new{We select a fixed subset of 20 notes (balanced across the 4CE and CORAL datasets) and run the complete CLINES pipeline $R=5$ times independently on each note with identical inputs and configuration (\texttt{gpt-4o-mini} backbone; temperature as deployed; distinct random seeds where exposed by the API). For each note we compare the five extracted i2b2 record sets and quantify stability with:}
+\new{\begin{itemize}[leftmargin=1.4em]
+  \item \emph{Pairwise mention-set Jaccard} and \emph{code-set Jaccard} across the $\binom{5}{2}=10$ run pairs, summarizing the overlap of extracted spans and assigned UMLS codes;
+  \item \emph{Per-field majority-vote stability}: for every mention span that appears in at least two runs, the fraction of those runs whose value for a given field (assertion status, value, unit, begin date, end date) equals the modal value across runs; averaged over all such (span, field) cells.
+\end{itemize}}
+
+\new{This protocol mirrors the output-consistency assessment recommended by Ntinopoulos et al.\ (BMJ Health \& Care Informatics 2025) for clinical LLM evaluations, which the present study did not originally include.}
+
+\subsection{\new{Results}}
+
+\new{All 20 notes produced complete outputs in all five runs (no run failures; no partial outputs). Across the $\binom{5}{2}=10$ run pairs per note, the mean mention-set Jaccard was $0.603$ (per-note range $0.396$--$0.767$) and the mean code-set Jaccard was $0.622$ (range $0.498$--$0.718$), indicating that roughly 60\% of extracted spans and assigned UMLS codes are shared across any two runs on the same note. Run-to-run variation therefore is appreciable at the set-membership level, consistent with stochastic LLM decoding at non-zero temperature.}
+
+\new{However, for mentions that \emph{are} recovered across runs, the structured fields associated with each mention are highly stable: averaging over all $43{,}670$ (span, field) cells with at least two contributing runs, the modal field value was matched in $89.9\%$ of contributing runs on average (Table~\ref{supp:consistency-field-stability}). Field-level stability was highest for unit ($94.3\%$), end date ($93.9\%$), and begin date ($91.1\%$), and slightly lower for assertion status ($85.1\%$) and numeric value ($84.9\%$). Together these two views indicate that, although the LLM does not deterministically reproduce the full extracted set on every run, the per-field content of each extracted mention is largely run-invariant; in chart-review use, an analyst aggregating multiple runs (e.g., via majority vote over $R\geq 3$ runs) recovers a stable consensus output. Per-note Jaccard values and the full distribution of field-cell modal frequencies are released alongside the data and code (\texttt{runs/EXP-J2/consistency\_metrics.json}).}
+
+\begin{table}[h]
+\centering
+\caption{\new{Per-field majority-vote stability across $R=5$ independent runs on the 20-note subset (mean fraction of contributing runs equal to the modal value; $n_{\mathrm{cells}}$ is the number of (mention, field) cells with $\geq 2$ contributing runs).}}
+\label{supp:consistency-field-stability}
+\small
+\begin{tabular}{lccc}
+\hline
+\textbf{Field} & \textbf{Mean modal agreement} & \textbf{Per-cell range} & $\boldsymbol{n_{\mathrm{cells}}}$ \\
+\hline
+Assertion status   & $0.851$ & $[0.250, 1.000]$ & 8,734 \\
+Numeric value      & $0.849$ & $[0.200, 1.000]$ & 8,734 \\
+Unit               & $0.943$ & $[0.200, 1.000]$ & 8,734 \\
+Begin date         & $0.911$ & $[0.200, 1.000]$ & 8,734 \\
+End date           & $0.939$ & $[0.200, 1.000]$ & 8,734 \\
+\hline
+\textbf{All fields pooled} & $\mathbf{0.899}$ & $[0.200, 1.000]$ & 43,670 \\
+\hline
+\end{tabular}
+\end{table}

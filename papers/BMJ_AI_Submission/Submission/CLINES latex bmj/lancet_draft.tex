@@ -1,0 +1,115 @@
+\documentclass[review,12pt,times,nopreprintline]{elsarticle}
+
+% Core math and symbols
+\usepackage{amsmath,amssymb}
+% Hyperlinks without boxes
+\usepackage[hidelinks]{hyperref}
+% Force-here placement for floats when desired
+\usepackage{float}
+% Color support for revision markup
+\usepackage{xcolor}
+% Point figures to the dedicated folder
+\graphicspath{{figures/}}
+
+% ============================================================================
+% REVISION MARKUP (BMJ Digital Health & AI Major Revision, 2026-05-26)
+%
+% Toggle \revmodetrue for tracked-changes version (added text in blue).
+% Toggle \revmodefalse for clean revised version (no color, normal text).
+% After editing, recompile with pdflatex to produce the desired output.
+% ============================================================================
+\newif\ifrevmode
+\revmodetrue   % <-- flip to \revmodefalse for clean version
+% \new{...} marks revised/added text in blue when revmode is true.
+% Defined with \long\def + a {\color ...} group (not \textcolor) so the
+% argument may span multiple paragraphs (\textcolor halts on \par).
+\makeatletter
+\long\def\new#1{\ifrevmode{\color{blue}#1}\else#1\fi}
+\makeatother
+
+% Lancet-style citation preferences: numeric, superscript, sorted & compressed
+\biboptions{super,sort&compress}
+
+\journal{The Lancet Digital Health}
+
+\begin{document}
+
+\begin{frontmatter}
+
+\title{CLINES: Clinical LLM-based Information Extraction and Structuring Agent}
+
+\author[1]{Zongxin Yang\fnref{contrib}}
+\author[3]{Hongyi Yuan\fnref{contrib}}
+\author[1]{Raheel Sayeed\fnref{contrib}}
+\author[1]{Amelia Li Min Tan}
+\author[1]{Enci Cai}
+\author[1]{Mohammed Moro}
+\author[4]{Xiudi Li}
+\author[3]{Huaiyuan Ying}
+\author[6]{Nicholas Brown}
+\author[5,6]{Griffin Weber}
+\author[3]{Sheng Yu}
+\author[1]{Isaac Kohane\corref{cor1}}
+\author[1,2]{Tianxi Cai\corref{cor2}}
+
+\address[1]{Department of Biomedical Informatics, Harvard Medical School, Boston, MA, USA}
+\address[2]{Harvard T.H. Chan School of Public Health, Boston, MA, USA}
+\address[3]{Department of Statistics and Data Science, Tsinghua University, Beijing, China}
+\address[4]{Division of Biostatistics, University of California Berkeley, Berkeley, CA, USA}
+\address[5]{Division of Interdisciplinary Medicine and Biotechnology, Department of Medicine, Beth Israel Deaconess Medical Center, Boston, MA, USA}
+\address[6]{Harvard Medical School, Boston, MA, USA}
+
+\fntext[contrib]{These authors contributed equally to this work.}
+\cortext[cor1]{Corresponding author. Email: \texttt{Isaac\_Kohane@hms.harvard.edu}.}
+\cortext[cor2]{Corresponding author. Email: \texttt{tcai@hsph.harvard.edu}.}
+
+\begin{abstract}
+\input{sections/abstract}
+\end{abstract}
+
+\begin{keyword}
+artificial intelligence \sep large language models \sep clinical natural language processing \sep electronic health records \sep real-world evidence
+\end{keyword}
+
+\end{frontmatter}
+
+% Uncomment the following lines to enable line numbers during review
+% \modulolinenumbers[5]
+% \linenumbers
+
+\input{sections/summary_box}
+
+\section{Introduction}
+\input{sections/introduction}
+
+\section{Methods}
+\input{sections/methods}
+
+\section{Results}
+\input{sections/results}
+
+\section{Discussion}
+\input{sections/discussion}
+
+\section*{Contributors}
+\input{sections/contributors}
+
+\section*{Data Sharing}
+\input{sections/data_sharing}
+
+\section*{Ethics Approval}
+\input{sections/ethics_approval}
+
+\new{\section*{Patient and Public Involvement}}
+\input{sections/ppi}
+
+\section*{Declaration of Interests}
+\input{sections/declaration_of_interests}
+
+\section*{Funding}
+This research received no specific grant from any funding agency in the public, commercial, or not-for-profit sectors.
+
+\bibliographystyle{vancouver}
+\bibliography{references}
+
+\end{document}

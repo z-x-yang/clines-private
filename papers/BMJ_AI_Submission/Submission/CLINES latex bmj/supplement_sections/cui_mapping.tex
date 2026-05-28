@@ -1,0 +1,27 @@
+\section{\new{Mapping UMLS Concepts to Source Terminologies}}
+
+\new{CLINES normalizes each extracted mention to a UMLS Concept Unique Identifier (CUI) using the SapBERT + FAISS retrieval procedure of the preceding section. The CUI is the interoperability hub: in the UMLS Metathesaurus a single CUI aggregates synonymous terms contributed by many independently maintained source vocabularies, so a CUI can be deterministically crosswalked to any of those vocabularies through the standard \texttt{MRCONSO} concept--atom table without further model inference. The i2b2-style export therefore stores, for every entity, the CUI, its UMLS preferred term, and its semantic type (\texttt{MRSTY}); downstream consumers obtain a code in their terminology of choice by joining on the CUI.}
+
+\begin{table}[H]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{6pt}
+\renewcommand{\arraystretch}{1.2}
+\new{
+\begin{tabular}{lll}
+\toprule
+Downstream use & Target vocabulary (UMLS source) & Example crosswalk from CUI \\
+\midrule
+Problem lists / diagnoses   & SNOMED CT (\texttt{SNOMEDCT\_US}) & C0020538 $\to$ 38341003 (Hypertensive disorder) \\
+Billing / claims            & ICD-10-CM (\texttt{ICD10CM})      & C0020538 $\to$ I10 (Essential hypertension) \\
+Medications                 & RxNorm (\texttt{RXNORM})          & C0025598 $\to$ 6809 (Metformin) \\
+Laboratory tests            & LOINC (\texttt{LNC})              & C0202194 $\to$ 4548-4 (Hemoglobin A1c) \\
+Procedures                  & CPT / SNOMED CT procedure         & C0009378 $\to$ 44970 (Appendectomy) \\
+\bottomrule
+\end{tabular}
+}
+\caption{\new{Because every entity is anchored to a UMLS CUI, a single normalization step yields codes in arbitrarily many downstream terminologies via standard UMLS crosswalks, without re-running the model. The example crosswalks are illustrative of widely used UMLS source mappings; the specific target codes available for a given CUI depend on the licensed UMLS source vocabularies.}}
+\label{supp:cui-mapping}
+\end{table}
+
+\new{This design decouples extraction from any single coding standard: institutions that require SNOMED CT for clinical documentation, ICD-10-CM for reimbursement, or RxNorm for medication reconciliation all consume the same CUI-anchored output, and the mapping layer is auditable because each CUI carries its preferred term and semantic type alongside the source-vocabulary codes.}

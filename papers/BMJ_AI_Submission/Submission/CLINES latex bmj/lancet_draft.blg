@@ -1,0 +1,14 @@
+This is BibTeX, Version 0.99d
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: lancet_draft.aux
+The style file: vancouver.bst
+Database file #1: references.bib
+Warning--empty author and editor in https://doi.org/10.48550/arxiv.2303.08774
+Warning--empty author and editor in https://doi.org/10.48550/arxiv.2005.14165
+Warning--empty author and editor in https://doi.org/10.48550/arxiv.2203.03540
+Warning--empty author and editor in https://doi.org/10.48550/arxiv.2309.05922
+Warning--empty author and editor in tiktoken2024
+Warning--empty author and editor in semchunk2024
+Warning--empty author and editor in JohnSnowLabs_HealthcareNLP
+Warning--missing publisher in JohnSnowLabs_HealthcareNLP
+(There were 8 warnings)
