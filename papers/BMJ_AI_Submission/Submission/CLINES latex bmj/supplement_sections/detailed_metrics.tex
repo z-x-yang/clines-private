@@ -8,6 +8,7 @@
 \setlength{\tabcolsep}{3.2pt}
 \renewcommand{\arraystretch}{1.15}
 \new{
+\resizebox{\textwidth}{!}{%
 \begin{tabular}{llcccccc}
 \toprule
 Backbone & Dataset & Code & Assertion & Value & Unit & Begin date & End date \\
@@ -27,7 +28,8 @@ Backbone & Dataset & Code & Assertion & Value & Unit & Begin date & End date \\
  & CORAL-B & 0.608\,(.577--.636) & 0.706\,(.672--.733) & 0.667\,(.590--.734) & 0.735\,(.671--.791) & 0.653\,(.600--.714) & 0.630\,(.542--.713) \\
  & CORAL-P & 0.655\,(.624--.686) & 0.746\,(.722--.770) & 0.776\,(.705--.836) & 0.720\,(.649--.782) & 0.629\,(.540--.706) & 0.635\,(.550--.707) \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 }
 \caption{\new{Per-field F1 with 95\% bootstrap confidence intervals for the four full-pipeline backbones across the three expert-annotated datasets (4CE; CORAL breast cancer, CORAL-B; CORAL pancreatic cancer, CORAL-P). CORAL-P value/unit fields exceed code F1 because numeric laboratory and pathology measurements are densely and explicitly reported in oncology synoptic notes. Date-field F1 is uniformly lower, reflecting the difficulty of resolving relative and implicit temporal expressions.}}
 \label{supp:detailed-metrics}

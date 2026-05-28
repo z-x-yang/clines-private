@@ -8,6 +8,7 @@
 \setlength{\tabcolsep}{4pt}
 \renewcommand{\arraystretch}{1.15}
 \new{
+\resizebox{\textwidth}{!}{%
 \begin{tabular}{llccccc}
 \toprule
 Dataset & Note & $n$ rows & F1 (pre$\to$post) & $\kappa$ (pre$\to$post) & PABAK (pre$\to$post) & Raw \% (pre$\to$post) \\
@@ -21,7 +22,8 @@ CORAL   & pdac\_14 & 656 & .787$\to$.775 & .380$\to$.510 & .439$\to$.510 & 72.0$
 \midrule
 \multicolumn{2}{l}{\emph{Pooled}} & 2{,}657 & \textbf{0.837} & 0.597 & 0.609 & 80.5 \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 }
 \caption{\new{Per-note IAA on the cross-annotation subset (three notes per dataset; 4CE and CORAL). The pre-specified structural-disambiguation guidelines improve agreement on every metric for almost all notes. The pooled mention-level F1 reported in the main text is $0.837$ ($\kappa=0.597$, PABAK $=0.609$, raw agreement $80.5\%$), within the substantial-agreement range reported for clinical named-entity IAA (cf.\ i2b2 2010 challenge $\kappa=0.43$--$0.60$ for entity-boundary tasks). $\kappa$ is uniformly lower than F1 because, under the highly skewed keep/discard distribution, it is depressed by the base rate; PABAK and the pre$\to$post improvement confirm that the reconciliation guidelines resolve guideline-ambiguity divergence rather than substantive clinical disagreement.}}
 \label{supp:iaa-detail}
