@@ -73,8 +73,18 @@ fuzzy optimization. Hence `%15` (all cells concurrent) here, vs EXP-J's `%6`.
 ## 5. Env
 
 - conda env **`sglang`**: faiss 1.7.2, torch 2.6.0+cu124, openai 1.60.1 (confirmed
-  `import faiss, torch` OK). **CPU + API only.** SapBERT auto-CPU; 18GB UMLS embed
-  cache HIT.
+  `import faiss, torch` OK). **CPU + API only.** SapBERT auto-CPU.
+- **UMLS embedding cache (was a launch bug):** `RetrieverCoordinator.embed_dictionary`
+  loads `./cache/{dense_embed_all,term_list_all,dense_embed_bodyloc,term_list_bodyloc}.pt`
+  on a HIT (read-only; never writes on HIT). The first 41737412 launch had an
+  **empty** `./cache/` (the job symlinked the dictionaries but not the cache), so all
+  15 cells cache-MISSED and started re-embedding 5.7M UMLS terms on CPU (~150 s/batch
+  × 173 batches ≈ **7 h/cell**, all racing to write the same `dense_embed_all.pt`).
+  Cancelled at ~13% (0 notes processed — pure setup waste, no valid output). Fix: the
+  job now symlinks the 4 pre-computed cache files from
+  `SHARE/From_Zongxin/language-into-clinical-data/cache/` (17G `dense_embed_all.pt`
+  built Jun 2025) → instant HIT. Same EXP-J2 (code-under-test `a31f18a` unchanged;
+  this was env plumbing, parallel to the existing umls symlinks).
 - `--model_name gpt4omini` → deployment `gpt-4o-mini-0718`, api-version
   `2025-04-01-preview`, endpoint `https://azure-ai.hms.edu`.
 

@@ -51,6 +51,16 @@ if [[ ! -e umls_body_loc_dictionary.txt ]]; then
     ln -sf /n/data1/hsph/biostat/celehs/lab/SHARE/From_Zongxin/language-into-clinical-data/umls_body_loc_dictionary.txt umls_body_loc_dictionary.txt
 fi
 
+# Pre-computed SapBERT dictionary embeddings (RetrieverCoordinator.embed_dictionary
+# loads ./cache/{dense_embed_all,term_list_all,dense_embed_bodyloc,term_list_bodyloc}.pt
+# on a HIT and only reads them; without these symlinks every cell re-embeds 5.7M
+# UMLS terms on CPU (~7h each, and races to write the same cache file).
+SHARE_CACHE=/n/data1/hsph/biostat/celehs/lab/SHARE/From_Zongxin/language-into-clinical-data/cache
+mkdir -p cache
+for cf in dense_embed_all.pt term_list_all.pt dense_embed_bodyloc.pt term_list_bodyloc.pt; do
+    [[ -e "cache/${cf}" ]] || ln -sf "${SHARE_CACHE}/${cf}" "cache/${cf}"
+done
+
 source /home/zoy043/miniconda3/etc/profile.d/conda.sh
 conda activate sglang
 
