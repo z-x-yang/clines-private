@@ -5,18 +5,26 @@ Reads the 5 independent runs' per-note i2b2-style CSVs for the same 20 notes
 and quantifies how much the structured outputs vary across runs (reviewer
 R5.4.5; Supplementary S4).
 
+Mention identity is SEMANTIC (not exact span-string match): two extracted
+mentions are equivalent if they (a) share a non-empty UMLS code, OR (b)
+share a canonical surface form (lowercase + alphanumeric + collapsed
+whitespace). This collapses boundary-jitter variants ("RLS" vs " RLS")
+and synonym variants that the pipeline mapped to the same CUI ("MI" vs
+"myocardial infarction" with same code), which exact-span matching
+overcounted as disagreement.
+
 Metrics
 -------
 1. Pairwise mention-set Jaccard and code-set Jaccard over the C(5,2)=10 run
-   pairs, per note. mention set = set of (start,end,mention) spans; code set =
-   set of `code` values. Report mean across pairs and notes, plus min/max.
-2. Per-field majority-vote stability: for each mention matched across runs and
-   each field in {assertion_status,value,unit,begin_date,end_date}, the
-   fraction of the 5 runs equal to the modal value; averaged over cells.
-   A mention is keyed by its (start,end,mention) span; we only score spans that
-   appear in >=2 runs (a singleton has no cross-run agreement to measure). For a
-   given span+field we take, per run, the field value if that span is present in
-   that run (else the run does not contribute to that cell's denominator).
+   pairs, per note. mention set = set of semantic-equivalence-class ids;
+   code set = set of `code` values. Report mean across pairs and notes,
+   plus min/max.
+2. Per-field majority-vote stability: for each mention (keyed by semantic
+   equivalence-class id) matched across runs and each field in
+   {assertion_status,value,unit,begin_date,end_date}, the fraction of the
+   runs equal to the modal value; averaged over cells. Only score classes
+   that appear in >=2 runs. When a class appears multiple times within one
+   run we take the run's modal value for that (class, field) cell.
 """
 import os
 import re
@@ -48,10 +56,59 @@ def norm(v):
     return s
 
 
-def span_key(row):
-    return (norm(row.get("mention_start_pos")),
-            norm(row.get("mention_end_pos")),
-            norm(row.get("mention")))
+def canonical_surface(s):
+    """Lowercase + collapsed-whitespace + alphanumeric-plus-hyphen-only form.
+
+    Strips boundary jitter (leading/trailing punctuation, capitalisation) but
+    preserves clinical hyphenation (e.g. "HER2-negative" stays distinct from
+    "HER2 positive").
+    """
+    s = norm(s).lower()
+    s = re.sub(r"[^a-z0-9\- ]", " ", s)
+    s = re.sub(r"\s+", " ", s).strip()
+    return s
+
+
+def assign_eq_classes(rows):
+    """Union-find equivalence classes over a single note's rows from all runs.
+
+    Two rows are in the same class iff they share a non-empty UMLS `code`
+    OR they share a non-empty canonical surface form. Returns a list of
+    equivalence-class ids parallel to `rows` (length == len(rows)).
+    """
+    n = len(rows)
+    parent = list(range(n))
+
+    def find(x):
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+
+    def union(a, b):
+        ra, rb = find(a), find(b)
+        if ra != rb:
+            parent[ra] = rb
+
+    code_groups = defaultdict(list)
+    for i, r in enumerate(rows):
+        c = norm(r.get("code"))
+        if c:
+            code_groups[c].append(i)
+    for idxs in code_groups.values():
+        for k in idxs[1:]:
+            union(idxs[0], k)
+
+    surf_groups = defaultdict(list)
+    for i, r in enumerate(rows):
+        s = canonical_surface(r.get("mention"))
+        if s:
+            surf_groups[s].append(i)
+    for idxs in surf_groups.values():
+        for k in idxs[1:]:
+            union(idxs[0], k)
+
+    return [find(i) for i in range(n)]
 
 
 def note_id_from_filename(fname, slice_name, run):
@@ -116,15 +173,29 @@ def main():
             scorable_notes.append((sl, nid, present))
 
     # ---- metric 1: pairwise jaccard over each note's available runs ----
+    # mention identity is the semantic equivalence-class id (see assign_eq_classes)
     mention_jac_per_note = {}
     code_jac_per_note = {}
+    # Cache combined rows + eq-class assignments per (sl, nid) for reuse in metric 2
+    note_rows = {}      # (sl, nid) -> list[(run, row_dict)]
+    note_eqclass = {}   # (sl, nid) -> parallel list[eq_class_id]
     for sl, nid, present in scorable_notes:
-        run_mentions = {}
-        run_codes = {}
+        combined = []
         for r in present:
             df = load_run_note(sl, r, nid)
-            run_mentions[r] = set(span_key(row) for _, row in df.iterrows())
-            run_codes[r] = set(norm(c) for c in df["code"].tolist() if norm(c))
+            for _, row in df.iterrows():
+                combined.append((r, row.to_dict()))
+        eq_ids = assign_eq_classes([row for _, row in combined])
+        note_rows[(sl, nid)] = combined
+        note_eqclass[(sl, nid)] = eq_ids
+
+        run_mentions = defaultdict(set)
+        run_codes = defaultdict(set)
+        for (r, row), eqid in zip(combined, eq_ids):
+            run_mentions[r].add(eqid)
+            c = norm(row.get("code"))
+            if c:
+                run_codes[r].add(c)
         m_pair, c_pair = [], []
         for a, b in combinations(present, 2):
             m_pair.append(jaccard(run_mentions[a], run_mentions[b]))
@@ -140,24 +211,30 @@ def main():
                 "min": min(vals), "max": max(vals), "n": len(vals)}
 
     # ---- metric 2: per-field majority-vote stability ----
-    # per field -> list of cell stabilities (one per span seen in >=2 runs)
+    # per field -> list of cell stabilities (one per eq-class seen in >=2 runs)
+    # When the same eq-class fires multiple times in one run (rare; e.g. an
+    # alias mentioned twice), the run's representative field value is the run's
+    # modal value for that (class, field).
     field_cells = defaultdict(list)
     for sl, nid, present in scorable_notes:
-        # span -> {field -> {run -> value}}
-        span_runs = defaultdict(lambda: defaultdict(dict))
-        span_present_runs = defaultdict(set)
-        for r in present:
-            df = load_run_note(sl, r, nid)
-            for _, row in df.iterrows():
-                sk = span_key(row)
-                span_present_runs[sk].add(r)
-                for fld in FIELDS:
-                    span_runs[sk][fld][r] = norm(row.get(fld))
-        for sk, runs_set in span_present_runs.items():
-            if len(runs_set) < 2:
-                continue  # singleton span: no cross-run agreement to score
+        combined = note_rows[(sl, nid)]
+        eq_ids = note_eqclass[(sl, nid)]
+        # (eq_class, run) -> {field -> [values]}; aggregate via run-level mode
+        per_run_values = defaultdict(lambda: defaultdict(list))
+        per_class_run_set = defaultdict(set)
+        for (r, row), eqid in zip(combined, eq_ids):
+            per_class_run_set[eqid].add(r)
             for fld in FIELDS:
-                vals = [span_runs[sk][fld][r] for r in sorted(runs_set)]
+                per_run_values[(eqid, r)][fld].append(norm(row.get(fld)))
+        for eqid, runs_set in per_class_run_set.items():
+            if len(runs_set) < 2:
+                continue  # eq-class only in one run: nothing to compare
+            for fld in FIELDS:
+                # per-run representative = run's modal value for this (class, field)
+                vals = []
+                for r in sorted(runs_set):
+                    cnts = Counter(per_run_values[(eqid, r)][fld])
+                    vals.append(cnts.most_common(1)[0][0])
                 cnt = Counter(vals)
                 modal_freq = cnt.most_common(1)[0][1]
                 field_cells[fld].append(modal_freq / len(vals))
