@@ -160,23 +160,30 @@ class NERProcessor:
         best_ratio = 0
         best_pos = -1
         best_window = ''
-        
+
         # Pre-process for case-insensitive comparison
         normalized_context_lower = normalized_context.lower()
         normalized_note_lower = normalized_note.lower()
-        
+
+        # seq2 (the context) is fixed across all windows; build each matcher once so
+        # difflib reuses its cached seq2 analysis and we only set_seq1 per window.
+        sm_cs = SequenceMatcher(None, '', normalized_context)
+        sm_ci = SequenceMatcher(None, '', normalized_context_lower)
+
         # Search for best matching window with case-insensitive comparison
         for i in range(len(normalized_note) - window_size + 1):
             window = normalized_note[i:i + window_size]
             window_lower = normalized_note_lower[i:i + window_size]
-            
-            # Try both case-sensitive and case-insensitive matching
-            ratio_case_sensitive = SequenceMatcher(None, window, normalized_context).ratio()
-            ratio_case_insensitive = SequenceMatcher(None, window_lower, normalized_context_lower).ratio()
-            
-            # Use the better ratio
-            ratio = max(ratio_case_sensitive, ratio_case_insensitive)
-            
+
+            sm_cs.set_seq1(window)
+            sm_ci.set_seq1(window_lower)
+
+            # quick_ratio() is an O(M) upper bound on ratio(); skip the O(M^2)
+            # ratio() when neither case can beat the current best (argmax preserved).
+            if max(sm_cs.quick_ratio(), sm_ci.quick_ratio()) <= best_ratio:
+                continue
+
+            ratio = max(sm_cs.ratio(), sm_ci.ratio())
             if ratio > best_ratio:
                 best_ratio = ratio
                 best_pos = i
@@ -856,18 +863,25 @@ class NERProcessor:
         # Search for best matching window starting from current position
         start_pos = current_search_position
         end_pos = len(normalized_note)
-        
+
+        # seq2 (the context) is fixed across all windows; build each matcher once so
+        # difflib reuses its cached seq2 analysis and we only set_seq1 per window.
+        sm_cs = SequenceMatcher(None, '', normalized_context)
+        sm_ci = SequenceMatcher(None, '', normalized_context_lower)
+
         for i in range(start_pos, end_pos - window_size + 1):
             window = normalized_note[i:i + window_size]
             window_lower = normalized_note_lower[i:i + window_size]
-            
-            # Try both case-sensitive and case-insensitive matching
-            ratio_case_sensitive = SequenceMatcher(None, window, normalized_context).ratio()
-            ratio_case_insensitive = SequenceMatcher(None, window_lower, normalized_context_lower).ratio()
-            
-            # Use the better ratio
-            ratio = max(ratio_case_sensitive, ratio_case_insensitive)
-            
+
+            sm_cs.set_seq1(window)
+            sm_ci.set_seq1(window_lower)
+
+            # quick_ratio() is an O(M) upper bound on ratio(); skip the O(M^2)
+            # ratio() when neither case can beat the current best (argmax preserved).
+            if max(sm_cs.quick_ratio(), sm_ci.quick_ratio()) <= best_ratio:
+                continue
+
+            ratio = max(sm_cs.ratio(), sm_ci.ratio())
             if ratio > best_ratio:
                 best_ratio = ratio
                 best_pos = i
