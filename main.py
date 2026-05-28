@@ -89,6 +89,9 @@ if __name__ == '__main__':
                         help="Use remote retrieval service (host:port) instead of local RetrieverCoordinator")
     parser.add_argument('--retriever_authkey', type=str, default='retriever',
                         help="Auth key for remote retrieval server")
+    parser.add_argument('--note_id_list', type=str, default=None,
+                        help="Path to a text file of note ids (one per line, '#' comments allowed); "
+                             "only these notes are processed. Ids match the .txt basename (dir) or note_id (csv).")
 
     args = parser.parse_args()
 
@@ -154,6 +157,19 @@ if __name__ == '__main__':
     with open(args.error_log_file, 'w') as f:
         json.dump(error_log, f, indent=4)
 
+    # Optional note-id allowlist (one id per line; '#' comments / blank lines ignored)
+    allowed_ids = None
+    if args.note_id_list:
+        if not os.path.isfile(args.note_id_list):
+            logger.error(f"--note_id_list path {args.note_id_list} does not exist.")
+            exit(1)
+        with open(args.note_id_list, 'r') as f:
+            allowed_ids = {line.strip() for line in f
+                           if line.strip() and not line.startswith('#')}
+        if not allowed_ids:
+            logger.error(f"--note_id_list {args.note_id_list} is empty (no ids).")
+            exit(1)
+
     # Adapt notes loading based on whether notes_dir is a CSV or a directory of .txt files
     notes = []
     if os.path.isdir(args.notes_dir):
@@ -185,6 +201,17 @@ if __name__ == '__main__':
         logger.error(
             f"notes_dir path {args.notes_dir} is not a valid directory or .csv file.")
         exit(1)
+
+    if allowed_ids is not None:
+        if notes_source_type == 'dir':
+            notes = [n for n in notes
+                     if (n[:-4] if n.endswith('.txt') else n) in allowed_ids]
+        else:  # csv
+            notes = [n for n in notes if n['id'] in allowed_ids]
+        if not notes:
+            logger.error(f"--note_id_list {args.note_id_list} matched 0 notes in {args.notes_dir}.")
+            exit(1)
+        logger.info(f"Filtered to {len(notes)} notes via --note_id_list ({len(allowed_ids)} ids requested)")
 
     total_processing_time = 0
     processed_notes_count = 0
