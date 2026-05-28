@@ -2,7 +2,7 @@
 
 Supersedes **EXP-J** (see `experiments/EXP-J_output_consistency.md`). Same
 reviewer hook, same 20 notes, same metric definitions — but run on the
-optimized i2b2 code (`adca819`) instead of the stale worktree (`d04b219`) that
+optimized i2b2 code (`a31f18a`) instead of the stale worktree (`d04b219`) that
 made EXP-J 5-7× too slow for the wrong reason.
 
 ## 1. Goal / reviewer hook
@@ -31,7 +31,7 @@ was branched from `d04b219`, which predates the i2b2 commit that restricts the
 alignment search to a `chunk_offset ± 400` window (Lever 1). EXP-J ran the
 pre-fix code. Running on current `i2b2` alone removes the catastrophe.
 
-## 3. Optimization in the code under test (`adca819`)
+## 3. Optimization in the code under test (`a31f18a`)
 
 - **Lever 1 (already on i2b2, pre-existing):** in `parse_ner_result_text`, build
   the normalized mapping over a `chunk_offset ± 400` window instead of the whole
@@ -55,12 +55,17 @@ fuzzy optimization. Hence `%15` (all cells concurrent) here, vs EXP-J's `%6`.
 
 ## 4. Baseline / provenance
 
-- **Base branch / commit:** `i2b2` @ **`adca819`** (perf: quick_ratio fuzzy
-  pruning, on top of the pre-existing chunk-window restriction). Cleanly checked
+- **Base branch / commit:** `i2b2` @ **`a31f18a`** = `adca819` (perf: quick_ratio
+  fuzzy pruning, on top of the pre-existing chunk-window restriction) + the
+  `--note_id_list` allowlist port (`a31f18a`). i2b2's `main.py` originally lacked
+  `--note_id_list` — that harness arg lived only on the EXP-G2/EXP-J lineage, so
+  the first EXP-J2 array (41735389) failed with `unrecognized arguments:
+  --note_id_list`. Ported it onto i2b2 (with the correct `n[:-4]` suffix strip,
+  not the buggy `rstrip('.txt')` from the old lineage) and re-ran. Cleanly checked
   out — NOT a worktree code mix (the old EXP-J worktree `d04b219` differs from
-  `adca819` by ~218 lines across `ner_processor.py` / `pipeline_coordinator.py` /
+  `a31f18a` by ~218 lines across `ner_processor.py` / `pipeline_coordinator.py` /
   `main.py`, so it could not be reused byte-for-byte).
-- **EXP-J2 branch:** `exp/EXP-J2_output_consistency` (from `adca819`).
+- **EXP-J2 branch:** `exp/EXP-J2_output_consistency` (== `i2b2` @ `a31f18a`).
 - **Run location:** main repo checkout (`/n/data1/.../language-into-clinical-data`,
   shared NFS), which has `data/`, `main.py`, the 18GB `cache/`, and gets
   `umls_dictionary.txt` / `umls_body_loc_dictionary.txt` symlinked by the job.
@@ -84,7 +89,7 @@ Lists at `runs/EXP-J2/notes_lists/{4CE,coral_breastca,coral_pdac}.txt`.
 ## 7. Exact commands (reproduce)
 
 ```bash
-git checkout exp/EXP-J2_output_consistency       # == i2b2 @ adca819
+git checkout exp/EXP-J2_output_consistency       # == i2b2 @ a31f18a
 # symlinks (data/ + cache/ already present in main checkout; umls auto-symlinked by job)
 source "$HOME/.clines_openai.env"                # OPENAIKEY + OPENAIENDPOINT (gitignored, $HOME)
 sbatch jobs/EXP-J2_cell.sh                        # array 0-14%15, -p short -c 8 --mem 96G -t 05:00:00
@@ -102,9 +107,11 @@ the residual bottleneck once fuzzy is fixed. With Lever 1+2 the per-chunk fuzzy
 cost is negligible; total wall-clock is now API-bound and depends on HMS proxy
 load at run time.
 
-**Carried-over caveat (from EXP-J §7b):** `main.py` uses `note_id.rstrip('.txt')`
-(strips the char set `{.,t,x}`, not the suffix). Non-impacting for these 20 ids
-(all end in digits / `_<digit>`). Pre-existing frozen-code bug, not fixed here.
+**Resolved (was EXP-J §7b caveat):** the old EXP-J lineage filtered note ids with
+`note_id.rstrip('.txt')` (strips the char set `{.,t,x}`, not the suffix). The
+`a31f18a` port uses correct suffix removal (`n[:-4] if n.endswith('.txt')`), so
+the bug does not exist in the code under test. (It happened to be non-impacting
+for these 20 ids anyway, since they all end in digits / `_<digit>`.)
 
 ## 8. Results
 
@@ -132,5 +139,6 @@ _(backfilled — paste metrics into supplement_sections/consistency.tex S4, tigh
 - Metrics JSON: `runs/EXP-J2/consistency_metrics.json` (to be produced)
 - Metric script: `runs/EXP-J/compute_consistency.py` (reused; retarget to runs/EXP-J2/)
 - Job script: `jobs/EXP-J2_cell.sh`
-- SLURM logs: `runs/EXP-J2/logs/cell-41735389_{0..14}.{out,err}`
-- Code under test: commit `adca819` on `i2b2` / `exp/EXP-J2_output_consistency`
+- SLURM logs: `runs/EXP-J2/logs/cell-<jobid>_{0..14}.{out,err}` (41735389 = failed
+  pre-`--note_id_list` array; superseded by the a31f18a re-run)
+- Code under test: commit `a31f18a` on `i2b2` / `exp/EXP-J2_output_consistency`
