@@ -1,6 +1,6 @@
 \section{\new{Hallucination Taxonomy and Case Studies}}
 
-\new{To characterize the nature of CLINES' apparent false positives (FPs) against the gold standard, we drew a stratified sample of candidate FP predictions and had each manually adjudicated into a seven-class taxonomy by a reviewer with access to the full source note. Because the sample was stratified by an automatic rule-based pre-classifier, we extrapolate the per-stratum judge distribution to the full FP population ($N=7{,}171$) by post-stratified Horvitz--Thompson estimation: within each rule stratum the judged category proportions are scaled to that stratum's population size and summed across strata. The seven classes distinguish genuine model errors (\texttt{fabricated\_entity}, \texttt{span\_boundary\_error}, \texttt{wrong\_assertion}, \texttt{wrong\_code}, \texttt{wrong\_value}, \texttt{wrong\_date}) from \texttt{not\_an\_error}, where the prediction is in fact defensible and the discrepancy reflects a gap or inconsistency in the reference annotation rather than a model hallucination.}
+\new{To characterize the nature of CLINES' apparent false positives (FPs) against the gold standard, we drew a stratified sample of candidate FP predictions and had each manually adjudicated into a seven-class taxonomy by a reviewer with access to the full source note. Because the sample was stratified by an automatic rule-based pre-classifier, we extrapolate the per-stratum judge distribution to the full FP population ($N=7{,}171$) by post-stratified Horvitz--Thompson estimation: within each rule stratum the judged category proportions are scaled to that stratum's population size and summed across strata. The seven classes distinguish genuine model errors (fabricated entity, span-boundary error, wrong assertion, wrong code, wrong value, wrong date) from ``not an error'', where the prediction is in fact defensible and the discrepancy reflects a gap or inconsistency in the reference annotation rather than a model hallucination.}
 
 \begin{table}[H]
 \centering
@@ -12,20 +12,20 @@
 \toprule
 Category & Extrapolated count & \% of candidate FPs \\
 \midrule
-\texttt{not\_an\_error} (annotation gap) & 3{,}895 & 54.31 \\
-\texttt{wrong\_code}                     & 1{,}199 & 16.72 \\
-\texttt{wrong\_assertion}                &   621 &  8.67 \\
-\texttt{wrong\_value}                    &   596 &  8.31 \\
-\texttt{fabricated\_entity}              &   388 &  5.41 \\
-\texttt{span\_boundary\_error}           &   387 &  5.39 \\
-\texttt{wrong\_date}                     &    85 &  1.19 \\
+Not an error (annotation gap) & 3{,}895 & 54.31 \\
+Wrong code                    & 1{,}199 & 16.72 \\
+Wrong assertion               &   621 &  8.67 \\
+Wrong value                   &   596 &  8.31 \\
+Fabricated entity             &   388 &  5.41 \\
+Span-boundary error           &   387 &  5.39 \\
+Wrong date                    &    85 &  1.19 \\
 \midrule
 \textbf{True hallucination (6 categories)} & \textbf{3{,}276} & \textbf{45.69} \\
 \textbf{Total candidate FPs}               & \textbf{7{,}171} & \textbf{100.0} \\
 \bottomrule
 \end{tabular}
 }
-\caption{\new{Seven-class hallucination taxonomy over the full candidate-FP population, extrapolated from $n=700$ manually judged predictions via post-stratified Horvitz--Thompson estimation. The single largest category is \texttt{not\_an\_error}: a majority (54.3\%) of apparent FPs are defensible predictions that the reference annotation omitted or recorded inconsistently. No individual \emph{true}-hallucination category exceeds 17\% of FPs, and outright \texttt{fabricated\_entity} errors account for only 5.4\%.}}
+\caption{\new{Seven-class hallucination taxonomy over the full candidate-FP population, extrapolated from $n=700$ manually judged predictions via post-stratified Horvitz--Thompson estimation. The single largest category is ``Not an error'': a majority (54.3\%) of apparent FPs are defensible predictions that the reference annotation omitted or recorded inconsistently. No individual \emph{true}-hallucination category exceeds 17\% of FPs, and outright ``Fabricated entity'' errors account for only 5.4\%.}}
 \label{supp:halluc-taxonomy}
 \end{table}
 
@@ -34,11 +34,11 @@ Category & Extrapolated count & \% of candidate FPs \\
 \new{The following examples are drawn verbatim (mentions and adjudication rationales) from the manual-judging study and illustrate each major category.}
 
 \new{\begin{description}[leftmargin=1.4em,style=nextline]
-  \item[\texttt{not\_an\_error} (annotation gap).] CLINES extracted \emph{``RLS''} and normalized it to \emph{restless legs syndrome} (C0035258). The abbreviation and its expansion are explicitly present in the note's problem list, but the rule-based reference annotation did not capture it. The prediction is correct; the discrepancy is a gap in the gold standard.
-  \item[\texttt{wrong\_code}.] For \emph{``HR+/HER2- breast cancers''} CLINES assigned C3539878 (\emph{ER-negative, PR-negative, HER2-negative breast cancer}). The surrounding text describes a hormone-receptor-\emph{positive}, HER2-negative tumor, so the assigned concept inverts the biomarker status---a genuine normalization error.
-  \item[\texttt{wrong\_assertion}.] \emph{``Penicillins''} (C0030842) was marked \texttt{Present}, but the note states the patient's penicillin-allergy status is uncertain (``not sure if she is allergic''), which the schema treats as \texttt{Conditional}. The concept is correct; the assertion class is wrong.
-  \item[\texttt{span\_boundary\_error}.] CLINES extracted \emph{``TYLENOL''} where the gold span is \emph{``acetaminophen (TYLENOL)''}. The normalized concept and code (C0699142) are identical and correct; only the surface span is truncated.
-  \item[\texttt{fabricated\_entity}.] \emph{``Age of Onset''} was extracted (and coded to C3175531) from a \emph{column header} in a family-history table rather than from any patient-specific clinical statement---an entity that does not correspond to a real clinical concept in context.
+  \item[Not an error (annotation gap).] CLINES extracted \emph{``RLS''} and normalized it to \emph{restless legs syndrome} (C0035258). The abbreviation and its expansion are explicitly present in the note's problem list, but the rule-based reference annotation did not capture it. The prediction is correct; the discrepancy is a gap in the gold standard.
+  \item[Wrong code.] For \emph{``HR+/HER2- breast cancers''} CLINES assigned C3539878 (\emph{ER-negative, PR-negative, HER2-negative breast cancer}). The surrounding text describes a hormone-receptor-\emph{positive}, HER2-negative tumor, so the assigned concept inverts the biomarker status---a genuine normalization error.
+  \item[Wrong assertion.] \emph{``Penicillins''} (C0030842) was marked Present, but the note states the patient's penicillin-allergy status is uncertain (``not sure if she is allergic''), which the schema treats as Conditional. The concept is correct; the assertion class is wrong.
+  \item[Span-boundary error.] CLINES extracted \emph{``TYLENOL''} where the gold span is \emph{``acetaminophen (TYLENOL)''}. The normalized concept and code (C0699142) are identical and correct; only the surface span is truncated.
+  \item[Fabricated entity.] \emph{``Age of Onset''} was extracted (and coded to C3175531) from a \emph{column header} in a family-history table rather than from any patient-specific clinical statement---an entity that does not correspond to a real clinical concept in context.
 \end{description}}
 
 \new{These case studies motivate the main-text argument that raw precision against a single-pass reference annotation systematically understates CLINES' true reliability, because the dominant ``error'' mode is recovery of clinically valid mentions the reference omitted, not fabrication.}
