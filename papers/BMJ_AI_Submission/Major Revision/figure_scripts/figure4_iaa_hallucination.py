@@ -29,8 +29,8 @@ OUT = (HERE / "../figures/figure4.pdf").resolve()
 # Nature-style aesthetics
 # ---------------------------------------------------------------------------
 plt.rcParams.update({
-    "font.family": "sans-serif",
-    "font.sans-serif": ["Arial", "Helvetica", "DejaVu Sans"],
+    "font.family": "serif",
+    "font.serif": ["Times New Roman", "DejaVu Serif", "Liberation Serif"],
     "font.size": 8,
     "axes.labelsize": 8,
     "axes.titlesize": 9,
@@ -49,23 +49,23 @@ plt.rcParams.update({
     "pdf.fonttype": 42,
 })
 
-# Curated palette (color-blind safe, Nature-leaning)
+# Muted, colorblind-safe palette (Nature/Lancet-leaning)
 C_PRE = "#9CA3AF"       # neutral gray for pre-guideline
-C_POST = "#1f6feb"      # vivid blue for post-guideline (matches \new blue)
-C_F1 = "#10b981"        # emerald
-C_KAPPA = "#7c3aed"     # violet
-C_PABAK = "#f59e0b"     # amber
-C_4CE = "#0ea5e9"       # sky
-C_CORAL = "#ef4444"     # red
+C_POST = "#2B6CB0"      # muted blue
+C_F1 = "#4F8A6E"        # muted teal-green
+C_KAPPA = "#7E6BA9"     # muted violet
+C_PABAK = "#C08A4E"     # muted amber
+C_4CE = "#4A88B9"       # muted sky
+C_CORAL = "#B25C5C"     # muted red
 
 PALETTE_HALLUC = {
     "not_an_error":        "#9CA3AF",
-    "wrong_code":          "#ef4444",
-    "wrong_assertion":     "#f59e0b",
-    "wrong_value":         "#10b981",
-    "span_boundary_error": "#7c3aed",
-    "fabricated_entity":   "#0ea5e9",
-    "wrong_date":          "#ec4899",
+    "wrong_code":          "#B25C5C",
+    "wrong_assertion":     "#C08A4E",
+    "wrong_value":         "#4F8A6E",
+    "span_boundary_error": "#7E6BA9",
+    "fabricated_entity":   "#4A88B9",
+    "wrong_date":          "#A56A8C",
 }
 
 LABEL_HALLUC = {
@@ -96,9 +96,9 @@ top6 = top6.sort_values(["order_key", "kappa_post"], ascending=[True, False]).re
 # ---------------------------------------------------------------------------
 # Figure layout — 2x2 panels, ~7" x 6"
 # ---------------------------------------------------------------------------
-fig = plt.figure(figsize=(7.2, 6.0))
-gs = fig.add_gridspec(2, 2, hspace=0.55, wspace=0.42,
-                      left=0.08, right=0.97, top=0.94, bottom=0.08)
+fig = plt.figure(figsize=(8.0, 7.6))
+gs = fig.add_gridspec(2, 2, hspace=0.65, wspace=0.45,
+                      left=0.08, right=0.96, top=0.93, bottom=0.10)
 
 # ===========================================================================
 # Panel A — Per-note IAA metrics (post-rule)
@@ -112,21 +112,15 @@ b2 = axA.bar(x,     top6["kappa_post"], w, label="Cohen's κ", color=C_KAPPA, ed
 b3 = axA.bar(x + w, top6["pabak_post"], w, label="PABAK", color=C_PABAK, edgecolor="white", linewidth=0.4)
 
 axA.axhline(y=0.6, linestyle=":", linewidth=0.6, color="#6b7280", zorder=0)
-axA.text(len(top6) - 0.55, 0.62, "substantial agreement (Landis-Koch)",
-         fontsize=6, color="#6b7280", ha="right")
 
 axA.set_xticks(x)
-labels = [f"{r['note']}\n({r['dataset']})" for _, r in top6.iterrows()]
-axA.set_xticklabels(labels, fontsize=6.5)
+labels = [f"{r['note']} ({r['dataset']})" for _, r in top6.iterrows()]
+axA.set_xticklabels(labels, fontsize=6.5, rotation=30, ha="right", rotation_mode="anchor")
 axA.set_ylim(0, 1.0)
 axA.set_ylabel("Inter-annotator agreement")
-axA.set_title("a   IAA per note (post-guideline)", loc="left", fontsize=9, x=-0.10, y=1.02)
-axA.legend(loc="upper right", ncol=3, bbox_to_anchor=(1.0, 1.13), columnspacing=0.8, handletextpad=0.3)
-
-# Pooled summary annotation
-pooled_txt = "Top-6 pooled:  F1 = 0.837  ·  κ = 0.597  ·  PABAK = 0.609"
-axA.text(0.5, -0.32, pooled_txt, transform=axA.transAxes, ha="center", fontsize=7,
-         color="#374151", style="italic")
+axA.set_title("a   IAA per note (post-guideline)", loc="left", fontsize=9, pad=10)
+axA.legend(loc="upper right", ncol=3, columnspacing=0.8, handletextpad=0.3,
+           bbox_to_anchor=(1.0, 1.18))
 
 # ===========================================================================
 # Panel B — Rule trigger breakdown (donut/stacked-horizontal)
@@ -134,11 +128,11 @@ axA.text(0.5, -0.32, pooled_txt, transform=axA.transAxes, ha="center", fontsize=
 axB = fig.add_subplot(gs[0, 1])
 
 rule_data = [
-    ("B1c: Header-like type + Notassociated/Absent", 290, "#7c3aed"),
-    ("B1: Section header (mention match)",            93, "#0ea5e9"),
-    ("A1: Non-clinical UMLS type (blacklist)",        89, "#10b981"),
-    ("B2: Drug brand/generic duplicate",              65, "#f59e0b"),
-    ("B3: Standalone severity adjective",             15, "#ef4444"),
+    ("B1c: Header-like type + Notassociated/Absent", 290, "#7E6BA9"),
+    ("B1: Section header (mention match)",            93, "#4A88B9"),
+    ("A1: Non-clinical UMLS type (blacklist)",        89, "#4F8A6E"),
+    ("B2: Drug brand/generic duplicate",              65, "#C08A4E"),
+    ("B3: Standalone severity adjective",             15, "#B25C5C"),
 ]
 labels_B = [r[0] for r in rule_data]
 counts_B = [r[1] for r in rule_data]
@@ -153,8 +147,8 @@ axB.set_xlabel("Candidate-mention rows fired")
 for yi, ci in zip(y_pos, counts_B):
     axB.text(ci + total_B * 0.01, yi, f"{ci}  ({100*ci/total_B:.1f}%)",
              va="center", fontsize=6.5, color="#374151")
-axB.set_title("b   Pre-specified rule triggers (n=552, 15.6% of all rows)",
-              loc="left", fontsize=9, x=-0.10, y=1.02)
+axB.set_title("b   Pre-specified rule triggers (n=552)",
+              loc="left", fontsize=9, pad=10)
 axB.set_xlim(0, max(counts_B) * 1.30)
 
 # ===========================================================================
@@ -176,11 +170,10 @@ axC.set_yticklabels(labs, fontsize=6.5)
 axC.set_xlabel("% of candidate false positives (extrapolated)")
 axC.set_xlim(0, max(vals) * 1.20)
 axC.axvline(x=20, linestyle=":", linewidth=0.6, color="#6b7280", zorder=0)
-axC.text(20.5, 6.2, "20% threshold", fontsize=6, color="#6b7280")
 for yi, vi in zip(y_pos, vals):
     axC.text(vi + 1.5, yi, f"{vi:.1f}%", va="center", fontsize=6.5, color="#374151")
-axC.set_title("c   Hallucination taxonomy on candidate FPs (N=7,171 extrapolated)",
-              loc="left", fontsize=9, x=-0.10, y=1.02)
+axC.set_title("c   Hallucination taxonomy on candidate FPs",
+              loc="left", fontsize=9, pad=10)
 
 # ===========================================================================
 # Panel D — True-error vs Not-an-error split (donut)
@@ -190,22 +183,22 @@ axD = fig.add_subplot(gs[1, 1])
 true_pct = sum(pct[k] for k in pct if k != "not_an_error")
 gap_pct = pct["not_an_error"]
 sizes = [gap_pct, true_pct]
-labels_D = [f"Not-an-error\n(annotation gap / synonym /\nguideline ambiguity)\n{gap_pct:.1f}%",
-            f"True hallucination\n(sum of 6 categories)\n{true_pct:.1f}%"]
-colors_D = ["#9CA3AF", "#ef4444"]
+labels_D = [f"Annotation gap\n{gap_pct:.1f}%",
+            f"True hallucination\n{true_pct:.1f}%"]
+colors_D = ["#9CA3AF", "#B25C5C"]
 
 wedges, texts = axD.pie(sizes, colors=colors_D, startangle=90,
                         wedgeprops=dict(width=0.42, edgecolor="white", linewidth=1.5),
                         counterclock=False)
-# Manually place labels outside, with leader lines disabled (clean look)
-axD.text(-1.05, 0.05, labels_D[0], fontsize=7, ha="center", va="center", color="#374151")
-axD.text( 1.05, 0.05, labels_D[1], fontsize=7, ha="center", va="center", color="#7f1d1d")
+axD.text(0, 1.30, labels_D[0], fontsize=7, ha="center", va="center", color="#374151")
+axD.text(0, -1.30, labels_D[1], fontsize=7, ha="center", va="center", color="#7f1d1d")
 axD.text(0, 0, f"{halluc['total_fp_population']:,}\ncandidate\nFPs",
          ha="center", va="center", fontsize=8, fontweight="bold", color="#111827")
-axD.set_title("d   Annotation gap vs true hallucination",
-              loc="left", fontsize=9, x=-0.10, y=1.02)
+axD.set_title("d   Gap vs true hallucination",
+              loc="left", fontsize=9, pad=10)
 axD.set_xlim(-1.5, 1.5)
-axD.set_ylim(-1.2, 1.2)
+axD.set_ylim(-1.55, 1.55)
+axD.set_aspect("equal")
 
 # ---------------------------------------------------------------------------
 # Save
