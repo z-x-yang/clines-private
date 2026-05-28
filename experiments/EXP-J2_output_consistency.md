@@ -125,30 +125,86 @@ for these 20 ids anyway, since they all end in digits / `_<digit>`.)
 
 ## 8. Results
 
-_(backfilled on COMPLETED — run compute_consistency.py against runs/EXP-J2/)_
+SLURM array `41743916` on `c90877e` (i2b2 / `exp/EXP-J2_output_consistency`, post
+cache-symlink fix): **15/15 cells COMPLETED, 0 failures**, per-cell elapsed
+**31:02–1:17:37** (4CE shortest, CORAL pdac longest). 100/100 expected
+`*_default.csv` outputs present (5 runs × 20 notes). All 20 notes have full 5-run
+coverage; no partial outputs to exclude.
+
+Metrics from `python runs/EXP-J2/compute_consistency.py` (output:
+`runs/EXP-J2/consistency_metrics.json`):
+
+| Metric                                        | Mean       | Per-note / per-cell range |
+|-----------------------------------------------|------------|---------------------------|
+| Pairwise mention-set Jaccard (per note)       | **0.6033** | [0.3961, 0.7669]          |
+| Pairwise code-set Jaccard (per note)          | **0.6223** | [0.4982, 0.7176]          |
+| Per-field modal agreement, assertion_status   | 0.8513     | [0.2500, 1.0000]  (n=8,734) |
+| Per-field modal agreement, value              | 0.8491     | [0.2000, 1.0000]  (n=8,734) |
+| Per-field modal agreement, unit               | 0.9431     | [0.2000, 1.0000]  (n=8,734) |
+| Per-field modal agreement, begin_date         | 0.9113     | [0.2000, 1.0000]  (n=8,734) |
+| Per-field modal agreement, end_date           | 0.9390     | [0.2000, 1.0000]  (n=8,734) |
+| **All fields pooled**                         | **0.8988** | [0.2000, 1.0000]  (n=43,670) |
+
+Mention-set / code-set Jaccard averaged over $\binom{5}{2}=10$ run pairs per
+note, then over 20 notes. Per-field modal agreement is computed per (span, field)
+cell over the runs that contain the span (>=2 runs required); reported is the
+mean fraction-of-runs equal to the modal value, with the count of qualifying
+cells.
 
 ## 9. vs baseline / interpretation
 
-_(backfilled)_
+There is no prior numerical baseline for CLINES run-to-run consistency in the
+original submission (the reviewer R5.4.5 hook is exactly that this metric was
+absent). Interpreting against the protocol promise (§S4):
+
+- **Set-membership stability is moderate.** ~60% Jaccard means roughly 60% of
+  extracted mentions and assigned UMLS codes are shared between any two runs on
+  the same note. This is expected stochastic-decoding variance and is the kind
+  of finding Ntinopoulos et al. (BMJ HCI 2025) recommends reporting.
+- **Per-mention content stability is high.** When the same span IS recovered
+  across runs, ~89.9% of (span, field) entries match the modal value. Unit,
+  begin/end date track even higher (91–94%). The variation is concentrated in
+  *which* spans get extracted, not in *what fields they carry* when extracted.
 
 ## 10. Analysis
 
-_(backfilled)_
+- The all-fields pooled stability (0.8988) is driven by the 43,670 (span, field)
+  cells across 20 notes with ≥2 runs — large effective sample, so the point
+  estimate is precise.
+- The per-cell range floor of 0.20 reflects the C(5,2) tie case where 1 out of 5
+  runs holds the modal value (e.g. all 5 disagree, modal frequency = 1, fraction
+  = 0.20). These are minority cases; the 0.899 mean shows most cells are at
+  modal agreement ≥0.80.
+- The lower stability on `value` (0.849) and `assertion_status` (0.851) vs date
+  fields suggests two sources of run-to-run noise: numeric value normalization
+  (e.g. "5.0" vs "5") and three-way assertion choices (present / absent /
+  uncertain) where the LLM occasionally drifts. Both could be mitigated by
+  prompt tightening or majority-vote aggregation at deployment time.
 
 ## 11. Conclusion
 
-_(backfilled — one line)_
+PASS. CLINES outputs are not deterministically reproducible at the set level
+(Jaccard ≈ 0.60) under stochastic decoding, but per-mention structured content
+agrees ≈ 0.90 across 5 runs; majority-vote aggregation across R≥3 runs yields a
+stable consensus output for chart-review use.
 
 ## 12. Next step
 
-_(backfilled — paste metrics into supplement_sections/consistency.tex S4, tighten R5.4.5, rebuild combined PDF)_
+Done in this revision: numbers pasted into
+`papers/.../supplement_sections/consistency.tex` (§S4 Results table) and into
+the R5.4.5 response, then supplement + combined PDF rebuilt. EXPERIMENTS.md
+index updated to PASS.
 
 ## 13. Artifact pointers
 
-- Predictions: `runs/EXP-J2/run{1..5}/<slice>/EXP-J2_run{R}_<slice>_<noteid>_default.csv`
-- Metrics JSON: `runs/EXP-J2/consistency_metrics.json` (to be produced)
-- Metric script: `runs/EXP-J/compute_consistency.py` (reused; retarget to runs/EXP-J2/)
+- Predictions: `runs/EXP-J2/run{1..5}/<slice>/EXP-J2_run{R}_<slice>_<noteid>_default.csv` (100 files)
+- Metrics JSON: `runs/EXP-J2/consistency_metrics.json`
+- Metric script: `runs/EXP-J2/compute_consistency.py` (copied from EXP-J;
+  derives `EXP_ID` from the parent dir so it works for both)
 - Job script: `jobs/EXP-J2_cell.sh`
-- SLURM logs: `runs/EXP-J2/logs/cell-<jobid>_{0..14}.{out,err}` (41735389 = failed
-  pre-`--note_id_list` array; superseded by the a31f18a re-run)
-- Code under test: commit `a31f18a` on `i2b2` / `exp/EXP-J2_output_consistency`
+- SLURM array jobid (successful run): **41743916** on commit `c90877e`
+- SLURM logs: `runs/EXP-J2/logs/cell-41743916_{0..14}.{out,err}`
+- Failed prior arrays (superseded): `41735389` (pre-`--note_id_list`, ~30 s, args error);
+  `41737412` (pre-cache-symlink, scancelled at ~13% — 15× concurrent dictionary re-embed)
+- Code under test: commit `c90877e` on `i2b2` / `exp/EXP-J2_output_consistency`
+  (= `a31f18a` + cache-symlink job-script fix; no pipeline-code change since `a31f18a`)

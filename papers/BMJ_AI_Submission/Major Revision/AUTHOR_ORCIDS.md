@@ -11,7 +11,7 @@ Compiled 2026-05-26 via WebSearch + ORCID.org cross-reference. **Please verify e
 | 3 | Raheel Sayeed | HMS DBMI | **0000-0001-8810-2471** | ✅ WebSearch (orcid.org/0000-0001-8810-2471) |
 | 4 | Amelia Li Min Tan | HMS DBMI | **0000-0003-0623-6623** | ✅ WebSearch (orcid.org/0000-0003-0623-6623) |
 | 5 | Enci Cai | HMS DBMI | **0009-0008-5329-9380** | ✅ Provided by Zongxin 2026-05-26 |
-| 6 | Mohammed Moro | HMS DBMI | — | ⚠️ Not registered (none found); will submit without — Mo may register at orcid.org before final acceptance if desired |
+| 6 | Mohammed Moro | HMS DBMI | **0009-0007-6108-6804** | ✅ Provided by Zongxin 2026-05-27 (Mo registered after initial compilation) |
 | 7 | Xiudi Li | UC Berkeley Biostat | **0000-0001-8304-1411** | ✅ Provided by Zongxin 2026-05-26 |
 | 8 | Huaiyuan Ying | Tsinghua Stat & Data Sci | **0009-0005-1575-6112** | ✅ WebSearch (orcid.org/0009-0005-1575-6112) |
 | 9 | Nicholas Brown | HMS | **0000-0002-2166-3140** | ✅ Provided by Zongxin 2026-05-26 |
@@ -22,16 +22,12 @@ Compiled 2026-05-26 via WebSearch + ORCID.org cross-reference. **Please verify e
 
 ## Summary
 
-- **12 of 13** ORCIDs confirmed (10 verifiable via orcid.org + 2 author-provided pending registry verification)
-- **1 of 13** without ORCID (Mohammed Moro — not registered)
+- **13 of 13** ORCIDs confirmed (10 verifiable via orcid.org + 3 author-provided pending registry verification)
 
 ## Recommended next steps
 
-1. **Mohammed Moro**: not currently registered. Two options:
-   - Mo registers at https://orcid.org/register (~5 min) before final acceptance; we add his ORCID to the typeset proof
-   - Submit revision without Mo's ORCID (he can add it later at proof stage)
-2. **Verify all confirmed ORCIDs** map to the correct affiliation by visiting each `https://orcid.org/<ID>` link before the final BMJ submission portal upload
-3. **In the BMJ submission portal**: each author's ORCID gets entered individually in the per-author form, separately from the manuscript text
+1. **Verify all confirmed ORCIDs** map to the correct affiliation by visiting each `https://orcid.org/<ID>` link before the final BMJ submission portal upload
+2. **In the BMJ submission portal**: each author's ORCID gets entered individually in the per-author form, separately from the manuscript text
 
 ## Where ORCIDs go in the BMJ submission
 
@@ -46,6 +42,7 @@ Compiled 2026-05-26 via WebSearch + ORCID.org cross-reference. **Please verify e
 - [Raheel Sayeed](https://orcid.org/0000-0001-8810-2471)
 - [Amelia Li Min Tan](https://orcid.org/0000-0003-0623-6623)
 - [Enci Cai](https://orcid.org/0009-0008-5329-9380)
+- [Mohammed Moro](https://orcid.org/0009-0007-6108-6804)
 - [Xiudi Li](https://orcid.org/0000-0001-8304-1411)
 - [Huaiyuan Ying](https://orcid.org/0009-0005-1575-6112)
 - [Nicholas Brown](https://orcid.org/0000-0002-2166-3140)
