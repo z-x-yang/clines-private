@@ -1,0 +1,45 @@
+Summary of changes — CLINES medRxiv version 2
+
+This version of the manuscript incorporates the following major additions and revisions relative to the prior version (v1, posted December 2025). No changes to authorship, funding sources, data sources, or core methodology.
+
+EVALUATION RIGOR
+
+- Conducted a structured inter-annotator agreement (IAA) study on six cross-annotated clinical notes (three each from 4CE and CORAL). Pooled mention-level F1 = 0.82; assertion Cohen's kappa = 0.85, following pre-specified structural-disambiguation guidelines. The MIMIC-III F1 figure is now framed explicitly as agreement-with-annotator rather than agreement-with-gold-standard.
+
+- Added 95% percentile bootstrap confidence intervals (B = 2,000 document-level resamples) and FDR-corrected paired-bootstrap significance tests to every primary F1 comparison.
+
+- Added a document-level resampling stability analysis.
+
+- Completed a seven-class hallucination taxonomy with stratified manual judging of 700 candidate false positives. We find that 54.3% of apparent false positives are annotation gaps rather than true model errors, and each true-hallucination subcategory accounts for ≤17% of cases.
+
+BASELINES AND ABLATIONS
+
+- Expanded the baseline cohort with o3-mini single-prompt, GPT-4o chain-of-thought single-prompt, and two off-the-shelf clinical deep-learning encoders (BERT-base clinical NER and GatorTron-base), closing previous asymmetry between the CLINES pipeline and its comparators.
+
+- Added a component-wise ablation isolating the contributions of semantic chunking, SapBERT normalization, the date module, and cross-chunk reconciliation.
+
+COST AND EFFICIENCY REPORTING
+
+- Added per-dataset and per-model cost, latency, and computational efficiency reporting, including total LLM invocations per note and Azure OpenAI list-price USD per note.
+
+METHODS AND DISCUSSION
+
+- Re-framed all uses of "agentic" and "zero-shot" with more precise language.
+
+- Added explicit discussion of FP8 precision for Llama-3.1-405B, of GDPR considerations for hosted LLM inference, and of UMLS-to-SNOMED / LOINC / RxNorm / OMOP-CDM mapping requirements.
+
+- Incorporated and contextualized three contemporary comparators not present in v1: John Snow Labs Healthcare NLP, CLEAR, and Ntinopoulos et al. (2025).
+
+REPORTING AND ETHICS
+
+- Replaced the STROBE reporting checklist with MI-CLAIM and TRIPOD+AI checklists in the supplementary materials.
+
+- Adopted a structured abstract (Objective / Methods and Analysis / Results / Conclusion) and added a summary box.
+
+- Clarified that all human annotators completed CITI Human Subjects Research training, and explicitly stated that LLM inference used a managed Azure AI service on de-identified data only, with the provider neither retaining nor training on submitted text.
+
+- Replaced the prior ethics statement with an accurate one: under the U.S. Common Rule (45 CFR 46.104), secondary analysis of fully de-identified data does not constitute human-subjects research and required no IRB approval at the authors' institution.
+
+- Added a Patient and Public Involvement statement.
+
+- Corrected the i2b2 2010 citation to Uzuner et al. 2011.
