@@ -41,30 +41,41 @@ OUT = (HERE / "../figures/figure5.pdf").resolve()
 plt.rcParams.update({
     "font.family": "serif",
     "font.serif": ["Times New Roman", "DejaVu Serif", "Liberation Serif"],
-    "font.size": 8,
-    "axes.labelsize": 8,
-    "axes.titlesize": 9,
+    "font.size": 9,
+    "axes.labelsize": 9,
+    "axes.titlesize": 11,
     "axes.linewidth": 0.6,
     "xtick.major.width": 0.6,
     "ytick.major.width": 0.6,
-    "xtick.labelsize": 7,
-    "ytick.labelsize": 7,
-    "legend.fontsize": 7,
+    "xtick.labelsize": 7.5,
+    "ytick.labelsize": 7.5,
+    "legend.fontsize": 7.5,
     "legend.frameon": False,
     "axes.spines.top": False,
     "axes.spines.right": False,
-    "axes.titleweight": "bold",
+    "axes.titleweight": "normal",
     "savefig.dpi": 300,
     "savefig.bbox": "tight",
     "pdf.fonttype": 42,
 })
 
-# Muted, colorblind-safe palette (Nature/Lancet-leaning)
-C_CLINES_REF = "#2B6CB0"  # muted blue — CLINES (o3-mini-medium), reference system
-C_CLINES_GPT = "#4F8A6E"  # muted teal-green — CLINES (GPT-4o)
-C_CLINES_LLM = "#C08A4E"  # muted amber — CLINES (Llama-3.1-405B)
-C_O3MINI = "#7E6BA9"      # muted violet — o3-mini single-prompt baseline
-C_COT = "#B25C5C"         # muted red — GPT-4o chain-of-thought
+
+def panel_label(ax, letter, title, dy=1.05, letter_size=14, title_size=11,
+                title_offset=0.075):
+    """Fig 3-style panel label: bold uppercase letter, regular-weight title."""
+    ax.text(-0.005, dy, letter, transform=ax.transAxes,
+            fontsize=letter_size, fontweight="bold",
+            va="bottom", ha="left", color="black")
+    ax.text(title_offset, dy, title, transform=ax.transAxes,
+            fontsize=title_size, fontweight="normal",
+            va="bottom", ha="left", color="black")
+
+# Wong colorblind-safe palette (Wong B., Nat Methods 2011, "Color blindness").
+C_CLINES_REF = "#0072B2"  # Wong blue — CLINES (o3-mini-medium), reference system
+C_CLINES_GPT = "#009E73"  # Wong bluish green — CLINES (GPT-4o)
+C_CLINES_LLM = "#E69F00"  # Wong orange — CLINES (Llama-3.1-405B)
+C_O3MINI = "#CC79A7"      # Wong reddish purple — o3-mini single-prompt baseline
+C_COT = "#D55E00"         # Wong vermillion — GPT-4o chain-of-thought
 
 DATASETS = [("4CE", "4CE"), ("coral_breastca", "CORAL-B"), ("coral_pdac", "CORAL-P")]
 
@@ -77,8 +88,8 @@ ci = json.loads((DATA / "metrics_with_ci.json").read_text())
 # ---------------------------------------------------------------------------
 # Figure layout — 2x2, ~7.2" x 6"
 # ---------------------------------------------------------------------------
-fig = plt.figure(figsize=(8.4, 7.0))
-gs = fig.add_gridspec(2, 2, hspace=0.55, wspace=0.32,
+fig = plt.figure(figsize=(8.4, 6.6))
+gs = fig.add_gridspec(2, 2, hspace=0.42, wspace=0.28,
                       left=0.07, right=0.97, top=0.93, bottom=0.10)
 
 # ===========================================================================
@@ -113,9 +124,9 @@ axA.set_xticks(x)
 axA.set_xticklabels([d[1] for d in DATASETS])
 axA.set_ylim(0, 1.0)
 axA.set_ylabel("Code F1 (95% CI)")
-axA.set_title("a   Primary comparison with bootstrap 95% CI", loc="left", fontsize=9, pad=10)
-axA.legend(loc="lower center", ncol=1, bbox_to_anchor=(0.5, -0.38),
-           columnspacing=1.0, handletextpad=0.3, fontsize=6.5)
+panel_label(axA, "A", "Primary comparison with bootstrap 95% CI")
+axA.legend(loc="upper center", ncol=3, bbox_to_anchor=(0.5, -0.18),
+           columnspacing=1.2, handletextpad=0.3, fontsize=6.5)
 
 # ===========================================================================
 # Panel B — Cost per note (dual 口径: API $/note for hosted models,
@@ -150,7 +161,7 @@ for ax, fam, ylab in [(axB1, "api", "API $ / note"), (axB2, "local", "GPU-h / no
     ax.set_ylabel(ylab, fontsize=7)
     ax.margins(x=0.22)
 
-axB1.set_title("b   Per-note cost", loc="left", fontsize=9, pad=10)
+panel_label(axB1, "B", "Per-note cost", title_offset=0.15)
 
 # ===========================================================================
 # Panel C — Component ablation: mean Δ code F1 per disabled module, 2 backbones
@@ -178,9 +189,9 @@ axC.axhline(0, color="#374151", linewidth=0.6, zorder=1)
 axC.set_xticks(xC)
 axC.set_xticklabels([abl_label[a] for a in abl_order])
 axC.set_ylim(-0.52, 0.06)
-axC.set_ylabel("Δ code F1 vs full pipeline")
-axC.set_title("c   Component ablation (Δ code F1)", loc="left", fontsize=9, pad=10)
-axC.legend(loc="lower left", ncol=1, bbox_to_anchor=(0.02, 0.02), columnspacing=0.8, handletextpad=0.3)
+axC.set_ylabel("$\\Delta$ code F1 vs full pipeline")
+panel_label(axC, "C", "Component ablation ($\\Delta$ code F1)")
+axC.legend(loc="lower right", ncol=1, bbox_to_anchor=(0.98, 0.02), columnspacing=0.8, handletextpad=0.3)
 
 # ===========================================================================
 # Panel D — Architecture vs alternatives, split by metric.
@@ -196,7 +207,7 @@ axD2 = fig.add_subplot(gsD[0, 1])   # code
 # the real run identity is CLINES (o3-mini-medium). Display label remapped.
 SYS_D = ["CLINES (GPT-4o)", "o3-mini SP", "GPT-4o CoT", "BERT-base", "GatorTron"]
 SYS_COL = {"CLINES (GPT-4o)": C_CLINES_REF, "o3-mini SP": C_O3MINI,
-           "GPT-4o CoT": C_COT, "BERT-base": "#3D6987", "GatorTron": "#6B7280"}
+           "GPT-4o CoT": C_COT, "BERT-base": "#56B4E9", "GatorTron": "#6B7280"}
 SYS_SHORT = {"CLINES (GPT-4o)": "CLINES", "o3-mini SP": "o3-mini SP",
              "GPT-4o CoT": "GPT-4o CoT", "BERT-base": "BERT-base", "GatorTron": "GatorTron"}
 
@@ -217,8 +228,7 @@ for ax, met, mlab in [(axD1, "mention", "Mention F1"), (axD2, "code", "Code F1")
     ax.set_ylim(0, 1.0)
     ax.set_ylabel(mlab, fontsize=7)
 
-axD1.set_title("d   Architecture vs single-prompt and DL baselines", loc="left",
-               fontsize=9, pad=10)
+panel_label(axD1, "D", "Architecture vs single-prompt and DL baselines", title_offset=0.15)
 
 # ---------------------------------------------------------------------------
 # Save

@@ -8,6 +8,7 @@
 \setlength{\tabcolsep}{6pt}
 \renewcommand{\arraystretch}{1.2}
 \new{
+\resizebox{\textwidth}{!}{%
 \begin{tabular}{lll}
 \toprule
 Downstream use & Target vocabulary (UMLS source) & Example crosswalk from CUI \\
@@ -18,7 +19,8 @@ Medications                 & RxNorm (\texttt{RXNORM})          & C0025598 $\to$
 Laboratory tests            & LOINC (\texttt{LNC})              & C0202194 $\to$ 4548-4 (Hemoglobin A1c) \\
 Procedures                  & CPT / SNOMED CT procedure         & C0009378 $\to$ 44970 (Appendectomy) \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 }
 \caption{\new{Because every entity is anchored to a UMLS CUI, a single normalization step yields codes in arbitrarily many downstream terminologies via standard UMLS crosswalks, without re-running the model. The example crosswalks are illustrative of widely used UMLS source mappings; the specific target codes available for a given CUI depend on the licensed UMLS source vocabularies.}}
 \label{supp:cui-mapping}

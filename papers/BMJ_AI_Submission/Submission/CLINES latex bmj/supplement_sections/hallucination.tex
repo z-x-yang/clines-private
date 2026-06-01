@@ -1,6 +1,6 @@
 \section{\new{Hallucination Taxonomy and Case Studies}}
 
-\new{To characterize the nature of CLINES' apparent false positives (FPs) against the gold standard, we drew a stratified sample of candidate FP predictions and had each manually adjudicated into a seven-class taxonomy by a reviewer with access to the full source note. Because the sample was stratified by an automatic rule-based pre-classifier, we extrapolate the per-stratum judge distribution to the full FP population ($N=7{,}171$) by post-stratified Horvitz--Thompson estimation: within each rule stratum the judged category proportions are scaled to that stratum's population size and summed across strata. The seven classes distinguish genuine model errors (fabricated entity, span-boundary error, wrong assertion, wrong code, wrong value, wrong date) from ``not an error'', where the prediction is in fact defensible and the discrepancy reflects a gap or inconsistency in the reference annotation rather than a model hallucination.}
+\new{To characterize the nature of CLINES' apparent false positives (FPs) against the gold standard, we drew a stratified sample of candidate FP predictions and had each manually adjudicated into a seven-class taxonomy by an independent adjudicator with access to the full source note. Because the sample was stratified by an automatic rule-based pre-classifier, we extrapolate the per-stratum judge distribution to the full FP population ($N=7{,}171$) by post-stratified Horvitz--Thompson estimation: within each rule stratum the judged category proportions are scaled to that stratum's population size and summed across strata. The seven classes distinguish genuine model errors (fabricated entity, span-boundary error, wrong assertion, wrong code, wrong value, wrong date) from ``not an error'', where the prediction is in fact defensible and the discrepancy reflects a gap or inconsistency in the reference annotation rather than a model hallucination.}
 
 \begin{table}[H]
 \centering
@@ -25,7 +25,7 @@ Wrong date                    &    85 &  1.19 \\
 \bottomrule
 \end{tabular}
 }
-\caption{\new{Seven-class hallucination taxonomy over the full candidate-FP population, extrapolated from $n=700$ manually judged predictions via post-stratified Horvitz--Thompson estimation. The single largest category is ``Not an error'': a majority (54.3\%) of apparent FPs are defensible predictions that the reference annotation omitted or recorded inconsistently. No individual \emph{true}-hallucination category exceeds 17\% of FPs, and outright ``Fabricated entity'' errors account for only 5.4\%.}}
+\caption{\new{Seven-class hallucination taxonomy over the full candidate-FP population, extrapolated from $n=700$ manually judged predictions via post-stratified Horvitz--Thompson estimation. The single largest category is ``Not an error'': a majority (54.3\%) of apparent FPs are defensible predictions that the reference annotation omitted or recorded inconsistently. No individual \emph{true}-hallucination category exceeds 17\% of FPs, and outright ``Fabricated entity'' errors account for only 5.4\%. Relative to the full set of CLINES predictions on the consensus-annotated 4CE + CORAL corpora, the 3{,}276 true hallucinations correspond to approximately 24.4\% of all predictions.}}
 \label{supp:halluc-taxonomy}
 \end{table}
 
@@ -42,3 +42,5 @@ Wrong date                    &    85 &  1.19 \\
 \end{description}}
 
 \new{These case studies motivate the main-text argument that raw precision against a single-pass reference annotation systematically understates CLINES' true reliability, because the dominant ``error'' mode is recovery of clinically valid mentions the reference omitted, not fabrication.}
+
+\input{figures/figure4}

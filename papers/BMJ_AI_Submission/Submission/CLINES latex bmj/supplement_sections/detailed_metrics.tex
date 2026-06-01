@@ -1,6 +1,6 @@
 \section{\new{Detailed Performance Metrics with Bootstrap Confidence Intervals}}
 
-\new{This section expands Figure~5a of the main text with the full per-field, per-dataset breakdown for the four full-pipeline backbones evaluated under the identical CLINES workflow. For every field we report the point F1 with a bias-corrected 95\% bootstrap confidence interval (2{,}000 resamples over notes; seed 20260525). \emph{Code} F1 requires both correct span detection and correct UMLS concept assignment; \emph{Assertion}, \emph{Value}, and \emph{Unit} are conditional on a correctly matched mention; \emph{Begin/End date} F1 reflect temporal-boundary agreement after relative-date normalization. The mention-level breakdown and single-prompt / deep-learning baselines appear in Figure~5d.}
+\new{This section expands Figure~5a of the main text with the full per-field, per-dataset breakdown for the three full-pipeline backbones (o3-mini-medium, GPT-4o, Llama-3.1-405B). For every field we report the point F1 with a percentile 95\% bootstrap confidence interval ($B=2{,}000$ document-level resamples; seed 20260525). \emph{Code} F1 requires both correct span detection and correct UMLS concept assignment; \emph{Assertion}, \emph{Value}, and \emph{Unit} are conditional on a correctly matched mention; \emph{Begin/End date} F1 reflect temporal-boundary agreement after relative-date normalization. The mention-level breakdown and single-prompt / deep-learning baselines appear in Figure~5d.}
 
 \begin{table}[H]
 \centering
@@ -31,6 +31,6 @@ Backbone & Dataset & Code & Assertion & Value & Unit & Begin date & End date \\
 \end{tabular}%
 }
 }
-\caption{\new{Per-field F1 with 95\% bootstrap confidence intervals for the four full-pipeline backbones across the three expert-annotated datasets (4CE; CORAL breast cancer, CORAL-B; CORAL pancreatic cancer, CORAL-P). CORAL-P value/unit fields exceed code F1 because numeric laboratory and pathology measurements are densely and explicitly reported in oncology synoptic notes. Date-field F1 is uniformly lower, reflecting the difficulty of resolving relative and implicit temporal expressions.}}
+\caption{\new{Per-field F1 with 95\% bootstrap confidence intervals for the three full-pipeline backbones (o3-mini-medium, GPT-4o, Llama-3.1-405B) across the three expert-annotated datasets (4CE; CORAL breast cancer, CORAL-B; CORAL pancreatic cancer, CORAL-P). CORAL-P value+unit fields exceed code F1 because numeric laboratory and pathology measurements are densely and explicitly reported in oncology synoptic notes. Date-field F1 is uniformly lower, reflecting the difficulty of resolving relative and implicit temporal expressions.}}
 \label{supp:detailed-metrics}
 \end{table}

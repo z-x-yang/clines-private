@@ -35,7 +35,7 @@ Structured outputs are rendered to the i2b2 \texttt{OBSERVATION\_FACT} layout wi
 
 \subsection{Base and Modifier Records}
 \begin{itemize}[leftmargin=1.3em]
-\item \textbf{Base record} (\texttt{modifier\_cd = @}): carries the primary concept, context, dates, and any value-unit pair directly associated with the entity.
+\item \textbf{Base record} (\texttt{modifier\_cd = @}): carries the primary concept, context, dates, and any value+unit pair directly associated with the entity.
 \item \textbf{Dose, route, frequency} modifiers: emitted when \texttt{value}, \texttt{route}, or \texttt{freq} appear in the JSON output.
 \item \textbf{Assertion status and body location} modifiers: capture clinical status and anatomical site for downstream phenotyping.
 \item \textbf{Other information} modifier: holds descriptive qualifiers not mapped elsewhere.

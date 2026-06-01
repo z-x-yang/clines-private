@@ -1,6 +1,22 @@
-\section{\new{Inter-Annotator Agreement: Per-Note Detail}}
+\section{\new{Inter-Annotator Agreement: Methodology and Per-Note Detail}}
 
-\new{This section provides the per-note inter-annotator agreement (IAA) results underlying Figure~4a and the headline agreement statistic in the main text. For the cross-annotation study, three notes per dataset (4CE; CORAL) were independently re-annotated by a second annotator, blinded to the original assignment. We report agreement before (\emph{pre}) and after (\emph{post}) applying the five pre-specified structural-disambiguation guidelines (Figure~4b), using three complementary statistics: mention-level F1, Cohen's $\kappa$, and prevalence-and-bias-adjusted $\kappa$ (PABAK). F1-based agreement is our primary metric because the keep/discard class distribution is highly skewed ($\approx$75\% keep), conditions under which $\kappa$ is depressed by the base rate (``Cohen's paradox''); we therefore report all three for transparency.}
+\subsection{\new{Study design}}
+
+\new{To quantify the inherent variability among clinical annotators following the protocol described in the main text Methods, we performed a structured cross-annotation study on three notes per dataset (4CE \(n=3\); CORAL \(n=3\); total 2{,}675 candidate-mention rows). For each note, a second annotator, independent of the original assignment, re-annotated the same AI-suggested draft, blinded to the original annotator's selections.}
+
+\subsection{\new{Agreement metrics}}
+
+\new{We report mention-level agreement as set-based F1 (\(2|A \cap B| / (|A| + |B|)\)), following clinical-NER inter-annotator agreement convention~\cite{Uzuner_2010}. Assertion agreement on the kept-by-both subset is reported as Cohen's \(\kappa\) on a 5-class collapsed label space (Present, Absent, Possible, Conditional, Hypothetical). Historical was collapsed into Present, and Notassociated into Absent, because their marginal frequencies in the cross-annotated subset were too small for a stable per-class $\kappa$. The full seven-class schema appears in Supplementary `JSON Schema'. Value and unit agreement are reported as exact-match rates over all kept-by-both rows (rows where neither annotator recorded the field count as agreement). Begin- and end-date agreement are reported as exact-match rates restricted to rows where both annotators recorded a date.}
+
+\subsection{\new{Structural-disambiguation patterns}}
+
+\new{Annotator review uncovered a small number of recurring structural-disambiguation patterns where guideline ambiguity (rather than substantive clinical disagreement) generated apparent label divergence: (a)~AI-suggested mentions whose UMLS semantic type is non-clinical (e.g., Bird, Geographic Area, Calendar Month); (b)~candidate spans that match a section header (e.g., \emph{Review of Systems}, \emph{Past Medical History}); (c)~header-like attribute types (e.g., Clinical Attribute, Body Location or Region) with \emph{Notassociated} or \emph{Absent} assertion status; (d)~drug brand/generic duplicates within the same span and value+unit; and (e)~standalone severity adjectives (e.g., \emph{moderate}, \emph{severe}). We pre-specified that under the consensus protocol all five patterns should resolve to a uniform DROP decision; the resulting reconciliation is reported alongside raw agreement.}
+
+\subsection{\new{Headline agreement and comparison to published benchmarks}}
+
+\new{Across the cross-annotated subset, pooled mention F1 was 0.82, comparable to the pair-wise F1 inter-annotator agreement (0.81--0.88) reported for the i2b2 medication-challenge community annotation experiment~\cite{Uzuner_2010}; pooled assertion $\kappa = 0.85$, in the substantial-agreement range~\cite{Landis_Koch_1977}; value and unit exact-match rates 0.71 and 0.98; begin- and end-date exact-match rates 0.92 and 0.94. Of the 2{,}675 candidate-mention rows, 552 (20.6\%) matched one of the five pre-specified structural-disambiguation patterns and were uniformly resolved to a DROP decision under the consensus protocol. For MIMIC-III, where each paragraph was annotated by a single expert without independent re-annotation, F1 scores are reframed as agreement-with-annotator rather than as a ground-truth benchmark.}
+
+\subsection{\new{Per-note breakdown}}
 
 \begin{table}[H]
 \centering
@@ -9,22 +25,22 @@
 \renewcommand{\arraystretch}{1.15}
 \new{
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{llccccc}
+\begin{tabular}{llcccccccc}
 \toprule
-Dataset & Note & $n$ rows & F1 (pre$\to$post) & $\kappa$ (pre$\to$post) & PABAK (pre$\to$post) & Raw \% (pre$\to$post) \\
+Dataset & Note & $n$ items & $n$ kept-both & Mention F1 & Assertion $\kappa$ & Value & Unit & Begin date & End date \\
 \midrule
-4CE     & report03 & 334 & .891$\to$.901 & .470$\to$.636 & .653$\to$.711 & 82.6$\to$85.5 \\
-4CE     & report04 & 299 & .812$\to$.850 & .251$\to$.583 & .431$\to$.612 & 71.6$\to$80.6 \\
-4CE     & KUMC\_7  & 371 & .668$\to$.705 & .295$\to$.503 & .224$\to$.485 & 61.2$\to$74.2 \\
-CORAL   & pdac\_17 & 443 & .906$\to$.905 & .743$\to$.769 & .761$\to$.777 & 88.0$\to$88.8 \\
-CORAL   & pdac\_7  & 554 & .850$\to$.859 & .383$\to$.570 & .545$\to$.621 & 77.3$\to$81.0 \\
-CORAL   & pdac\_14 & 656 & .787$\to$.775 & .380$\to$.510 & .439$\to$.510 & 72.0$\to$75.5 \\
+4CE    & report03 & 335 & 237 & 0.889 & 0.842 & 0.717 & 0.966 & --    & --    \\
+4CE    & report04 & 302 & 184 & 0.807 & 0.860 & 0.717 & 0.984 & --    & --    \\
+4CE    & KUMC\_7  & 375 & 145 & 0.662 & 0.773 & 0.669 & 0.972 & --    & --    \\
+CORAL  & pdac\_17 & 446 & 254 & 0.901 & 0.664 & 0.839 & 0.988 & 0.952 & 0.953 \\
+CORAL  & pdac\_7  & 559 & 358 & 0.845 & 0.940 & 0.662 & 0.989 & 0.925 & 0.954 \\
+CORAL  & pdac\_14 & 658 & 340 & 0.785 & 0.900 & 0.679 & 0.974 & 0.898 & 0.918 \\
 \midrule
-\multicolumn{2}{l}{\emph{Pooled}} & 2{,}657 & \textbf{0.837} & 0.597 & 0.609 & 80.5 \\
+\multicolumn{2}{l}{\emph{\textbf{Pooled}}} & 2{,}675 & 1{,}518 & \textbf{0.820} & \textbf{0.848} & \textbf{0.711} & \textbf{0.980} & \textbf{0.923} & \textbf{0.937} \\
 \bottomrule
 \end{tabular}%
 }
 }
-\caption{\new{Per-note IAA on the cross-annotation subset (three notes per dataset; 4CE and CORAL). The pre-specified structural-disambiguation guidelines improve agreement on every metric for almost all notes. The pooled mention-level F1 reported in the main text is $0.837$ ($\kappa=0.597$, PABAK $=0.609$, raw agreement $80.5\%$), within the substantial-agreement range reported for clinical named-entity IAA (cf.\ i2b2 2010 challenge $\kappa=0.43$--$0.60$ for entity-boundary tasks). $\kappa$ is uniformly lower than F1 because, under the highly skewed keep/discard distribution, it is depressed by the base rate; PABAK and the pre$\to$post improvement confirm that the reconciliation guidelines resolve guideline-ambiguity divergence rather than substantive clinical disagreement.}}
+\caption{\new{Per-note IAA on the cross-annotation subset (three notes per dataset; 4CE and CORAL). Mention F1 is set-based agreement on the kept-mention sets; assertion $\kappa$ is computed on the 5-class collapsed label space over the kept-by-both subset; value and unit are exact-match agreement rates over all kept-by-both rows; begin- and end-date are exact-match agreement rates restricted to rows where both annotators recorded a date. Date columns are reported only where the sample of rows with both annotators recording a date is large enough for a stable estimate (CORAL longitudinal oncology notes); pooled rates are computed over all such rows across the cohort. Pooled mention F1 (0.820) is comparable to the pair-wise F1 inter-annotator agreement (0.81--0.88) reported for the i2b2 medication-challenge community annotation experiment (Uzuner et al.\ 2010 \cite{Uzuner_2010}); pooled assertion $\kappa$ (0.848) is in the substantial range (Landis \& Koch 1977 \cite{Landis_Koch_1977}).}}
 \label{supp:iaa-detail}
 \end{table}
