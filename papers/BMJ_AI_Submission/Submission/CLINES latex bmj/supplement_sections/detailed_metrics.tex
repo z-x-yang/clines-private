@@ -1,6 +1,6 @@
 \section{\new{Detailed Performance Metrics with Bootstrap Confidence Intervals}}
 
-\new{This section expands Figure~4A of the main text with the full per-field, per-dataset breakdown for the three full-pipeline backbones (o3-mini-medium, GPT-4o, Llama-3.1-405B). For every field we report the point F1 with a percentile 95\% bootstrap confidence interval ($B=2{,}000$ document-level resamples; seed 20260525). \emph{Code} F1 requires both correct span detection and correct UMLS concept assignment; \emph{Assertion}, \emph{Value}, and \emph{Unit} are conditional on a correctly matched mention; \emph{Begin/End date} F1 reflect temporal-boundary agreement after relative-date normalization. The mention-level breakdown and single-prompt / deep-learning baselines appear in Figure~4D.}
+\new{This section expands Figure~4A of the main text with the full per-field, per-dataset breakdown for the three full-pipeline backbones (o3-mini-medium, GPT-4o, Llama-3.1-405B). For every field we report the point F1 with a percentile 95\% bootstrap confidence interval ($B=2{,}000$ document-level resamples; seed 20260525). \emph{Code} F1 requires both correct span detection and correct UMLS concept assignment; \emph{Assertion}, \emph{Value}, and \emph{Unit} are conditional on a correctly matched mention; \emph{Date} F1 scores the start--end date as a single joint-correctness outcome (both endpoints correct) after relative-date normalization, matching the main-text performance figure. The mention-level breakdown and single-prompt / deep-learning baselines appear in Figure~4D.}
 
 \begin{table}[H]
 \centering
@@ -9,28 +9,28 @@
 \renewcommand{\arraystretch}{1.15}
 \new{
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{llcccccc}
+\begin{tabular}{llccccc}
 \toprule
-Backbone & Dataset & Code & Assertion & Value & Unit & Begin date & End date \\
+Backbone & Dataset & Code & Assertion & Value & Unit & Date \\
 \midrule
 \multirow{3}{*}{o3-mini-medium}
- & 4CE     & 0.874\,(.849--.896) & 0.884\,(.857--.909) & 0.815\,(.748--.867) & 0.771\,(.710--.826) & 0.555\,(.495--.624) & 0.560\,(.498--.637) \\
- & CORAL-B & 0.814\,(.787--.838) & 0.840\,(.803--.871) & 0.801\,(.711--.858) & 0.752\,(.675--.810) & 0.683\,(.614--.756) & 0.690\,(.622--.764) \\
- & CORAL-P & 0.848\,(.834--.865) & 0.873\,(.857--.887) & 0.905\,(.877--.932) & 0.895\,(.863--.926) & 0.708\,(.630--.783) & 0.722\,(.638--.797) \\
+ & 4CE     & 0.874\,(.849--.896) & 0.884\,(.857--.909) & 0.815\,(.748--.867) & 0.771\,(.710--.826) & 0.790\,(.660--.872) \\
+ & CORAL-B & 0.814\,(.787--.838) & 0.840\,(.803--.871) & 0.801\,(.711--.858) & 0.752\,(.675--.810) & 0.730\,(.642--.808) \\
+ & CORAL-P & 0.848\,(.834--.865) & 0.873\,(.857--.887) & 0.905\,(.877--.932) & 0.895\,(.863--.926) & 0.780\,(.704--.847) \\
 \midrule
 \multirow{3}{*}{GPT-4o}
- & 4CE     & 0.781\,(.759--.801) & 0.842\,(.825--.858) & 0.771\,(.715--.822) & 0.764\,(.698--.823) & 0.780\,(.627--.867) & 0.729\,(.443--.847) \\
- & CORAL-B & 0.701\,(.667--.731) & 0.761\,(.714--.799) & 0.617\,(.546--.683) & 0.545\,(.476--.612) & 0.734\,(.636--.820) & 0.735\,(.634--.821) \\
- & CORAL-P & 0.781\,(.751--.810) & 0.852\,(.831--.872) & 0.857\,(.808--.900) & 0.761\,(.687--.840) & 0.780\,(.706--.843) & 0.772\,(.698--.836) \\
+ & 4CE     & 0.781\,(.759--.801) & 0.842\,(.825--.858) & 0.771\,(.715--.822) & 0.764\,(.698--.823) & 0.750\,(.598--.846) \\
+ & CORAL-B & 0.701\,(.667--.731) & 0.761\,(.714--.799) & 0.617\,(.546--.683) & 0.545\,(.476--.612) & 0.690\,(.594--.778) \\
+ & CORAL-P & 0.781\,(.751--.810) & 0.852\,(.831--.872) & 0.857\,(.808--.900) & 0.761\,(.687--.840) & 0.710\,(.628--.785) \\
 \midrule
 \multirow{3}{*}{Llama-3.1-405B}
- & 4CE     & 0.665\,(.641--.690) & 0.738\,(.715--.760) & 0.711\,(.660--.761) & 0.655\,(.588--.713) & 0.706\,(.573--.767) & 0.608\,(.208--.715) \\
- & CORAL-B & 0.608\,(.577--.636) & 0.706\,(.672--.733) & 0.667\,(.590--.734) & 0.735\,(.671--.791) & 0.653\,(.600--.714) & 0.630\,(.542--.713) \\
- & CORAL-P & 0.655\,(.624--.686) & 0.746\,(.722--.770) & 0.776\,(.705--.836) & 0.720\,(.649--.782) & 0.629\,(.540--.706) & 0.635\,(.550--.707) \\
+ & 4CE     & 0.665\,(.641--.690) & 0.738\,(.715--.760) & 0.711\,(.660--.761) & 0.655\,(.588--.713) & 0.560\,(.408--.704) \\
+ & CORAL-B & 0.608\,(.577--.636) & 0.706\,(.672--.733) & 0.667\,(.590--.734) & 0.735\,(.671--.791) & 0.640\,(.548--.726) \\
+ & CORAL-P & 0.655\,(.624--.686) & 0.746\,(.722--.770) & 0.776\,(.705--.836) & 0.720\,(.649--.782) & 0.630\,(.540--.716) \\
 \bottomrule
 \end{tabular}%
 }
 }
-\caption{\new{Per-field F1 with 95\% bootstrap confidence intervals for the three full-pipeline backbones (o3-mini-medium, GPT-4o, Llama-3.1-405B) across the three expert-annotated datasets (4CE; CORAL breast cancer, CORAL-B; CORAL pancreatic cancer, CORAL-P). CORAL-P value+unit fields exceed code F1 because numeric laboratory and pathology measurements are densely and explicitly reported in oncology synoptic notes. Date-field F1 is uniformly lower, reflecting the difficulty of resolving relative and implicit temporal expressions.}}
+\caption{\new{Per-field F1 with 95\% bootstrap confidence intervals for the three full-pipeline backbones (o3-mini-medium, GPT-4o, Llama-3.1-405B) across the three expert-annotated datasets (4CE; CORAL breast cancer, CORAL-B; CORAL pancreatic cancer, CORAL-P). CORAL-P value+unit fields exceed code F1 because numeric laboratory and pathology measurements are densely and explicitly reported in oncology synoptic notes. Date-field F1 is generally lower, reflecting the difficulty of resolving relative and implicit temporal expressions.}}
 \label{supp:detailed-metrics}
 \end{table}
