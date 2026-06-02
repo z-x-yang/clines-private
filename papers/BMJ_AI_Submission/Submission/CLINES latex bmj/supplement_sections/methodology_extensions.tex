@@ -20,7 +20,7 @@
 
 \subsection{\new{Llama-3.1-405B serving configuration and architectural-stage taxonomy}}
 
-\new{The open-weight backbone is the official \nolinkurl{Meta-Llama-3.1-405B-Instruct-FP8} checkpoint served at FP8 precision on $8\times$NVIDIA H100 GPUs (the only single-node configuration that accommodates a 405B model; quality trade-off relative to FP16 is acknowledged in Discussion). We distinguish the four \emph{architectural stages} (chunk~$\rightarrow$~extract~$\rightarrow$~normalize~$\rightarrow$~reconcile) from the per-chunk LLM invocations: each chunk triggers multiple invocations across the extract/normalize/date sub-prompts, so the per-note call count exceeds four. Full per-step invocation, token, time, and cost breakdown appears with the cost analysis in Figure~4b.}
+\new{The open-weight backbone is the official \nolinkurl{Meta-Llama-3.1-405B-Instruct-FP8} checkpoint served at FP8 precision on $8\times$NVIDIA H100 GPUs (the only single-node configuration that accommodates a 405B model; quality trade-off relative to FP16 is acknowledged in Discussion). We distinguish the four \emph{architectural stages} (chunk~$\rightarrow$~extract~$\rightarrow$~normalize~$\rightarrow$~reconcile) from the per-chunk LLM invocations: each chunk triggers multiple invocations across the extract/normalize/date sub-prompts, so the per-note call count exceeds four. Full per-step invocation, token, time, and cost breakdown appears with the cost analysis in Figure~4B.}
 
 \subsection{\new{Compute and governance configuration}}
 
