@@ -78,3 +78,11 @@ papers/BMJ_AI_Submission/Major Revision/figure_scripts/data/*
 papers/BMJ_AI_Submission/Major Revision/figures/*
 !papers/BMJ_AI_Submission/Major Revision/figures/*.pdf
 !papers/BMJ_AI_Submission/Major Revision/figures/*.png
+
+# runs/ holds per-experiment artifacts (ckpts, tb events, eval outputs) and
+# PHI-bearing cross-annotation .txt under EXP-A2-*. Per the artifact policy these
+# never go in git; the few small reproducibility helpers already committed
+# (EXP-J/J2 scripts + note-id lists) were deliberately `git add -f`'d and remain
+# tracked (an ignore rule never un-tracks a tracked file). Anchored /runs/ blocks
+# an accidental `git add -A` from sweeping in PHI; add new helpers via `git add -f`.
+/runs/
