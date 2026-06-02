@@ -75,7 +75,7 @@ Where the item maps to a meaningful concept in the extraction setting (e.g., ``m
 | 29 | Conflicts of interest | ✅ | Declaration of Interests |
 | 30 | Data / code availability | ✅ (REVISION) | Data Availability: PhysioNet / 4CE access routes; cross-annotation on request. Code availability: inference-only public demo at GitHub (URL provided at publication); full prompt suite with examples in Supp |
 | 31 | Patient and Public Involvement | ✅ (REVISION) | PPI statement added (R1.20) |
-| 32 | Ethics / informed consent / IRB | ✅ (REVISION) | Mass General Brigham IRB exempt determination (R1.21); CITI training documented |
+| 32 | Ethics / informed consent / IRB | ✅ (REVISION) | No IRB approval or formal exemption required at Harvard Medical School — secondary analysis of fully de-identified EHR data is not human-subjects research under U.S. Common Rule 45 CFR 46.104 (R1.21); CITI training documented |
 
 ---
 

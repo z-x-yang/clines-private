@@ -67,12 +67,12 @@ This study uses **frozen, instruction-finetuned large language models without fi
 |---|---|---|---|
 | 6.1 | Model availability (code) | ✅ Reported (REVISION) | Data Availability statement: inference-only public reference implementation released at GitHub URL (provided at publication); see also `clines-demo/` repository |
 | 6.2 | Data availability | ✅ Reported (REVISION) | Data Availability statement: MIMIC-III + CORAL via PhysioNet credentialed access; 4CE via consortium; cross-annotation files available from corresponding author on reasonable request, subject to source-dataset credential verification |
-| 6.3 | Ethics approval / IRB | ✅ Reported (REVISION) | Ethics Approval: Mass General Brigham IRB exempt determination; CITI training completed by all annotators |
+| 6.3 | Ethics approval / IRB | ✅ Reported (REVISION) | Ethics Approval: secondary analysis of fully de-identified EHR data does not constitute human-subjects research under U.S. Common Rule 45 CFR 46.104, so no IRB approval or formal exemption was required at Harvard Medical School; all annotators completed CITI training |
 | 6.4 | Funding | ✅ Reported | Funding statement (no specific grant) |
 | 6.5 | Conflicts of interest | ✅ Reported | Declaration of Interests |
 | 6.6 | Limitations | ✅ Reported (REVISION) | Discussion §3.x ``Limitations'' substantially expanded per R3.11; per-limitation paths-forward added |
 | 6.7 | Patient and Public Involvement | ✅ Reported (REVISION) | PPI statement added immediately before Ethics Approval (added in revision per R1.20) |
-| 6.8 | Author contributions (CRediT) | ✅ Reported (REVISION) | Contributors section; cross-annotation investigation role for Mo + Enci added in revision |
+| 6.8 | Author contributions (CRediT) | ✅ Reported (REVISION) | Contributors section; Enci Cai and Mohammed Moro credited under Data curation & annotation |
 
 ---
 

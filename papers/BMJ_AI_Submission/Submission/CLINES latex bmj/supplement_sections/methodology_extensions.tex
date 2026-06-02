@@ -1,0 +1,31 @@
+\section{\new{Methodology Extensions}}
+
+\new{This section expands several methodology details whose full description was condensed in the main text.}
+
+\subsection{\new{Semantic chunking and overlap policy}}
+
+\new{Chunks are non-overlapping (no sliding window is used) and no source text is truncated; the segmenter operates on the full note. Token budgets and the recommended sentence-aware splitter are inherited from the \texttt{semchunk} library \cite{semchunk2024} (default Markdown-aware splitter); the tokeniser used to count budget is the model's native tokeniser (OpenAI \texttt{tiktoken} \cite{tiktoken2024} for GPT-family backbones, the Hugging Face tokeniser for Llama-3.1-405B). Within each chunk the prompt operates on the full sentence boundary set so that adjacent mentions necessary for assertion or value inference remain co-resident.}
+
+\subsection{\new{UMLS retrieval index and relation extraction}}
+
+\new{The retrieval index type, similarity computation, candidate count, and the UMLS release used (UMLS 2021AB Metathesaurus, no source-vocabulary filter applied) are detailed in the UMLS retrieval procedure section. The relation-extraction component is deployed as part of the structured output but is not benchmarked here because gold-standard relation annotations are unavailable for any of the evaluated corpora; this is noted as a limitation.}
+
+\subsection{\new{Off-the-shelf clinical encoder baselines}}
+
+\new{The two larger clinical-encoder baselines referenced in the main-text Methods correspond to the following publicly released checkpoints: \nolinkurl{samrawal/bert-base-uncased_clinical-ner} (BERT-base clinical NER, 110M parameters) and \nolinkurl{longluu/Clinical-NER-MedMentions-GatorTronBase} (a clinical-NER fine-tune of GatorTron-base on MedMentions; 345M parameters). Both were used without further fine-tuning on the present corpora; only their span-detection output is comparable to CLINES because neither produces UMLS-normalized codes, assertion status, value+unit, or date fields.}
+
+\subsection{\new{Cross-chunk reconciliation}}
+
+\new{Reconciliation (i)~re-indexes chunk-local entity tags to a document-global namespace via a running tag offset, so that per-step attribute and date outputs produced from each chunk can be joined back to a single global entity table; (ii)~joins per-step attribute and date outputs to entity records by global tag, preserving each chunk's locally-extracted attribute values; and (iii)~resolves relative-date expressions against the note's admission timestamp. Because chunks are non-overlapping (Semantic chunking subsection above), a given character span appears in at most one chunk, so explicit cross-chunk span deduplication is not required; same-surface mentions arising in different chunks are retained as separate records, each carrying their chunk-local context's attribute assignments.}
+
+\subsection{\new{Llama-3.1-405B serving configuration and architectural-stage taxonomy}}
+
+\new{The open-weight backbone is the official \nolinkurl{Meta-Llama-3.1-405B-Instruct-FP8} checkpoint served at FP8 precision on $8\times$NVIDIA H100 GPUs (the only single-node configuration that accommodates a 405B model; quality trade-off relative to FP16 is acknowledged in Discussion). We distinguish the four \emph{architectural stages} (chunk~$\rightarrow$~extract~$\rightarrow$~normalize~$\rightarrow$~reconcile) from the per-chunk LLM invocations: each chunk triggers multiple invocations across the extract/normalize/date sub-prompts, so the per-note call count exceeds four. Full per-step invocation, token, time, and cost breakdown appears with the cost analysis in Figure~4b.}
+
+\subsection{\new{Compute and governance configuration}}
+
+\new{Hosted-API inference (GPT-4o, o3-mini) was performed via HMS Information Technology's managed Azure AI service (HMS Azure AI, \url{https://it.hms.harvard.edu/service/azure-ai}), an HMS-administered Microsoft Azure OpenAI deployment that provides project-scoped access for Harvard data-security Level~4 projects and that is restricted to non-HIPAA-regulated data; only de-identified clinical text was processed, and provider models did not retain or train on the submitted data. The open-weight Llama-3.1-405B backbone was served on-premises. All annotators completed CITI Human Subjects Research training and held the access credentials required by their respective institutions for the de-identified study data; the data-use protocol is summarized in the main-text Ethics statement.}
+
+\subsection{\new{Reporting checklists}}
+
+\new{This study is reported in accordance with the MI-CLAIM~\cite{Norgeot_2020} and TRIPOD+AI~\cite{Collins_2024} reporting guidelines; completed checklists are provided in the Checklists section of this supplement.}

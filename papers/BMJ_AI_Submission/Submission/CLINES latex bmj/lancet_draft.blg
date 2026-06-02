@@ -1,14 +1,55 @@
-This is BibTeX, Version 0.99d
-Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+This is BibTeX, Version 0.99e (TeX Live 2026)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
 The top-level auxiliary file: lancet_draft.aux
 The style file: vancouver.bst
+Reallocated glb_str_ptr (elt_size=4) to 20 items from 10.
+Reallocated global_strs (elt_size=200001) to 20 items from 10.
+Reallocated glb_str_end (elt_size=4) to 20 items from 10.
+Reallocated wiz_functions (elt_size=4) to 6000 items from 3000.
 Database file #1: references.bib
-Warning--empty author and editor in https://doi.org/10.48550/arxiv.2303.08774
-Warning--empty author and editor in https://doi.org/10.48550/arxiv.2005.14165
-Warning--empty author and editor in https://doi.org/10.48550/arxiv.2203.03540
-Warning--empty author and editor in https://doi.org/10.48550/arxiv.2309.05922
 Warning--empty author and editor in tiktoken2024
+Warning--missing publisher in tiktoken2024
 Warning--empty author and editor in semchunk2024
-Warning--empty author and editor in JohnSnowLabs_HealthcareNLP
-Warning--missing publisher in JohnSnowLabs_HealthcareNLP
-(There were 8 warnings)
+Warning--missing publisher in semchunk2024
+You've used 30 entries,
+            3507 wiz_defined-function locations,
+            920 strings with 17665 characters,
+and the built_in function-call counts, 111648 in all, are:
+= -- 12905
+> -- 806
+< -- 266
++ -- 381
+- -- 166
+* -- 10155
+:= -- 12037
+add.period$ -- 133
+call.type$ -- 30
+change.case$ -- 10
+chr.to.int$ -- 641
+cite$ -- 34
+duplicate$ -- 6326
+empty$ -- 11304
+format.name$ -- 188
+if$ -- 25825
+int.to.chr$ -- 0
+int.to.str$ -- 30
+missing$ -- 363
+newline$ -- 173
+num.names$ -- 30
+pop$ -- 853
+preamble$ -- 1
+purify$ -- 0
+quote$ -- 0
+skip$ -- 810
+stack$ -- 0
+substring$ -- 26463
+swap$ -- 909
+text.length$ -- 69
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 0
+warning$ -- 4
+while$ -- 339
+width$ -- 32
+write$ -- 365
+(There were 4 warnings)

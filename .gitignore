@@ -9,7 +9,8 @@ setting_env.sh
 *.zip
 data/
 *.log
-*log*
+logs/
+log.txt
 *.pyc
 *.pt
 *cache*
