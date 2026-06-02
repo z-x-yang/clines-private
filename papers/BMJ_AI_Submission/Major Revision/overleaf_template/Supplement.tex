@@ -1,0 +1,97 @@
+\documentclass[nopreprintline]{elsarticle}
+
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{multirow}
+\usepackage{float}
+\usepackage{enumitem}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage[hidelinks]{hyperref}
+\usepackage{microtype}
+\usepackage{xurl}
+% Resolve cross-references to main manuscript (Figure 4 etc.).
+% Requires Manuscript.aux to be present in the same directory at compile time.
+\usepackage{xr}
+\externaldocument{Manuscript}
+\renewcommand{\UrlBreaks}{\do\/\do\-\do\_\do\.\do\&\do\?\do\=}
+\sloppy
+\emergencystretch=3em
+\hyphenpenalty=100
+\tolerance=2000
+
+% Revision markup shared with the main document: \new{...} marks added text in
+% blue when revmode is on; identity otherwise. \long\def so it spans paragraphs.
+\newif\ifrevmode
+\revmodetrue   % flip to \revmodefalse for the clean version
+\makeatletter
+\protected\long\def\new#1{\ifrevmode{\color{blue}#1}\else#1\fi}
+% Strip \new when hyperref generates PDF bookmark / metadata strings.
+\pdfstringdefDisableCommands{\let\new\@firstofone}
+\makeatother
+
+\biboptions{super,sort&compress}
+\journal{The Lancet Digital Health}
+
+% S-prefix all sections, tables, and figures so the standalone supplement
+% matches the combined-PDF numbering (Section S1, Table S1, Figure S1, ...).
+\renewcommand{\thesection}{S\arabic{section}}
+\renewcommand{\thesubsection}{S\arabic{section}.\arabic{subsection}}
+\renewcommand{\thetable}{S\arabic{table}}
+\renewcommand{\thefigure}{S\arabic{figure}}
+
+% The manual S-prefix makes two-digit labels ("S10", "S10.1") overflow
+% elsarticle's default ToC \numberline box (1.5em/2.3em) and collide with the
+% title; elsarticle only auto-widens these inside \appendix, which we do not use.
+% Widen the two boxes; style is otherwise unchanged (bold section, dotted subsec).
+\makeatletter
+\renewcommand*\l@section[2]{%
+  \ifnum \c@tocdepth >\z@
+    \addpenalty\@secpenalty
+    \addvspace{1.0em \@plus\p@}%
+    \setlength\@tempdima{2.8em}%
+    \begingroup
+      \parindent \z@ \rightskip \@pnumwidth
+      \parfillskip -\@pnumwidth
+      \leavevmode \bfseries
+      \advance\leftskip\@tempdima
+      \hskip -\leftskip
+      #1\nobreak\hfil
+      \nobreak\hb@xt@\@pnumwidth{\hss #2}\par
+    \endgroup
+  \fi}
+\renewcommand*\l@subsection{\@dottedtocline{2}{1.5em}{3.5em}}
+\makeatother
+
+\begin{document}
+
+\begin{frontmatter}
+\title{Supplementary Material for CLINES}
+\author{}
+\end{frontmatter}
+
+\tableofcontents
+
+\input{supplement_sections/introduction}
+\input{supplement_sections/methodology_extensions}
+\input{supplement_sections/prompts}
+\input{supplement_sections/json_schema}
+\input{supplement_sections/i2b2_schema}
+\input{supplement_sections/umls_pseudocode}
+\input{supplement_sections/cui_mapping}
+\input{supplement_sections/detailed_metrics}
+\input{supplement_sections/extended_results}
+\input{supplement_sections/iaa_detail}
+\input{supplement_sections/hallucination}
+\input{supplement_sections/consistency}
+\input{supplement_sections/deployment}
+\input{supplement_sections/checklists}
+
+\bibliographystyle{vancouver}
+\bibliography{references}
+
+\end{document}

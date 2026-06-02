@@ -1,0 +1,263 @@
+% ============================================================================
+% CLINES BMJ Digital Health & AI -- Major Revision (R2) UNIFIED master
+% Manuscript bmjdh-2026-000027
+%
+% Compiling master.tex with pdflatex produces a single ~88-page PDF containing
+% all four R2 submission documents in order, with full SyncTeX support:
+% double-clicking ANY location in the resulting PDF jumps directly to the
+% underlying source .tex line on Overleaf (or in any TeX editor).
+%
+% The four documents are also kept as independently compilable standalone
+% .tex files (Cover_Letter.tex, Response_to_Reviewers.tex, Manuscript.tex,
+% Supplement.tex) so each can be compiled in its journal-native styling for
+% final submission. The body content is shared via the *_body.tex files and
+% the sections/*, supplement_sections/* trees -- so editing one source edits
+% it everywhere.
+%
+% Class trade-off: this master compiles under elsarticle 12pt for uniformity
+% with the manuscript and supplement. The cover letter and reviewer-response
+% therefore render in elsarticle typography rather than the article-class
+% 11pt look you would see when compiling Cover_Letter.tex / Response_to_
+% Reviewers.tex standalone. Content is identical.
+% ============================================================================
+
+\documentclass[12pt,nopreprintline]{elsarticle}
+
+% ----- packages (union of needs across all four documents) -----
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb}
+\usepackage[hidelinks]{hyperref}
+\usepackage{float}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{multirow}
+\usepackage{enumitem}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{listings}
+\usepackage{microtype}
+\usepackage{xurl}
+\usepackage{fancyhdr}
+\usepackage{parskip}
+\graphicspath{{figures/}}
+
+\hypersetup{colorlinks=true,linkcolor=blue,urlcolor=blue,citecolor=blue}
+
+% Aggressive line-breaking inside \url{} / \path{} for HuggingFace-style identifiers.
+\renewcommand{\UrlBreaks}{\do\/\do\-\do\_\do\.\do\&\do\?\do\=}
+
+% Allow LaTeX to stretch line spacing slightly rather than overrunning the margin.
+\sloppy
+\emergencystretch=3em
+\hyphenpenalty=100
+\tolerance=2000
+
+% ----- revision markup macro (manuscript + supplement) -----
+\newif\ifrevmode
+\revmodetrue   % flip to \revmodefalse for the clean (no-blue) version
+\makeatletter
+\protected\long\def\new#1{\ifrevmode{\color{blue}#1}\else#1\fi}
+% Tell hyperref to strip \new when generating PDF strings (bookmarks, metadata).
+\pdfstringdefDisableCommands{\let\new\@firstofone}
+\makeatother
+
+% ----- fancyhdr style used by response_body.tex (\thispagestyle{fancy}) -----
+\fancyhf{}
+\fancyhead[L]{\textbf{CLINES --- Response to Reviewers}}
+\fancyhead[R]{Manuscript \texttt{bmjdh-2026-000027}}
+\fancyfoot[C]{\thepage}
+
+% ----- response-to-reviewers macros -----
+\newcommand{\reviewer}[1]{\par\medskip\textcolor{blue!75!black}{\textit{#1}}\par\medskip}
+\newcommand{\response}[1]{\par#1\par\medskip}
+\definecolor{msgray}{gray}{0.28}
+\newcommand{\fromms}[2]{\par\smallskip{\small\setlength{\leftskip}{1.4em}\setlength{\rightskip}{0.6em}%
+\textcolor{msgray}{\textbf{$\hookrightarrow$ Revised manuscript, #1:}}\par
+\textcolor{msgray}{\itshape #2}\par}\smallskip}
+
+% ----- bibliography options (manuscript) -----
+\biboptions{super,sort&compress}
+\journal{The Lancet Digital Health}
+
+\begin{document}
+
+% ============================================================================
+% 1. COVER LETTER
+% ============================================================================
+\input{cover_letter_body}
+\clearpage
+
+% ============================================================================
+% 2. RESPONSE TO REVIEWERS
+% ============================================================================
+\begingroup
+\begin{center}
+{\Large\bfseries Response to Reviewers}\\[0.4em]
+{\large CLINES: Clinical LLM-based Information Extraction and Structuring Agent}\\[0.2em]
+{\normalsize BMJ Digital Health \& AI --- Manuscript \texttt{bmjdh-2026-000027}}\\[0.6em]
+{\small May 26, 2026}
+\end{center}
+\vspace{1em}
+\setcounter{section}{0}
+% Unique hyperref bookmark namespace for response (avoids duplicate anchor warnings)
+\renewcommand{\theHsection}{resp.\arabic{section}}
+\renewcommand{\theHsubsection}{resp.\arabic{section}.\arabic{subsection}}
+\renewcommand{\theHsubsubsection}{resp.\arabic{section}.\arabic{subsection}.\arabic{subsubsection}}
+\input{response_body}
+\endgroup
+\clearpage
+
+% ============================================================================
+% 3. REVISED MANUSCRIPT
+% ============================================================================
+\setcounter{section}{0}
+\setcounter{figure}{0}
+\setcounter{table}{0}
+% Unique hyperref bookmark namespace for manuscript
+\renewcommand{\theHsection}{ms.\arabic{section}}
+\renewcommand{\theHsubsection}{ms.\arabic{section}.\arabic{subsection}}
+\renewcommand{\theHsubsubsection}{ms.\arabic{section}.\arabic{subsection}.\arabic{subsubsection}}
+\renewcommand{\theHfigure}{ms.\arabic{figure}}
+\renewcommand{\theHtable}{ms.\arabic{table}}
+
+\begin{frontmatter}
+
+\title{CLINES: Clinical LLM-based Information Extraction and Structuring Agent}
+
+\author[1]{Zongxin Yang\fnref{contrib}}
+\author[3]{Hongyi Yuan\fnref{contrib}}
+\author[1]{Raheel Sayeed\fnref{contrib}}
+\author[1]{Amelia Li Min Tan}
+\author[1]{Enci Cai}
+\author[1]{Mohammed Moro}
+\author[4]{Xiudi Li}
+\author[3]{Huaiyuan Ying}
+\author[6]{Nicholas Brown}
+\author[5,6]{Griffin Weber}
+\author[3]{Sheng Yu}
+\author[1]{Isaac Kohane\corref{cor1}}
+\author[1,2]{Tianxi Cai\corref{cor2}}
+
+\address[1]{Department of Biomedical Informatics, Harvard Medical School, Boston, MA, USA}
+\address[2]{Harvard T.H. Chan School of Public Health, Boston, MA, USA}
+\address[3]{Department of Statistics and Data Science, Tsinghua University, Beijing, China}
+\address[4]{Division of Biostatistics, University of California Berkeley, Berkeley, CA, USA}
+\address[5]{Division of Interdisciplinary Medicine and Biotechnology, Department of Medicine, Beth Israel Deaconess Medical Center, Boston, MA, USA}
+\address[6]{Harvard Medical School, Boston, MA, USA}
+
+\fntext[contrib]{These authors contributed equally to this work.}
+\cortext[cor1]{Corresponding author. Email: \texttt{Isaac\_Kohane@hms.harvard.edu}.}
+\cortext[cor2]{Corresponding author. Email: \texttt{tcai@hsph.harvard.edu}.}
+
+\begin{abstract}
+\input{sections/abstract}
+\end{abstract}
+
+\begin{keyword}
+Artificial intelligence \sep Medical informatics \sep Electronic health records
+\end{keyword}
+
+\end{frontmatter}
+
+\input{sections/summary_box}
+
+\section{Introduction}
+\input{sections/introduction}
+
+\section{Methods}
+\input{sections/methods}
+
+\section{Results}
+\input{sections/results}
+
+\section{Discussion}
+\input{sections/discussion}
+
+\section*{Contributors}
+\input{sections/contributors}
+
+\section*{Data Sharing}
+\input{sections/data_sharing}
+
+\section*{Ethics Approval}
+\input{sections/ethics_approval}
+
+\section*{Declaration of Interests}
+\input{sections/declaration_of_interests}
+
+\section*{Funding}
+This research received no specific grant from any funding agency in the public, commercial, or not-for-profit sectors.
+
+\bibliographystyle{vancouver}
+\bibliography{references}
+
+\clearpage
+
+% ============================================================================
+% 4. SUPPLEMENTARY MATERIAL
+% ============================================================================
+\setcounter{section}{0}
+\setcounter{table}{0}
+\setcounter{figure}{0}
+\renewcommand{\thesection}{S\arabic{section}}
+\renewcommand{\thesubsection}{S\arabic{section}.\arabic{subsection}}
+\renewcommand{\thetable}{S\arabic{table}}
+\renewcommand{\thefigure}{S\arabic{figure}}
+% Unique hyperref bookmark namespace for supplement
+\renewcommand{\theHsection}{supp.S\arabic{section}}
+\renewcommand{\theHsubsection}{supp.S\arabic{section}.\arabic{subsection}}
+\renewcommand{\theHsubsubsection}{supp.S\arabic{section}.\arabic{subsection}.\arabic{subsubsection}}
+\renewcommand{\theHfigure}{supp.S\arabic{figure}}
+\renewcommand{\theHtable}{supp.S\arabic{table}}
+
+% The manual S-prefix makes two-digit labels ("S10", "S10.1") overflow
+% elsarticle's default ToC \numberline box (1.5em/2.3em) and collide with the
+% title; elsarticle only auto-widens these inside \appendix, which we do not use.
+% Widen the two boxes; style is otherwise unchanged (bold section, dotted subsec).
+\makeatletter
+\renewcommand*\l@section[2]{%
+  \ifnum \c@tocdepth >\z@
+    \addpenalty\@secpenalty
+    \addvspace{1.0em \@plus\p@}%
+    \setlength\@tempdima{2.8em}%
+    \begingroup
+      \parindent \z@ \rightskip \@pnumwidth
+      \parfillskip -\@pnumwidth
+      \leavevmode \bfseries
+      \advance\leftskip\@tempdima
+      \hskip -\leftskip
+      #1\nobreak\hfil
+      \nobreak\hb@xt@\@pnumwidth{\hss #2}\par
+    \endgroup
+  \fi}
+\renewcommand*\l@subsection{\@dottedtocline{2}{1.5em}{3.5em}}
+\makeatother
+
+\begin{center}
+{\Large\bfseries Supplementary Material for CLINES}\\[0.3em]
+{\normalsize BMJ Digital Health \& AI --- Manuscript \texttt{bmjdh-2026-000027}}
+\end{center}
+\vspace{1em}
+
+\tableofcontents
+\bigskip
+
+\input{supplement_sections/introduction}
+\input{supplement_sections/methodology_extensions}
+\input{supplement_sections/prompts}
+\input{supplement_sections/json_schema}
+\input{supplement_sections/i2b2_schema}
+\input{supplement_sections/umls_pseudocode}
+\input{supplement_sections/cui_mapping}
+\input{supplement_sections/detailed_metrics}
+\input{supplement_sections/extended_results}
+\input{supplement_sections/iaa_detail}
+\input{supplement_sections/hallucination}
+\input{supplement_sections/consistency}
+\input{supplement_sections/deployment}
+\input{supplement_sections/checklists}
+
+\end{document}
