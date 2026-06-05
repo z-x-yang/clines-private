@@ -58,6 +58,9 @@ papers/BMJ_AI_Submission/Major Revision/*
 !papers/BMJ_AI_Submission/Major Revision/*.md
 !papers/BMJ_AI_Submission/Major Revision/*.txt
 !papers/BMJ_AI_Submission/Major Revision/*.pdf
+# Build scripts (overleaf bundle, captioned figure uploads) are
+# reproducibility-critical sources, not artifacts.
+!papers/BMJ_AI_Submission/Major Revision/*.sh
 !papers/BMJ_AI_Submission/Major Revision/cross-annotation/
 papers/BMJ_AI_Submission/Major Revision/cross-annotation/*
 !papers/BMJ_AI_Submission/Major Revision/cross-annotation/*.txt
