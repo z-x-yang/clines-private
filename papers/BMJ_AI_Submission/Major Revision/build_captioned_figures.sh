@@ -31,11 +31,18 @@ OUT="$HERE/BMJ_R2_Resubmission"
 BACKUP="$OUT/_pre_caption_backup"
 MARGIN=12   # crop margin in PostScript points
 
-command -v pdflatex >/dev/null || { echo "ERROR: pdflatex not found"; exit 1; }
-command -v gs       >/dev/null || { echo "ERROR: ghostscript (gs) not found"; exit 1; }
-command -v pdfinfo  >/dev/null || { echo "ERROR: pdfinfo not found"; exit 1; }
+command -v pdflatex  >/dev/null || { echo "ERROR: pdflatex not found"; exit 1; }
+command -v gs        >/dev/null || { echo "ERROR: ghostscript (gs) not found"; exit 1; }
+command -v pdfinfo   >/dev/null || { echo "ERROR: pdfinfo not found"; exit 1; }
+command -v pdftotext >/dev/null || { echo "ERROR: pdftotext not found"; exit 1; }
 [[ -d "$LIVE" ]] || { echo "ERROR: live source not found at $LIVE"; exit 1; }
 [[ -d "$OUT"  ]] || { echo "ERROR: output dir not found at $OUT"; exit 1; }
+
+# figure5.pdf exists in BOTH trees (live + Major Revision). The wrapper/caption
+# is taken from live but the image from Major Revision (latest, same convention
+# as build_overleaf_zip.sh) -- refuse to build if the two have drifted apart.
+cmp -s "$LIVE/figures/figure5.pdf" "$HERE/figures/figure5.pdf" \
+    || { echo "ERROR: figure5.pdf differs between live ($LIVE/figures) and Major Revision ($HERE/figures); sync them first"; exit 1; }
 
 STAGE="$(mktemp -d)"
 trap 'rm -rf "$STAGE"' EXIT
@@ -63,9 +70,11 @@ crop_pdf() {
     [[ -f "$out" ]] || { echo "ERROR: gs crop produced no output for $in"; exit 1; }
 }
 
-# build_one <upload-N> <wrapper-name>
+# build_one <upload-N> <wrapper-name> <expected-caption-title>
+# Builds + validates into $STAGE/out/; installation happens only after ALL
+# figures pass, so a failed run never leaves a mixed-generation upload dir.
 build_one() {
-    local n="$1" wrapper="$2" job="Figure_${1}_captioned"
+    local n="$1" wrapper="$2" title="$3" job="Figure_${1}_captioned"
     echo "=== Figure_${n}.pdf  (wrapper ${wrapper}.tex, counter -> Figure ${n}) ==="
     cat > "$STAGE/${job}.tex" <<EOF
 \\documentclass[review,12pt,times,nopreprintline]{elsarticle}
@@ -98,21 +107,31 @@ EOF
     local pages
     pages="$(pdfinfo "$STAGE/${job}.pdf" | awk '/^Pages:/{print $2}')"
     [[ "$pages" == "1" ]] || { echo "ERROR: ${job}.pdf has $pages pages (expected 1)"; exit 1; }
-    # Refuse to ship a figure whose caption did not render.
-    pdftotext "$STAGE/${job}.pdf" - | grep -q "Figure ${n}:" \
+    # Refuse to ship a figure whose caption did not render, or whose caption is
+    # the WRONG one for this upload number (e.g. wrapper/counter mismatch).
+    local txt
+    txt="$(pdftotext "$STAGE/${job}.pdf" - | tr '\n' ' ')"
+    grep -q "Figure ${n}:" <<<"$txt" \
         || { echo "ERROR: rendered page lacks 'Figure ${n}:' caption label"; exit 1; }
-    # One-time backup of the pre-caption upload file.
+    grep -qF "$title" <<<"$txt" \
+        || { echo "ERROR: Figure ${n} caption lacks expected title '$title'"; exit 1; }
+    crop_pdf "$STAGE/${job}.pdf" "$STAGE/out/Figure_${n}.pdf"
+    echo "  -> staged Figure_${n}.pdf  ($(pdfinfo "$STAGE/out/Figure_${n}.pdf" | awk -F': *' '/Page size/{print $2}'))"
+}
+
+mkdir -p "$STAGE/out"
+build_one 1 figure1 "Overview of CLINES"
+build_one 2 figure2 "CLINES LLM-based module workflow"
+build_one 3 figure3 "Performance of CLINES across datasets and tasks"
+build_one 4 figure5 "Robustness, cost, and component contributions"
+
+# All four passed validation -- back up the previous uploads once, then install.
+for n in 1 2 3 4; do
     if [[ -f "$OUT/Figure_${n}.pdf" && ! -f "$BACKUP/Figure_${n}.pdf" ]]; then
         cp "$OUT/Figure_${n}.pdf" "$BACKUP/Figure_${n}.pdf"
     fi
-    crop_pdf "$STAGE/${job}.pdf" "$OUT/Figure_${n}.pdf"
-    echo "  -> $OUT/Figure_${n}.pdf  ($(pdfinfo "$OUT/Figure_${n}.pdf" | awk -F': *' '/Page size/{print $2}'))"
-}
-
-build_one 1 figure1
-build_one 2 figure2
-build_one 3 figure3
-build_one 4 figure5
+    cp "$STAGE/out/Figure_${n}.pdf" "$OUT/Figure_${n}.pdf"
+done
 
 echo
 echo "=== done ==="
